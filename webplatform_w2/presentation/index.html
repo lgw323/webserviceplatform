@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로젝트 제안서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Noto Sans (본문용), Archivo Black (제목용, 투박하고 매우 굵음), JetBrains Mono (수치용) */
+        @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@700;800&family=Noto+Sans+KR:wght@500;700;900&display=swap');
+    </style>
+</head>
+
+<body class="overflow-hidden bg-white flex items-center justify-center h-screen w-screen relative">
+    <div class="absolute inset-0 bg-grid opacity-20 pointer-events-none"></div>
+
+    <!-- 16:9 Aspect Ratio Container (QHD Base) -->
+    <div id="presentation-aspect-ratio"
+        class="relative bg-white shadow-[12px_12px_0_0_#000] overflow-hidden border-[3px] border-black"
+        style="aspect-ratio: 16/9; width: 100%; max-width: 2560px; max-height: 100vh;">
+
+        <div id="presentation-container" class="w-full h-full flex flex-col relative z-10"></div>
+
+        <div id="nav-left"
+            class="absolute top-0 left-0 w-32 h-full z-50 cursor-pointer hidden md:block hover:bg-[#F8F32B]/20 transition-colors">
+        </div>
+        <div id="nav-right"
+            class="absolute top-0 right-0 w-32 h-full z-50 cursor-pointer hidden md:block hover:bg-[#F8F32B]/20 transition-colors">
+        </div>
+
+        <div id="font-controls"
+            class="absolute bottom-6 right-6 z-[100] flex gap-2 opacity-30 hover:opacity-100 transition-opacity duration-300">
+            <button id="btn-decrease" class="font-control-btn shadow-[6px_6px_0_0_#000]" title="글자 작게 (↓)">-</button>
+            <button id="btn-reset" class="font-control-btn shadow-[6px_6px_0_0_#000]" title="초기화">R</button>
+            <button id="btn-increase" class="font-control-btn shadow-[6px_6px_0_0_#000]" title="글자 크게 (↑)">+</button>
+        </div>
+    </div>
+
+    <!-- 순서 중요 -->
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

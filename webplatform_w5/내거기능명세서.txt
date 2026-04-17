@@ -1,0 +1,176 @@
+통합 게임 데이터 및 하드웨어 최적화 플랫폼 기능 명세서 (FSD)
+
+1. 문서 관리 정보
+
+버전	작성/수정일	주요 수정 내용	작성자
+v1.0.0	2024. 05. 23	초안 작성 및 매칭 알고리즘/인터페이스 상세 정의	수석 비즈니스 분석가 & 테크니컬 아키텍트
+
+
+--------------------------------------------------------------------------------
+
+
+2. 개요 (Overview)
+
+2.1. 제품 설명
+
+본 플랫폼은 스팀(Steam), 라이엇 게임즈(Riot Games) 등 파편화된 게임 유통 플랫폼의 데이터를 통합하고, 사용자의 하드웨어 제원에 최적화된 그래픽 설정값을 매칭해 주는 다면 웹 서비스 플랫폼입니다. 사용자가 겪는 데이터 관리의 번거로움과 개별 시스템 사양에 따른 최적화 탐색 비용(Performance Search Cost)을 최소화하는 것을 핵심 목적으로 합니다.
+
+2.2. 범위 (Scope)
+
+* In-Scope:
+  * OAuth 2.0 기반 외부 플랫폼 계정 연동 및 게임 데이터 수집
+  * 사용자 하드웨어 프로필(CPU, GPU, RAM, 모니터) 관리 시스템
+  * 가중치 기반 하드웨어 유사도(90% 이상) 매칭 알고리즘
+  * Recharts 기반 게임 통계 시각화 대시보드
+  * 시스템 병목(Bottleneck) 분석 및 최적 세팅값 정렬 출력
+* Out-of-Scope:
+  * 콘솔 플랫폼(PSN, Xbox Live) 데이터 연동 (Phase 2 확장 예정)
+  * 인게임 그래픽 설정의 실시간 자동 주입(Injection) 및 API 기반 자동 적용
+
+2.3. 가정 및 제약 사항
+
+* OS/브라우저: 최신 웹 표준을 준수하는 Chrome, Edge, Safari 환경을 지원하며 모바일 반응형 레이아웃을 포함함.
+* 외부 API 의존성: Steam Web API 및 Riot API의 가동률 및 Rate Limit 정책에 종속적임.
+* 데이터 신뢰성: 사용자가 수동으로 입력하는 하드웨어 데이터의 경우, 마스터 카탈로그와의 매핑을 통해 정규화 과정을 거쳐야 함.
+
+
+--------------------------------------------------------------------------------
+
+
+3. 기능별 상세 명세 (Feature Specifications)
+
+3.1. [FSD-001] OAuth 기반 외부 계정 연동
+
+* 요구사항 (EARS):
+  1. WHEN 사용자가 플랫폼 연동 버튼을 클릭할 때, the system shall 외부 인증 서버(Steam/Riot)로 OAuth 권한 부여 요청을 전송해야 합니다.
+  2. WHEN 인증 토큰 발급이 완료될 때, the system shall API 비동기 통신을 통해 사용자의 라이브러리 목록 및 플레이 데이터를 수집해야 합니다.
+* 입력 명세:
+  * Access Token (String, 필수), Provider ID (String, 필수: Steam/Riot)
+* 처리 로직:
+  * Axios Interceptor를 통한 요청 헤더 구성 및 비동기 수신.
+  * 수신된 JSON 데이터에서 appid, playtime_forever, achievements 항목 추출.
+  * 서버 사이드 캐싱(Redis 등) 후 RDBMS 반영.
+* 출력 명세: 연동 성공 팝업 및 대시보드 내 게임 아이콘 리스트 업데이트.
+* 예외 처리:
+  * 인증 실패(401) 시: "인증 세션이 만료되었습니다" 알림 및 재로그인 유도.
+  * API Rate Limit 초과 시: 지수 백오프(Exponential Backoff) 전략을 통한 재시도.
+* 인터페이스:
+  * UI: ConnectionSettingView 컴포넌트
+  * API: GET /api/v1/auth/{provider}/callback, Steam Web API (GetOwnedGames)
+
+3.2. [FSD-002] 하드웨어 프로필 등록 시스템
+
+* 요구사항 (EARS): WHEN 사용자가 사양 등록 양식을 제출할 때, the system shall 입력값의 유효성을 검증하고 하드웨어 마스터 테이블과 매핑하여 프로필을 저장해야 합니다.
+* 입력 명세:
+
+항목	데이터 타입	유효성 검사 규칙 (Regex/Range)	필수 여부
+CPU	String	^[a-zA-Z0-9\s-]{2,50}$ (예: Ryzen 9 7950X3D)	필수
+GPU	String	^[a-zA-Z0-9\s-]{2,50}$ (예: RTX 4080 SUPER)	필수
+RAM	Int	4 <= n <= 256 (GB 단위)	필수
+Resolution	String	`^(FHD	QHD
+Refresh Rate	Int	30 <= n <= 540 (Hz 단위)	필수
+
+* 처리 로직:
+  1. Normalization: 입력된 문자열을 Hardware_Master_Catalog의 표준 명칭으로 변환 (예: "4080 슈퍼" -> "RTX 4080 SUPER").
+  2. Validation: 정해진 범위 및 정규식 일치 확인.
+  3. Persistence: User_Hardware_Profile 테이블에 RDBMS 정규화 저장.
+* 출력 명세: 등록 완료 토스트 메시지 및 프로필 요약 위젯 표시.
+* 예외 처리: 카탈로그에 없는 하드웨어 입력 시, 유사 명칭 리스트를 제안하거나 수동 확인 요청 프로세스로 전환.
+* 인터페이스:
+  * UI: HardwareRegistrationForm (Tailwind 기반 모달)
+  * API: POST /api/v1/user/hardware-profile
+
+3.3. [FSD-003] 알고리즘 기반 최적화 필터링 매칭
+
+* 요구사항 (EARS): WHEN 사용자가 특정 게임의 최적 설정을 요청할 때, the system shall 가중치 기반 알고리즘을 실행하여 유사도 90% 이상의 최적 프로필을 정렬 출력해야 합니다.
+* 처리 로직 (90% Similarity Scoring):
+  * Hard Filters (Must Match): GPU_Model (Tier 일치), Resolution (동일 해상도). 일치하지 않을 경우 매칭 제외.
+  * Soft Filters (Weighted Score):
+    * GPU 성능 점수 (Benchmark 기반): 50%
+    * 해상도 가중치: 30%
+    * CPU 세대 및 성능 점수: 10%
+    * RAM 용량: 10%
+  * Calculation: TotalScore = \sum (Weight \times Similarity). TotalScore \ge 0.9인 데이터만 추출.
+  * Bottleneck Analysis: 사용자 CPU와 매칭된 GPU 간의 성능 불균형 지수 계산 후 경고 메시지 포함.
+* 출력 명세:
+  * 최적 그래픽 상세 설정값 (Texture, Shadow, Ray-Tracing 등 상세 리스트)
+  * 평균 예상 프레임(FPS) 및 하위 1% 프레임 데이터 규격 (Float)
+* 예외 처리: 90% 일치 데이터 부재 시, GPU를 한 단계 낮춘(Tier-1) 최상위 호환 세팅을 '차선책'으로 출력.
+* 인터페이스:
+  * UI: OptimizationResultCard, BottleneckIndicator
+  * Library: Internal Matching Engine v1.0
+
+3.4. [FSD-004] 통합 데이터 시각화 대시보드
+
+* 요구사항 (EARS): WHEN 사용자가 대시보드 메뉴에 진입할 때, the system shall DB의 누적 데이터를 가공하여 Recharts 기반의 동적 차트를 렌더링해야 합니다.
+* 처리 로직:
+  1. 사용자별 Play_Log 테이블에서 게임별 플레이 타임 및 날짜별 접속 기록 집계.
+  2. JSON 데이터를 Recharts의 data 프로퍼티 형식(Array of Objects)으로 변환.
+  3. 브라우저 뷰포트 크기에 따른 반응형 차트 스케일링 적용.
+* 출력 명세:
+  * 총 플레이 시간 (Pie Chart)
+  * 주간 활동량 (Bar Chart)
+  * 업적 달성 추이 (Area Chart)
+* 예외 처리: 데이터가 0건일 경우 "표시할 데이터가 없습니다" 플레이스홀더 렌더링.
+* 인터페이스:
+  * UI: DashboardMainView
+  * Library: Recharts.js (ResponsiveContainer 활용)
+
+
+--------------------------------------------------------------------------------
+
+
+4. 외부 인터페이스 (External Interfaces)
+
+* 4.1. 사용자 인터페이스(UI): React.js 기반 SPA. Tailwind CSS를 통한 Utility-first 스타일링. 모바일/데스크톱 100% 대응 반응형 설계.
+* 4.2. 하드웨어 인터페이스: 마스터 카탈로그 매핑 엔진. 사용자 시스템 정보 수집을 위한 표준 Input 명세(Schema) 정의.
+* 4.3. API/통신 사양:
+  * Protocol: HTTPS / TLS 1.3
+  * Authentication: OAuth 2.0 (Bearer Token)
+  * Steam Web API: GET /IPlayerService/GetOwnedGames/v1/
+  * Riot API: GET /lol/summoner/v4/summoners/by-name/ (API Key 기반)
+
+
+--------------------------------------------------------------------------------
+
+
+5. 비기능 요구사항 (NFR - "The Itys")
+
+* Security (보안성):
+  * OAuth 토큰 및 사용자 개인 식별 정보(PII)는 AES-256 암호화 저장.
+  * CSRF 및 XSS 방지를 위한 보안 헤더 적용.
+* Capacity (용량):
+  * 초기 10,000명의 동시 접속 사용자 지원.
+  * 사용자당 평균 50KB의 라이브러리 메타데이터 저장 공간 할당.
+* Reliability & Availability (신뢰성/가용성):
+  * 연간 가동률(Uptime) 99.9% 목표.
+  * 장애 발생 시 복구 목표 시간(RTO) 4시간 이내, 복구 시점 목표(RPO) 1시간 이내.
+* Scalability (확장성):
+  * Node.js 이벤트 루프 기반 비동기 처리로 I/O 병목 방지.
+  * Docker 컨테이너 기반 쿠버네티스 환경에서 수평적 확장(Scale-out) 지원.
+* Usability (사용성):
+  * 신규 사용자의 계정 연동 및 하드웨어 등록 프로세스 완료까지의 시간(Time-to-Value) 3분 이내 설계.
+  * 모든 UI 요소에 대해 WCAG 2.1 웹 접근성 가이드라인 준수.
+* Maintainability (유지보수성):
+  * Winston 기반 중앙 집중형 로깅 및 ELK Stack 모니터링 구축.
+
+
+--------------------------------------------------------------------------------
+
+
+6. 부록 (Appendix)
+
+6.1. 용어 사전 (Glossary)
+
+* 인증된 사용자(Verified User): OAuth 인증을 통해 하나 이상의 게임 플랫폼 계정을 성공적으로 연동한 사용자.
+* 게스트(Guest): 회원 가입 없이 공개된 하드웨어 세팅 DB만 조회 가능한 사용자.
+* Power User: 벤치마크 결과 및 상세 그래픽 설정값을 등록하여 최적화 알고리즘의 기초 데이터를 제공하는 사용자.
+* General User: 자신의 사양을 등록하고 타인의 세팅값을 추천받는 엔드 유저.
+* System Bottleneck: 특정 하드웨어 부품(예: CPU)의 성능이 낮아 다른 부품(예: GPU)의 성능을 완전히 끌어내지 못하는 현상.
+
+6.2. 참고 문헌
+
+* ISO/IEC/IEEE 29148:2018 (Systems and software engineering — Life cycle processes — Requirements engineering)
+* Steam Web API Documentation (Valve Corp)
+* Riot Games API Terms of Service
+* QRA Corp EARS Syntax Guide [END OF DOCUMENT]

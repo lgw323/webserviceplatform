@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYNCRIG: Hardware & Data Platform</title>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons (CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        main: '#23ce6b', /* 강조, CTA */
+                        sub: '#272d2d',  /* 배경, 보조 */
+                        dark: '#111111', /* 텍스트 및 깊은 음영 */
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f9fafb;
+            /* gray-50 */
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .nav-btn.active {
+            background-color: #23ce6b;
+            /* main */
+            color: #272d2d;
+            /* sub */
+            font-weight: 700;
+        }
+
+        .nav-btn.active .nav-icon {
+            color: #272d2d;
+            /* sub */
+        }
+    </style>
+</head>
+
+<body class="text-sub min-h-screen flex selection:bg-main selection:text-sub">
+
+    <!-- Sidebar Navigation -->
+    <aside class="bg-sub w-20 lg:w-72 flex flex-col transition-all z-20 shadow-xl">
+        <!-- Logo Area -->
+        <div class="p-6 flex items-center gap-4 border-b border-white/10">
+            <div class="bg-main p-2.5 rounded-xl text-sub shadow-lg shadow-main/20">
+                <i data-lucide="zap" class="w-6 h-6 fill-current"></i>
+            </div>
+            <span class="hidden lg:block font-bold text-2xl tracking-tight text-white">SYNCRIG</span>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            <!-- Overview -->
+            <button data-target="home"
+                class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-white/10 hover:text-white transition-all group">
+                <i data-lucide="home" class="nav-icon w-5 h-5 transition-colors"></i>
+                <span class="hidden lg:block text-sm font-semibold tracking-wide">Overview</span>
+            </button>
+
+            <!-- Dashboard -->
+            <button data-target="dashboard"
+                class="nav-btn active w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all group shadow-md shadow-main/10">
+                <i data-lucide="layout-dashboard" class="nav-icon w-5 h-5 transition-colors"></i>
+                <span class="hidden lg:block text-sm tracking-wide">Library & Stats</span>
+            </button>
+
+            <!-- Optimization Hub -->
+            <button data-target="optimize"
+                class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-white/10 hover:text-white transition-all group">
+                <i data-lucide="settings" class="nav-icon w-5 h-5 transition-colors"></i>
+                <span class="hidden lg:block text-sm font-semibold tracking-wide">Optimization Hub</span>
+            </button>
+
+            <!-- Device Profile -->
+            <button data-target="hardware"
+                class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-white/10 hover:text-white transition-all group">
+                <i data-lucide="cpu" class="nav-icon w-5 h-5 transition-colors"></i>
+                <span class="hidden lg:block text-sm font-semibold tracking-wide">Device Profile</span>
+            </button>
+        </nav>
+
+        <!-- User Status / B2C Indicator -->
+        <div class="p-5 space-y-4 border-t border-white/10">
+            <div class="bg-main p-4 rounded-xl shadow-lg shadow-main/20 text-sub hidden lg:block">
+                <p class="text-[11px] font-bold mb-1 flex items-center gap-1.5 uppercase tracking-wider">
+                    <i data-lucide="crown" class="w-3.5 h-3.5"></i> Premium Active
+                </p>
+                <p class="text-xs font-semibold leading-tight opacity-90">B2C Subscription Valid</p>
+            </div>
+
+            <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/10 transition-colors cursor-pointer">
+                <div
+                    class="bg-gray-800 text-main w-10 h-10 rounded-full flex items-center justify-center shrink-0 border border-gray-700">
+                    <i data-lucide="user" class="w-5 h-5"></i>
+                </div>
+                <div class="hidden lg:block overflow-hidden">
+                    <p class="text-sm font-bold truncate text-white">PRO_GAMER_KR</p>
+                    <p class="text-[11px] font-medium text-gray-400 mt-0.5 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-main shadow-[0_0_8px_#23ce6b]"></span> Verified System
+                    </p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto relative h-screen">
+        <!-- Header -->
+        <header
+            class="bg-white/80 backdrop-blur-md h-20 border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-10">
+            <div>
+                <h2 id="header-title" class="text-xl font-bold text-sub tracking-tight">Analytics Dashboard</h2>
+            </div>
+            <div
+                class="hidden md:flex items-center gap-2 text-xs font-bold bg-main/10 text-sub px-3 py-1.5 rounded-full border border-main/20">
+                <div class="w-2 h-2 rounded-full bg-main animate-pulse shadow-[0_0_8px_#23ce6b]"></div>
+                <span>API SYNC: ONLINE</span>
+            </div>
+        </header>
+
+        <!-- Container for Views -->
+        <div class="p-8 max-w-6xl mx-auto space-y-8">
+
+            <!-- ========================================== -->
+            <!-- VIEW: Home (Not Implemented placeholder)   -->
+            <!-- ========================================== -->
+            <div id="view-home" class="view-section hidden space-y-6">
+                <div class="bg-white border border-gray-200 rounded-2xl p-16 text-center shadow-sm">
+                    <div
+                        class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                        <i data-lucide="construction" class="w-8 h-8 text-gray-400"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-sub">Module Under Construction</h2>
+                    <p class="font-mono text-sm text-gray-500 mt-2">sys.req.overview_module_missing</p>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- VIEW: Dashboard (Library & Achievements)   -->
+            <!-- ========================================== -->
+            <div id="view-dashboard" class="view-section block space-y-8 animate-[fadeIn_0.3s_ease-in-out]">
+
+                <!-- Metrics Grid -->
+                <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div
+                        class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-3 mb-4 text-gray-500">
+                            <div class="p-2 bg-main/10 rounded-lg"><i data-lucide="clock" class="w-5 h-5 text-main"></i>
+                            </div>
+                            <p class="text-sm font-semibold tracking-wide text-sub">Total Playtime</p>
+                        </div>
+                        <h3 class="text-4xl font-bold text-sub mb-1">2,482<span
+                                class="text-lg text-gray-400 ml-1 font-medium">h</span></h3>
+                        <p class="text-xs text-gray-500 mt-3 font-medium">Steam / Epic / Riot</p>
+                    </div>
+
+                    <div
+                        class="bg-sub border border-sub rounded-2xl p-6 shadow-lg shadow-sub/20 text-white hover:-translate-y-0.5 transition-transform">
+                        <div class="flex items-center gap-3 mb-4 text-gray-300">
+                            <div class="p-2 bg-white/10 rounded-lg"><i data-lucide="bar-chart-2"
+                                    class="w-5 h-5 text-main"></i></div>
+                            <p class="text-sm font-semibold tracking-wide text-white">Avg. Completion</p>
+                        </div>
+                        <h3 class="text-4xl font-bold mb-1 text-white">68.4<span
+                                class="text-lg text-gray-400 ml-1 font-medium">%</span></h3>
+                        <p class="text-xs text-main mt-3 font-semibold">Global Top 12%</p>
+                    </div>
+
+                    <div
+                        class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-3 mb-4 text-gray-500">
+                            <div class="p-2 bg-main/10 rounded-lg"><i data-lucide="gamepad-2"
+                                    class="w-5 h-5 text-main"></i></div>
+                            <p class="text-sm font-semibold tracking-wide text-sub">Integrated Assets</p>
+                        </div>
+                        <h3 class="text-4xl font-bold text-sub mb-1">156<span
+                                class="text-lg text-gray-400 ml-1 font-medium">units</span></h3>
+                        <p class="text-xs text-gray-500 mt-3 font-medium">Verified Licenses</p>
+                    </div>
+                </section>
+
+                <!-- Achievement Tracker -->
+                <section class="space-y-5">
+                    <div class="flex justify-between items-end pb-2">
+                        <h3 class="text-lg font-bold text-sub flex items-center gap-2">
+                            <i data-lucide="trophy" class="w-5 h-5 text-main"></i> Achievement Tracker
+                        </h3>
+                        <span
+                            class="text-xs font-semibold text-sub bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">Sort:
+                            Playtime</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Game Item 1 -->
+                        <div
+                            class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:border-gray-300 transition-colors">
+                            <div class="flex items-start gap-4 mb-4">
+                                <div
+                                    class="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center shrink-0 text-gray-400 border border-gray-100">
+                                    <i data-lucide="image" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-bold text-base text-sub truncate">Cyberpunk 2077</h4>
+                                    <p class="text-xs font-medium text-gray-500 mb-2 mt-0.5">Playtime: 124h</p>
+                                    <div class="flex items-center gap-1.5 text-sm font-semibold text-sub">
+                                        <i data-lucide="trophy" class="w-4 h-4 text-gray-300"></i>
+                                        <span>38 / 44</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-main rounded-full transition-all duration-1000"
+                                    style="width: 86%;"></div>
+                            </div>
+                            <div class="text-right mt-2">
+                                <span class="text-[11px] font-bold text-main">86% COMPLETION</span>
+                            </div>
+                        </div>
+
+                        <!-- Game Item 2 -->
+                        <div
+                            class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:border-gray-300 transition-colors relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-2 h-full bg-main"></div>
+                            <div class="flex items-start gap-4 mb-4">
+                                <div
+                                    class="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center shrink-0 text-gray-400 border border-gray-100">
+                                    <i data-lucide="image" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-bold text-base text-sub truncate">Elden Ring</h4>
+                                    <p class="text-xs font-medium text-gray-500 mb-2 mt-0.5">Playtime: 210h</p>
+                                    <div class="flex items-center gap-1.5 text-sm font-semibold text-sub">
+                                        <i data-lucide="trophy" class="w-4 h-4 text-main fill-main"></i>
+                                        <span>42 / 42</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-main rounded-full transition-all duration-1000"
+                                    style="width: 100%;"></div>
+                            </div>
+                            <div class="text-right mt-2">
+                                <span class="text-[11px] font-bold text-main">100% COMPLETION</span>
+                            </div>
+                        </div>
+
+                        <!-- Game Item 3 -->
+                        <div
+                            class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:border-gray-300 transition-colors">
+                            <div class="flex items-start gap-4 mb-4">
+                                <div
+                                    class="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center shrink-0 text-gray-400 border border-gray-100">
+                                    <i data-lucide="image" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-bold text-base text-sub truncate">Red Dead Redemption 2</h4>
+                                    <p class="text-xs font-medium text-gray-500 mb-2 mt-0.5">Playtime: 86h</p>
+                                    <div class="flex items-center gap-1.5 text-sm font-semibold text-sub">
+                                        <i data-lucide="trophy" class="w-4 h-4 text-gray-300"></i>
+                                        <span>12 / 52</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-gray-300 rounded-full transition-all duration-1000"
+                                    style="width: 23%;"></div>
+                            </div>
+                            <div class="text-right mt-2">
+                                <span class="text-[11px] font-bold text-gray-500">23% COMPLETION</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- VIEW: Optimization Hub (Hardware Match)    -->
+            <!-- ========================================== -->
+            <div id="view-optimize" class="view-section hidden space-y-8 animate-[fadeIn_0.3s_ease-in-out]">
+
+                <div class="flex justify-between items-end pb-2">
+                    <h3 class="text-lg font-bold text-sub flex items-center gap-2">
+                        <i data-lucide="shield-check" class="w-5 h-5 text-main"></i> Profile Matching Engine
+                    </h3>
+                </div>
+
+                <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                    <!-- User Hardware Context Column -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <!-- Target Device Profile -->
+                        <div class="bg-sub rounded-2xl p-6 shadow-lg shadow-sub/10 text-white relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-main/5 rounded-full blur-3xl"></div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider mb-6 text-gray-400">Target Device
+                                Profile</h3>
+                            <div class="space-y-5 relative z-10">
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2 bg-white/5 rounded-lg text-main shrink-0"><i data-lucide="cpu"
+                                            class="w-4 h-4"></i></div>
+                                    <div>
+                                        <p
+                                            class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+                                            Processor</p>
+                                        <p class="text-sm font-medium">AMD Ryzen 9 7950X3D</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2 bg-white/5 rounded-lg text-main shrink-0"><i data-lucide="activity"
+                                            class="w-4 h-4"></i></div>
+                                    <div>
+                                        <p
+                                            class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+                                            Motherboard</p>
+                                        <p class="text-sm font-medium">ASUS TUF X670E-PLUS WIFI</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2 bg-white/5 rounded-lg text-main shrink-0"><i data-lucide="monitor"
+                                            class="w-4 h-4"></i></div>
+                                    <div>
+                                        <p
+                                            class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+                                            Graphics Adapter</p>
+                                        <p class="text-sm font-medium">ASUS TUF RTX 4080 SUPER</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="p-2 bg-white/5 rounded-lg text-main shrink-0"><i data-lucide="maximize"
+                                            class="w-4 h-4"></i></div>
+                                    <div>
+                                        <p
+                                            class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+                                            Display Output</p>
+                                        <p class="text-sm font-medium">LG 27GP850</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- B2B Targeted Ad Slot -->
+                        <div
+                            class="bg-main rounded-2xl p-6 relative group cursor-pointer shadow-md shadow-main/20 text-sub transition-transform hover:-translate-y-1">
+                            <div
+                                class="absolute top-4 right-4 bg-sub text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide">
+                                Sponsored</div>
+                            <div class="w-10 h-10 bg-sub rounded-xl flex items-center justify-center mb-4 text-main">
+                                <i data-lucide="zap" class="w-5 h-5"></i>
+                            </div>
+                            <h5 class="text-base font-bold text-sub mb-2">Unlock 240Hz Potential</h5>
+                            <p class="text-sm text-sub/80 font-medium leading-relaxed mb-4">
+                                Your RTX 4080 SUPER can push higher frames. Upgrade to ROG SWIFT OLED PG27AQDM.
+                            </p>
+                            <div
+                                class="flex items-center gap-2 text-sm font-bold text-sub group-hover:gap-3 transition-all">
+                                <span>View Hardware</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DB Profile Matching Result Column -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                            <!-- Result Header -->
+                            <div
+                                class="p-6 sm:p-8 border-b border-gray-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6 bg-gray-50">
+                                <div>
+                                    <h4 class="font-bold text-2xl text-sub mb-2">Cyberpunk 2077</h4>
+                                    <span
+                                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-main/10 text-sub border border-main/20 text-xs font-semibold">
+                                        <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-main"></i>
+                                        Matched via CPU + GPU (98%)
+                                    </span>
+                                </div>
+                                <div
+                                    class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm text-center min-w-[140px]">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Target
+                                        FPS</p>
+                                    <div class="flex items-baseline justify-center gap-1">
+                                        <span class="text-4xl font-bold text-sub">118</span>
+                                        <span class="text-sm font-medium text-gray-400">avg</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Settings Context -->
+                            <div class="p-6 sm:p-8 space-y-8">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="bg-gray-50 border border-gray-100 rounded-xl p-5">
+                                        <div class="flex items-center gap-2 text-gray-500 mb-2">
+                                            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-main"></i>
+                                            <p class="text-xs font-semibold uppercase tracking-wider text-sub">Graphics
+                                                Preset</p>
+                                        </div>
+                                        <p class="text-lg font-bold text-sub">RT Overdrive</p>
+                                    </div>
+                                    <div class="bg-gray-50 border border-gray-100 rounded-xl p-5">
+                                        <div class="flex items-center gap-2 text-gray-500 mb-2">
+                                            <i data-lucide="layers" class="w-4 h-4 text-main"></i>
+                                            <p class="text-xs font-semibold uppercase tracking-wider text-sub">Upscaling
+                                                Method</p>
+                                        </div>
+                                        <p class="text-lg font-bold text-sub">DLSS 3 Frame Gen</p>
+                                    </div>
+                                </div>
+
+                                <!-- Action Element -->
+                                <div class="pt-2">
+                                    <button id="btn-copy-script"
+                                        class="w-full py-4 px-6 flex items-center justify-center gap-2 text-sm font-bold bg-main hover:bg-[#1eb55d] text-sub rounded-xl shadow-md shadow-main/20 transition-all focus:ring-4 focus:ring-main/30">
+                                        <i data-lucide="copy" class="w-5 h-5"></i>
+                                        <span>Copy Console Script</span>
+                                    </button>
+                                    <p class="text-center text-xs font-medium text-gray-400 mt-4">
+                                        Paste this script in the game console to apply settings automatically.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- VIEW: Hardware (Not Implemented placeholder) -->
+            <!-- ========================================== -->
+            <div id="view-hardware" class="view-section hidden space-y-6">
+                <div class="bg-white border border-gray-200 rounded-2xl p-16 text-center shadow-sm">
+                    <div
+                        class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                        <i data-lucide="cpu" class="w-8 h-8 text-gray-400"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-sub">Hardware Profile Pending</h2>
+                    <p class="font-mono text-sm text-gray-500 mt-2">sys.req.hardware_entry_form_missing</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // DOM 제어 및 View 라우팅 초기화
+        document.addEventListener("DOMContentLoaded", () => {
+            // 아이콘 렌더링 호출
+            lucide.createIcons();
+
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const views = document.querySelectorAll('.view-section');
+            const headerTitle = document.getElementById('header-title');
+
+            const viewTitles = {
+                'home': 'Platform Overview',
+                'dashboard': 'Analytics Dashboard',
+                'optimize': 'Optimization & Matching Hub',
+                'hardware': 'Device Profile'
+            };
+
+            // View 전환 함수
+            function switchView(targetId) {
+                // 1. View 노출 변경
+                views.forEach(view => {
+                    if (view.id === `view-${targetId}`) {
+                        view.classList.remove('hidden');
+                        view.classList.add('block');
+                    } else {
+                        view.classList.remove('block');
+                        view.classList.add('hidden');
+                    }
+                });
+
+                // 2. Nav 버튼 스타일 갱신
+                navButtons.forEach(btn => {
+                    if (btn.dataset.target === targetId) {
+                        btn.classList.add('active');
+                        btn.classList.remove('text-gray-400', 'hover:bg-white/10', 'hover:text-white');
+                    } else {
+                        btn.classList.remove('active');
+                        btn.classList.add('text-gray-400', 'hover:bg-white/10', 'hover:text-white');
+                    }
+                });
+
+                // 3. 헤더 타이틀 갱신
+                headerTitle.textContent = viewTitles[targetId] || 'System Console';
+            }
+
+            // 이벤트 리스너 바인딩
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    switchView(btn.dataset.target);
+                });
+            });
+
+            // 클립보드 복사 액션 시뮬레이션
+            const copyBtn = document.getElementById('btn-copy-script');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', () => {
+                    const originalHTML = copyBtn.innerHTML;
+
+                    // 성공 상태 시각적 피드백
+                    copyBtn.classList.remove('bg-main', 'hover:bg-[#1eb55d]', 'text-sub');
+                    copyBtn.classList.add('bg-sub', 'hover:bg-[#1a1e1e]', 'text-white');
+                    copyBtn.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i><span>Script Copied Successfully</span>';
+                    lucide.createIcons(); // 동적 삽입된 아이콘 렌더링
+
+                    // 2.5초 후 복원
+                    setTimeout(() => {
+                        copyBtn.classList.add('bg-main', 'hover:bg-[#1eb55d]', 'text-sub');
+                        copyBtn.classList.remove('bg-sub', 'hover:bg-[#1a1e1e]', 'text-white');
+                        copyBtn.innerHTML = originalHTML;
+                        lucide.createIcons();
+                    }, 2500);
+                });
+            }
+
+            // 초기 로드 시 'Dashboard'를 기본 뷰로 설정
+            switchView('dashboard');
+        });
+    </script>
+</body>
+
+</html>
