@@ -3,17 +3,19 @@ import { fetchRecommendations } from './api';
 import HardwareProfileForm from './components/HardwareProfileForm';
 import RecommendationList from './components/RecommendationList';
 import DashboardCharts from './DashboardCharts';
-import { Gamepad2, Settings, BarChart3, Zap, ChevronRight, Loader2 } from 'lucide-react';
+import { Gamepad2, LayoutDashboard, Cpu, Settings2, Bell, Search, Loader2 } from 'lucide-react';
 
-/* ─── Stepped Loading Animation ─── */
+/* ─── Sidebar Navigation ─── */
+const NAV = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'hardware', label: 'Hardware Profiles', icon: Cpu },
+  { id: 'recommend', label: 'Optimization Hub', icon: Settings2 },
+];
+
+/* ─── Loading State ─── */
 function MatchingLoader() {
   const [step, setStep] = useState(0);
-  const steps = [
-    { label: '하드웨어 사양 데이터 분석', icon: '📡' },
-    { label: '9주차 매칭 엔진 유사도 연산', icon: '⚙️' },
-    { label: '최적 그래픽 프리셋 산출 완료', icon: '✨' },
-  ];
-
+  const steps = ['하드웨어 사양 분석', '매칭 엔진 유사도 연산', '최적 프리셋 산출'];
   useEffect(() => {
     const t1 = setTimeout(() => setStep(1), 600);
     const t2 = setTimeout(() => setStep(2), 1400);
@@ -21,41 +23,27 @@ function MatchingLoader() {
   }, []);
 
   return (
-    <div className="surface-card p-10 max-w-md mx-auto animate-fade-in">
+    <div className="bg-cyber-card rounded-xl border border-gray-800 p-10 max-w-md mx-auto animation-fade-in">
       <div className="flex justify-center mb-8">
-        <div className="relative">
-          <Loader2 size={40} className="text-accent animate-spin" />
-          <div className="absolute inset-0 rounded-full bg-accent/10 blur-xl" />
-        </div>
+        <Loader2 size={36} className="text-cyber-accent animate-spin" />
       </div>
       <div className="space-y-3">
         {steps.map((s, i) => (
-          <div key={i} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-500 ${
-            i <= step ? 'bg-surface-3 border border-accent/20' : 'bg-surface-1 border border-transparent opacity-40'
+          <div key={i} className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all duration-300 ${
+            i <= step ? 'bg-cyber-darker border border-gray-700 text-gray-200' : 'text-gray-600'
           }`}>
-            <span className="text-base">{s.icon}</span>
-            <span className="text-sm font-medium flex-1">{s.label}</span>
-            {i < step && <span className="text-accent text-xs font-bold">완료</span>}
-            {i === step && <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />}
+            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+              i < step ? 'bg-cyber-success text-white' : i === step ? 'bg-cyber-accent text-white' : 'bg-gray-800 text-gray-600'
+            }`}>{i + 1}</span>
+            <span className="flex-1">{s}</span>
+            {i < step && <span className="text-cyber-success text-xs font-medium">완료</span>}
+            {i === step && <div className="w-2 h-2 rounded-full bg-cyber-accent animate-pulse" />}
           </div>
         ))}
       </div>
     </div>
   );
 }
-
-/* ─── Tab Configuration ─── */
-const TABS = [
-  { id: 'dashboard', label: '대시보드', icon: BarChart3 },
-  { id: 'hardware', label: '내 PC', icon: Settings },
-  { id: 'recommend', label: '최적화', icon: Gamepad2 },
-];
-
-const BREADCRUMBS = {
-  dashboard: ['대시보드'],
-  hardware: ['내 PC 관리', '하드웨어 사양 등록'],
-  recommend: ['최적화 허브', '그래픽 프리셋 추천'],
-};
 
 export default function App() {
   const [userSpec, setUserSpec] = useState({
@@ -82,9 +70,7 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    loadRecommendations(userSpec);
-  }, [userSpec]);
+  useEffect(() => { loadRecommendations(userSpec); }, [userSpec]);
 
   const handleHardwareUpdate = (newSpec) => {
     setUserSpec(newSpec);
@@ -92,146 +78,143 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-0 font-sans pb-20 md:pb-0">
+    <div className="flex h-screen overflow-hidden bg-cyber-darker text-gray-100">
 
-      {/* ─── Top Bar ─── */}
-      <header className="sticky top-0 z-50 bg-surface-0/80 backdrop-blur-xl border-b border-surface-3/50">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-light flex items-center justify-center shadow-glow-sm">
-              <Zap size={16} className="text-white" />
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-lg font-extrabold tracking-tight text-txt-primary">SYNCRIG</span>
-              <span className="tag-accent text-[9px] py-0.5 px-1.5">BETA</span>
-            </div>
-          </div>
+      {/* ─── Sidebar ─── */}
+      <aside className="hidden md:flex w-64 bg-cyber-card border-r border-gray-800 flex-col h-full shrink-0">
+        {/* Logo */}
+        <div className="h-16 flex items-center px-6 border-b border-gray-800">
+          <Gamepad2 className="w-7 h-7 text-cyber-accent mr-3" />
+          <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyber-accent to-cyber-purple">
+            SYNCRIG
+          </span>
+        </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1 bg-surface-2 p-1 rounded-xl border border-surface-3/50">
-            {TABS.map(tab => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
+        {/* Nav */}
+        <div className="p-4 flex-1">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">Menu</div>
+          <nav className="space-y-1">
+            {NAV.map(item => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
               return (
                 <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? 'bg-accent text-white shadow-glow-sm'
-                      : 'text-txt-muted hover:text-txt-secondary hover:bg-surface-3'
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive ? 'bg-cyber-dark text-cyber-accent' : 'text-gray-400 hover:bg-cyber-dark hover:text-gray-200'
                   }`}
                 >
-                  <Icon size={14} />
-                  {tab.label}
+                  <Icon className="w-5 h-5 mr-3 flex-shrink-0" />
+                  {item.label}
                 </button>
               );
             })}
           </nav>
         </div>
-      </header>
 
-      {/* ─── Main Content ─── */}
-      <main className="max-w-6xl mx-auto px-6 py-6">
-
-        {/* Breadcrumbs */}
-        <div className="flex items-center gap-1.5 text-xs text-txt-muted font-mono mb-6 select-none">
-          <span className="cursor-pointer hover:text-accent transition-colors" onClick={() => setActiveTab('dashboard')}>
-            SYNCRIG
-          </span>
-          {BREADCRUMBS[activeTab].map((crumb, i) => (
-            <React.Fragment key={i}>
-              <ChevronRight size={10} className="text-surface-4" />
-              <span className={i === BREADCRUMBS[activeTab].length - 1 ? 'text-accent font-semibold' : 'text-txt-muted'}>
-                {crumb}
-              </span>
-            </React.Fragment>
-          ))}
+        {/* User */}
+        <div className="p-4 border-t border-gray-800">
+          <div className="flex items-center px-3 py-2">
+            <div className="w-8 h-8 rounded-full bg-cyber-dark flex items-center justify-center border border-gray-700">
+              <span className="text-sm font-medium text-cyber-accent">U</span>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-200">User</p>
+              <p className="text-xs text-gray-500">Premium Member</p>
+            </div>
+          </div>
         </div>
+      </aside>
 
-        {/* Dashboard */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6 animate-fade-in">
-            {/* Hero Card */}
-            <div className="surface-card p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-extrabold text-txt-primary tracking-tight">
-                  안녕하세요, 게이머님 👋
-                </h1>
-                <p className="text-sm text-txt-secondary mt-2 leading-relaxed">
-                  스팀과 라이엇 연동 데이터를 기반으로 최적의 그래픽 세팅을 추천합니다.
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="surface-raised px-4 py-3 text-center min-w-[120px]">
-                  <div className="text-[10px] font-semibold text-txt-muted uppercase tracking-widest mb-1">현재 GPU</div>
-                  <div className="text-sm font-bold font-mono text-accent">{userSpec.gpu_model.split(' ').slice(-2).join(' ')}</div>
-                </div>
-                <div className="surface-raised px-4 py-3 text-center min-w-[80px]">
-                  <div className="text-[10px] font-semibold text-txt-muted uppercase tracking-widest mb-1">해상도</div>
-                  <div className="text-sm font-bold font-mono text-mint">{userSpec.resolution}</div>
-                </div>
-              </div>
-            </div>
-
-            <DashboardCharts />
+      {/* ─── Main Area ─── */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Header */}
+        <header className="h-16 bg-cyber-card/50 backdrop-blur-md border-b border-gray-800 flex items-center justify-between px-6 shrink-0">
+          {/* Mobile menu */}
+          <div className="md:hidden flex items-center gap-2">
+            <Gamepad2 className="w-6 h-6 text-cyber-accent" />
+            <span className="font-bold text-lg">SYNCRIG</span>
           </div>
-        )}
-
-        {/* Hardware Form */}
-        {activeTab === 'hardware' && (
-          <div className="animate-slide-up">
-            <HardwareProfileForm onSave={handleHardwareUpdate} />
+          {/* Search */}
+          <div className="hidden md:flex items-center bg-cyber-darker rounded-full px-4 py-2 border border-gray-800 w-96">
+            <Search className="w-4 h-4 text-gray-500 mr-2" />
+            <input type="text" placeholder="Search games, profiles..." className="bg-transparent border-none outline-none text-sm w-full text-gray-200 placeholder-gray-500" />
           </div>
-        )}
+          <div className="flex items-center space-x-4">
+            <button className="p-2 rounded-full hover:bg-cyber-dark transition-colors relative text-gray-400 hover:text-gray-200">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-cyber-danger rounded-full ring-2 ring-cyber-card"></span>
+            </button>
+          </div>
+        </header>
 
-        {/* Recommendations */}
-        {activeTab === 'recommend' && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="surface-card p-6">
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-xl bg-accent/10">
-                  <Gamepad2 size={20} className="text-accent" />
-                </div>
+        {/* Content */}
+        <main className="flex-1 overflow-y-auto p-6 scroll-smooth">
+          <div className="max-w-7xl mx-auto">
+
+            {/* ─── Dashboard ─── */}
+            {activeTab === 'dashboard' && (
+              <div className="space-y-6 animation-fade-in">
                 <div>
-                  <h2 className="text-lg font-bold text-txt-primary">Cyberpunk 2077 추천 그래픽 세팅</h2>
-                  <p className="text-sm text-txt-secondary mt-1">
-                    <span className="font-mono text-accent bg-accent/5 px-2 py-0.5 rounded-lg border border-accent/10">
-                      {userSpec.gpu_model}
-                    </span>
-                    {' '}환경에서 60fps 이상을 방어하는 커뮤니티 검증 데이터입니다.
-                  </p>
+                  <h1 className="text-2xl font-bold text-gray-100 mb-2">Welcome back, Commander</h1>
+                  <p className="text-gray-400">Here's your gaming and hardware summary for today.</p>
                 </div>
+                <DashboardCharts userSpec={userSpec} />
               </div>
-            </div>
+            )}
 
-            {isLoading ? (
-              <MatchingLoader />
-            ) : (
-              <RecommendationList recommendations={recommendations} userSpec={userSpec} />
+            {/* ─── Hardware ─── */}
+            {activeTab === 'hardware' && (
+              <div className="animation-fade-in">
+                <HardwareProfileForm onSave={handleHardwareUpdate} />
+              </div>
+            )}
+
+            {/* ─── Optimization Hub ─── */}
+            {activeTab === 'recommend' && (
+              <div className="space-y-6 animation-fade-in">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-100 mb-1">Optimization Hub</h1>
+                    <p className="text-gray-400">Discover the best graphics settings for your hardware.</p>
+                  </div>
+                </div>
+
+                {/* Active Profile Context */}
+                <div className="flex items-center justify-between text-sm text-gray-400 bg-cyber-darker/50 p-3 rounded-lg border border-gray-800/50">
+                  <div className="flex items-center">
+                    <Cpu className="w-4 h-4 mr-2 text-cyber-success" />
+                    Matching against: <strong className="text-gray-200 ml-1">{userSpec.gpu_model}</strong>
+                  </div>
+                </div>
+
+                {isLoading ? (
+                  <MatchingLoader />
+                ) : (
+                  <RecommendationList recommendations={recommendations} userSpec={userSpec} />
+                )}
+              </div>
             )}
           </div>
-        )}
-      </main>
+        </main>
+      </div>
 
       {/* ─── Mobile Bottom Nav ─── */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-surface-0/90 backdrop-blur-xl border-t border-surface-3/50 z-50">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-cyber-card/95 backdrop-blur border-t border-gray-800 z-50">
         <div className="grid grid-cols-3 h-16">
-          {TABS.map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
+          {NAV.map(item => {
+            const Icon = item.icon;
             return (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center justify-center gap-1 transition-colors duration-200 ${
-                  isActive ? 'text-accent' : 'text-txt-muted'
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`flex flex-col items-center justify-center gap-1 ${
+                  activeTab === item.id ? 'text-cyber-accent' : 'text-gray-500'
                 }`}
               >
                 <Icon size={18} />
-                <span className="text-[10px] font-semibold">{tab.label}</span>
+                <span className="text-[10px] font-medium">{item.label.split(' ')[0]}</span>
               </button>
             );
           })}
