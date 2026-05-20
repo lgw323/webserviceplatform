@@ -3,7 +3,7 @@ import * as api from './api';
 import HardwareProfileForm from './components/HardwareProfileForm';
 import RecommendationList from './components/RecommendationList';
 import DashboardCharts from './DashboardCharts';
-import { Gamepad2, LayoutDashboard, Cpu, Settings2, Bell, Search, Loader2, LogOut, Key, User, Plus, Check } from 'lucide-react';
+import { Gamepad2, LayoutDashboard, Cpu, Settings2, Bell, Search, Loader2, LogOut, Key, User, Plus, Check, RefreshCw } from 'lucide-react';
 
 /* ─── Sidebar Navigation ─── */
 const NAV = [
@@ -203,33 +203,76 @@ function AuthScreen({ onAuthSuccess }) {
 /* ─── Main App ─── */
 export default function App() {
   const [user, setUser] = useState(null);
-  const [userSpec, setUserSpec] = useState({
-    cpu_model: 'AMD Ryzen 5 5600X',
-    gpu_model: 'NVIDIA GeForce RTX 3060',
-    ram_gb: 16,
-    resolution: 'FHD',
-    refresh_rate: 144,
-  });
+  const [userSpec, setUserSpec] = useState(null);
+  const [gameLibrary, setGameLibrary] = useState([]);
+  const [achievementsCount, setAchievementsCount] = useState(0);
 
   const [recommendations, setRecommendations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Check auth state on mount
+  // Check auth state and load user details on mount
   useEffect(() => {
     const token = api.getToken();
     if (token) {
-      // Decode user from mock or simple string representation (or fallback object)
-      setUser({
+      const isSteam = token.includes('steam');
+      const isRiot = token.includes('riot');
+      const provider = isSteam ? 'steam' : isRiot ? 'riot' : 'local';
+      const providerId = token.replace('mock_jwt_token_for_', '');
+      
+      const sessionUser = {
         id: 'user-mock-id',
-        provider: token.includes('steam') ? 'steam' : token.includes('riot') ? 'riot' : 'local',
-        provider_id: token.replace('mock_jwt_token_for_', '')
-      });
+        provider,
+        provider_id: providerId
+      };
+      
+      setUser(sessionUser);
+      initializeUserData(sessionUser);
     }
   }, []);
 
+  // Fetch games, achievements, and hardware specs for the user
+  const initializeUserData = async (currentUser) => {
+    if (!currentUser) return;
+    
+    // 1. Fetch hardware profiles to establish default spec
+    try {
+      const profiles = await api.fetchHardwareProfiles();
+      const defaultProfile = profiles.find(p => p.is_default || p.isDefault) || profiles[0];
+      if (defaultProfile) {
+        setUserSpec({
+          cpu_model: defaultProfile.cpu_model || defaultProfile.cpu,
+          gpu_model: defaultProfile.gpu_model || defaultProfile.gpu,
+          ram_gb: parseInt(defaultProfile.ram_gb || defaultProfile.ram) || 16,
+          resolution: defaultProfile.resolution,
+          refresh_rate: parseInt(defaultProfile.refresh_rate || defaultProfile.refreshRate) || 144
+        });
+      } else {
+        setUserSpec(null);
+      }
+    } catch (e) {
+      console.error('Failed to load hardware profiles', e);
+      setUserSpec(null);
+    }
+
+    // 2. Fetch games library if user registered via social, else empty
+    if (currentUser.provider === 'steam' || currentUser.provider === 'riot') {
+      try {
+        const games = await api.syncGameLibrary();
+        setGameLibrary(games);
+        setAchievementsCount(854);
+      } catch (e) {
+        console.error('Failed to sync games', e);
+      }
+    } else {
+      setGameLibrary([]);
+      setAchievementsCount(0);
+    }
+  };
+
   const loadRecommendations = async (specs) => {
-    if (!user) return;
+    if (!user || !specs) return;
     setIsLoading(true);
     try {
       const data = await api.fetchRecommendations(specs);
@@ -242,7 +285,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && userSpec) {
       loadRecommendations(userSpec);
     }
   }, [userSpec, user]);
@@ -255,15 +298,53 @@ export default function App() {
   const handleLogout = () => {
     api.setToken(null);
     setUser(null);
+    setUserSpec(null);
+    setGameLibrary([]);
+    setAchievementsCount(0);
+  };
+
+  // Sync external account simulator on dashboard
+  const handleSyncAccount = async (provider) => {
+    setIsSyncing(true);
+    try {
+      const mockCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const data = await api.oauthCallback(provider, mockCode);
+      
+      // Update user state to Steam/Riot
+      setUser(data.user);
+      
+      // Fetch libraries
+      const games = await api.syncGameLibrary();
+      setGameLibrary(games);
+      setAchievementsCount(854);
+    } catch (err) {
+      console.error('Sync failed', err);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   // If not authenticated, render AuthScreen
   if (!user) {
-    return <AuthScreen onAuthSuccess={(authenticatedUser) => setUser(authenticatedUser)} />;
+    return <AuthScreen onAuthSuccess={(authenticatedUser) => {
+      setUser(authenticatedUser);
+      initializeUserData(authenticatedUser);
+    }} />;
   }
 
   return (
     <div className="flex h-screen overflow-hidden bg-cyber-darker text-gray-100">
+
+      {/* ─── Syncing Backdrop overlay ─── */}
+      {isSyncing && (
+        <div className="fixed inset-0 bg-cyber-darker/80 backdrop-blur-md flex items-center justify-center z-[100] animation-fade-in">
+          <div className="text-center space-y-4">
+            <Loader2 className="w-10 h-10 animate-spin text-cyber-accent mx-auto" />
+            <p className="text-sm font-semibold text-gray-200">외부 계정 연동 동기화 중...</p>
+            <p className="text-xs text-gray-500">Steam/Riot 라이브러리 및 하드웨어 통계를 가져오는 중입니다.</p>
+          </div>
+        </div>
+      )}
 
       {/* ─── Sidebar ─── */}
       <aside className="hidden md:flex w-64 bg-cyber-card border-r border-gray-800 flex-col h-full shrink-0">
@@ -362,12 +443,23 @@ export default function App() {
                   {/* Account linking status indicator */}
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-500">계정 연동 상태:</span>
-                    <span className="text-xs font-semibold bg-cyber-success/10 border border-cyber-success/20 text-cyber-success px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                      <Check className="w-3 h-3" /> Steam/Riot 활성됨
-                    </span>
+                    {gameLibrary.length > 0 ? (
+                      <span className="text-xs font-semibold bg-cyber-success/10 border border-cyber-success/20 text-cyber-success px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                        <Check className="w-3 h-3" /> Steam/Riot 활성됨
+                      </span>
+                    ) : (
+                      <span className="text-xs font-semibold bg-gray-800 border border-gray-700 text-gray-400 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                        미연동
+                      </span>
+                    )}
                   </div>
                 </div>
-                <DashboardCharts userSpec={userSpec} />
+                <DashboardCharts
+                  userSpec={userSpec}
+                  gameLibrary={gameLibrary}
+                  achievementsCount={achievementsCount}
+                  onSyncAccount={handleSyncAccount}
+                />
               </div>
             )}
 
@@ -388,18 +480,40 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Active Profile Context */}
-                <div className="flex items-center justify-between text-sm text-gray-400 bg-cyber-darker/50 p-3 rounded-lg border border-gray-800/50">
-                  <div className="flex items-center">
-                    <Cpu className="w-4 h-4 mr-2 text-cyber-success" />
-                    Matching against: <strong className="text-gray-200 ml-1">{userSpec.gpu_model}</strong>
-                  </div>
-                </div>
+                {userSpec ? (
+                  <>
+                    {/* Active Profile Context */}
+                    <div className="flex items-center justify-between text-sm text-gray-400 bg-cyber-darker/50 p-3 rounded-lg border border-gray-800/50">
+                      <div className="flex items-center">
+                        <Cpu className="w-4 h-4 mr-2 text-cyber-success" />
+                        Matching against: <strong className="text-gray-200 ml-1">{userSpec.gpu_model}</strong>
+                      </div>
+                    </div>
 
-                {isLoading ? (
-                  <MatchingLoader />
+                    {isLoading ? (
+                      <MatchingLoader />
+                    ) : (
+                      <RecommendationList recommendations={recommendations} userSpec={userSpec} />
+                    )}
+                  </>
                 ) : (
-                  <RecommendationList recommendations={recommendations} userSpec={userSpec} />
+                  <div className="text-center py-16 bg-cyber-card rounded-xl border border-gray-800 max-w-lg mx-auto space-y-6 animation-fade-in">
+                    <div className="inline-flex p-4 bg-cyber-accent/10 text-cyber-accent rounded-full border border-cyber-accent/20">
+                      <Cpu className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-2 px-6">
+                      <h2 className="text-lg font-bold text-gray-200">하드웨어 프로필이 없습니다</h2>
+                      <p className="text-sm text-gray-400 leading-relaxed">
+                        추천 그래픽 세팅 엔진을 기동하려면 먼저 사용 중이신 PC 사양을 프로필로 등록해 주셔야 합니다.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setActiveTab('hardware')}
+                      className="px-6 py-2.5 bg-cyber-accent hover:bg-blue-600 text-white rounded-lg transition-colors font-semibold text-sm shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                    >
+                      프로필 등록하러 가기
+                    </button>
+                  </div>
                 )}
               </div>
             )}
