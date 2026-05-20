@@ -1,155 +1,130 @@
 import React, { useState } from 'react';
-import { ThumbsUp, ShieldAlert, CheckCircle2, ChevronRight, Check, Copy } from 'lucide-react';
+import { ThumbsUp, CheckCircle2, ShieldAlert, Check, Copy } from 'lucide-react';
+
+/* ─── SVG Donut Gauge ─── */
+function DonutGauge({ percent, isHigh }) {
+  const r = 20;
+  const stroke = 3;
+  const nr = r - stroke;
+  const c = nr * 2 * Math.PI;
+  const offset = c - (percent / 100) * c;
+  const color = isHigh ? '#2dd4bf' : '#fb7185';
+
+  return (
+    <div className="relative w-14 h-14 flex-shrink-0">
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 40 40">
+        <circle cx="20" cy="20" r={nr} fill="none" stroke="#1f1f23" strokeWidth={stroke} />
+        <circle
+          cx="20" cy="20" r={nr} fill="none"
+          stroke={color} strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={offset}
+          className="transition-all duration-700"
+        />
+      </svg>
+      <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold font-mono text-txt-primary">
+        {percent}%
+      </span>
+    </div>
+  );
+}
 
 export default function RecommendationList({ recommendations, userSpec }) {
   const [copiedId, setCopiedId] = useState(null);
 
-  const handleCopySettings = (item) => {
-    const settingsString = Object.entries(item.settings)
-      .map(([key, val]) => `${key}: ${val}`)
-      .join('\n');
-    
-    navigator.clipboard.writeText(settingsString).then(() => {
+  const copySettings = (item) => {
+    const text = Object.entries(item.settings).map(([k, v]) => `${k}: ${v}`).join('\n');
+    navigator.clipboard.writeText(text).then(() => {
       setCopiedId(item.id);
-      setTimeout(() => {
-        setCopiedId(null);
-      }, 2000);
-    }).catch(err => {
-      console.error('클립보드 복사 실패:', err);
-    });
+      setTimeout(() => setCopiedId(null), 2000);
+    }).catch(console.error);
   };
 
   if (!recommendations || recommendations.length === 0) {
     return (
-      <div className="text-center py-16 glass-panel rounded-brand-lg border border-white/5 shadow-brand-soft">
-        <p className="text-sm text-gray-400">내 하드웨어와 매칭되는 그래픽 프로파일이 아직 없습니다.</p>
-        <p className="text-xs text-gray-500 mt-2">다른 해상도나 사양의 프로파일을 탐색해 보세요.</p>
+      <div className="surface-card p-12 text-center">
+        <p className="text-sm text-txt-secondary">매칭되는 그래픽 프로파일이 없습니다.</p>
+        <p className="text-xs text-txt-muted mt-1">다른 해상도나 사양을 시도해 보세요.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-5">
-      <div className="flex justify-between items-center px-1 border-b border-white/5 pb-3">
-        <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">
-          유사도 기반 매칭 결과 <span className="text-[#00ff66]">({recommendations.length}개 발견)</span>
+      {/* Section Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-surface-3/50">
+        <h3 className="text-sm font-bold text-txt-primary">
+          매칭 결과 <span className="text-accent ml-1">{recommendations.length}건</span>
         </h3>
-        <span className="text-xs text-gray-400">
-          내 기준: <span className="font-mono font-bold text-[#00ff66] bg-[#00ff66]/10 px-2 py-0.5 rounded border border-[#00ff66]/20">{userSpec.gpu_model} / {userSpec.resolution}</span>
+        <span className="font-mono text-[11px] text-accent bg-accent/5 px-3 py-1 rounded-lg border border-accent/10">
+          {userSpec.gpu_model} / {userSpec.resolution}
         </span>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-1">
+      {/* Result Cards */}
+      <div className="space-y-4">
         {recommendations.map((item) => {
-          const matchPercent = Math.round(item.similarity_score * 100);
-          const isHighMatch = matchPercent >= 90;
-
-          // SVG Circle telemetry parameters
-          const radius = 18;
-          const stroke = 3.5;
-          const normalizedRadius = radius - stroke * 2;
-          const circumference = normalizedRadius * 2 * Math.PI;
-          const strokeDashoffset = circumference - (matchPercent / 100) * circumference;
+          const pct = Math.round(item.similarity_score * 100);
+          const isHigh = pct >= 90;
 
           return (
-            <div 
-              key={item.id}
-              className="glass-card rounded-brand-md p-6 border border-white/5 hover:border-[#00ff66]/20 transition-all duration-300 shadow-brand-soft flex flex-col md:flex-row md:items-center md:justify-between gap-5 relative overflow-hidden"
-            >
+            <div key={item.id} className="surface-card p-5 hover:border-accent/30 transition-all duration-300 animate-slide-up">
               <div className="flex items-start gap-4">
-                {/* SVG circular gauge */}
-                <div className="relative flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg className="w-12 h-12 transform -rotate-90">
-                    <circle
-                      className="text-gray-800"
-                      strokeWidth={stroke}
-                      stroke="currentColor"
-                      fill="transparent"
-                      r={normalizedRadius}
-                      cx="24"
-                      cy="24"
-                    />
-                    <svg className="w-12 h-12">
-                      <circle
-                        className={`${isHighMatch ? 'text-[#00ff66]' : 'text-amber-500'}`}
-                        strokeWidth={stroke}
-                        strokeDasharray={circumference + ' ' + circumference}
-                        style={{ strokeDashoffset }}
-                        strokeLinecap="round"
-                        stroke="currentColor"
-                        fill="transparent"
-                        r={normalizedRadius}
-                        cx="24"
-                        cy="24"
-                      />
-                    </svg>
-                  </svg>
-                  <span className="absolute text-[10px] font-extrabold font-mono text-white">
-                    {matchPercent}%
-                  </span>
-                </div>
+                {/* Donut */}
+                <DonutGauge percent={pct} isHigh={isHigh} />
 
-                <div className="space-y-3 flex-1">
-                  <div className="flex items-center flex-wrap gap-2">
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-                      isHighMatch 
-                        ? 'bg-[#00ff66]/10 text-[#00ff66] border border-[#00ff66]/20 shadow-[0_0_10px_rgba(0,255,102,0.15)]' 
-                        : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-                    }`}>
-                      {isHighMatch ? (
-                        <>
-                          <CheckCircle2 size={12} /> [최상] OPTIMAL MATCH
-                        </>
-                      ) : (
-                        <>
-                          <ShieldAlert size={12} /> [보통] NORMAL MATCH
-                        </>
-                      )}
-                    </span>
-                    <span className="text-xs font-bold text-gray-300">
-                      테스트 사양: {item.hardware.gpu || item.hardware.gpu_model} / {item.hardware.cpu || item.hardware.cpu_model}
+                {/* Content */}
+                <div className="flex-1 min-w-0 space-y-3">
+                  {/* Match Tag + Specs */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {isHigh ? (
+                      <span className="tag-mint">
+                        <CheckCircle2 size={11} /> 최상 일치
+                      </span>
+                    ) : (
+                      <span className="tag-rose">
+                        <ShieldAlert size={11} /> 보통 일치
+                      </span>
+                    )}
+                    <span className="text-xs text-txt-muted">
+                      {item.hardware.gpu || item.hardware.gpu_model} · {item.hardware.cpu || item.hardware.cpu_model}
                     </span>
                   </div>
-                  
-                  <div className="text-xs text-gray-400 flex flex-wrap gap-x-5 gap-y-1.5">
-                    <span>해상도: <strong className="text-white font-mono">{item.hardware.resolution}</strong></span>
-                    <span>평균 FPS: <strong className="text-[#00ff66] font-mono bg-[#00ff66]/5 px-1.5 py-0.5 rounded border border-[#00ff66]/10">{item.avg_fps} FPS</strong></span>
-                    <span>게임 버전: <span className="font-mono text-gray-500">{item.game_version}</span></span>
+
+                  {/* Stats Row */}
+                  <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-txt-secondary">
+                    <span>해상도 <strong className="text-txt-primary font-mono">{item.hardware.resolution}</strong></span>
+                    <span>FPS <strong className="font-mono tag-accent py-0 px-1.5 border-0 bg-transparent text-accent">{item.avg_fps}</strong></span>
+                    <span>버전 <span className="font-mono text-txt-muted">{item.game_version}</span></span>
                   </div>
 
-                  <div className="pt-1 flex flex-wrap gap-2">
+                  {/* Settings Chips */}
+                  <div className="flex flex-wrap gap-1.5">
                     {Object.entries(item.settings).map(([key, val]) => (
-                      <span key={key} className="inline-flex items-center text-xs bg-black/40 text-gray-300 px-2.5 py-1.5 rounded-brand-sm font-mono border border-white/5">
-                        <span className="text-gray-500 mr-1.5">{key}:</span>
-                        <span className="text-[#00ff66] font-bold">{val}</span>
+                      <span key={key} className="inline-flex items-center gap-1 text-[11px] font-mono px-2.5 py-1 rounded-lg bg-surface-1 border border-surface-3/50 text-txt-secondary">
+                        <span className="text-txt-muted">{key}</span>
+                        <span className="text-accent font-semibold">{val}</span>
                       </span>
                     ))}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center self-end md:self-center gap-3 pt-3 md:pt-0 border-t border-white/5 md:border-t-0 w-full md:w-auto justify-end">
-                <button className="flex items-center justify-center py-2 px-3 rounded-brand-sm bg-white/5 hover:bg-white/10 text-gray-400 hover:text-[#00ff66] transition-colors border border-white/5">
-                  <ThumbsUp size={14} className="mr-1.5" />
-                  <span className="text-xs font-mono font-bold">{item.likes || 0}</span>
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-surface-3/30">
+                <button className="btn-ghost flex items-center gap-1.5 text-[11px] py-1.5">
+                  <ThumbsUp size={12} />
+                  <span className="font-mono">{item.likes || 0}</span>
                 </button>
-                <button 
-                  onClick={() => handleCopySettings(item)}
-                  className={`px-4 py-2.5 text-xs font-extrabold rounded-brand-sm flex items-center gap-2 transition-all duration-300 border ${
-                    copiedId === item.id 
-                      ? 'bg-[#00ff66]/15 text-[#00ff66] border-[#00ff66]/30 shadow-brand-glow-subtle' 
-                      : 'bg-white text-black hover:bg-gray-200 border-transparent shadow-brand-soft'
+                <button
+                  onClick={() => copySettings(item)}
+                  className={`flex items-center gap-1.5 text-[11px] font-semibold py-1.5 px-3 rounded-xl transition-all duration-300 ${
+                    copiedId === item.id
+                      ? 'bg-mint/10 text-mint border border-mint/20'
+                      : 'btn-primary py-1.5 px-3 text-[11px]'
                   }`}
                 >
-                  {copiedId === item.id ? (
-                    <>
-                      <Check size={14} /> 복사 완료!
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={14} /> 설정 복사하기
-                    </>
-                  )}
+                  {copiedId === item.id ? <><Check size={12} /> 복사 완료</> : <><Copy size={12} /> 설정 복사</>}
                 </button>
               </div>
             </div>
