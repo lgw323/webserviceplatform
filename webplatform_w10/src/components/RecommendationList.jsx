@@ -91,12 +91,20 @@ export default function RecommendationList({ recommendations, userSpec }) {
 
                 <div className="space-y-3 flex-1">
                   <div className="flex items-center flex-wrap gap-2">
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${
                       isHighMatch 
                         ? 'bg-[#00ff66]/10 text-[#00ff66] border border-[#00ff66]/20 shadow-[0_0_10px_rgba(0,255,102,0.15)]' 
                         : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
                     }`}>
-                      {isHighMatch ? 'Optimal Match' : 'Normal Match'}
+                      {isHighMatch ? (
+                        <>
+                          <CheckCircle2 size={12} /> [최상] OPTIMAL MATCH
+                        </>
+                      ) : (
+                        <>
+                          <ShieldAlert size={12} /> [보통] NORMAL MATCH
+                        </>
+                      )}
                     </span>
                     <span className="text-xs font-bold text-gray-300">
                       테스트 사양: {item.hardware.gpu || item.hardware.gpu_model} / {item.hardware.cpu || item.hardware.cpu_model}
