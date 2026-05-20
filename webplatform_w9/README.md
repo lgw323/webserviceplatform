@@ -1,0 +1,22 @@
+# 9주차: 코어 알고리즘 및 추천 엔진 구현 보고서
+
+## 1. 수행 목표
+- SYNCRIG 서비스의 핵심 가치이자 차별화 요소인 '하드웨어 유사도 매칭 알고리즘(Matching Engine v1.0)' 구현.
+- CPU, GPU, RAM, 해상도 사양 간의 상관도 및 가중치를 점수화하는 유사도 계산 함수 모델링.
+- 가상 추천 데이터를 담은 Mock 데이터베이스 파일 구축 및 Express 라우터 결합 테스트.
+
+## 2. 개발 내역
+### 2.1. 하드웨어 유사도 계산 모델 구축
+- [matchingEngine.js](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w9/matchingEngine.js):
+  - **가중치 정의**: GPU (50%), CPU (30%), RAM (10%), Resolution (10%).
+  - **사양 매핑 로직**: GPU와 CPU 문자열(예: `RTX 4070 SUPER`, `i7-13700K`)에서 핵심 칩셋 네임과 세대를 추출하여 `GPU_TIERS` 및 `CPU_TIERS` 객체를 기반으로 상대 성능 지표 점수를 도출.
+  - **유사도 점수 산출**: 두 하드웨어 프로필 간의 개별 점수 차이를 가중 비례하여 0.0 ~ 1.0 범위로 정량화.
+  - **정렬 및 필터링**: 임계치(기본값 85%) 이상의 유사도를 가진 프로파일을 추출하고, 유사도가 동일할 경우 추천 평가(`likes`) 순으로 2차 정렬하는 정교한 랭킹 시스템 적용.
+
+### 2.2. API 연동 및 모의 데이터 구성
+- [mockData.json](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w9/mockData.json): Cyberpunk 2077 등 고사양 게임에 대해 RTX 4090부터 RTX 3060까지 다양한 하드웨어 테스트 사양과 각각의 세부 인게임 그래픽 설정(Ray Tracing, Texture Quality 등), 평균 FPS 값을 담은 테스트 데이터 셋 구축.
+- [recommendationRoute.js](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w9/recommendationRoute.js): Express 라우터를 연동하여 Query Parameter로 전달받은 사용자 사양 데이터를 매칭 엔진에 주입하고, 임계치에 부합하는 그래픽 프로파일 결과를 반환하는 REST API 개발.
+
+## 3. 결과 및 향후 계획
+- 핵심 매칭 알고리즘 코딩 완료 및 API 엔드포인트 바인딩 완료.
+- 10주차에는 기존 기획안이 복사되어 있던 임시 `webplatform_w10` 폴더를 대체하여, 본 매칭 API와 7주차 UI 컴포넌트를 직접 연결하고 Recharts를 모사하는 대시보드 시각화 통합 페이지를 구현할 예정.
