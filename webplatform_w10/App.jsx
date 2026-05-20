@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchRecommendations } from './api';
-import HardwareProfileForm from '../webplatform_w7/src/components/HardwareProfileForm';
-import RecommendationList from '../webplatform_w7/src/components/RecommendationList';
+import HardwareProfileForm from './src/components/HardwareProfileForm';
+import RecommendationList from './src/components/RecommendationList';
 import DashboardCharts from './DashboardCharts';
 import { Gamepad2, Settings, BarChart3, HelpCircle } from 'lucide-react';
 
