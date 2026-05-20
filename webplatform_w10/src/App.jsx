@@ -40,40 +40,46 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-offwhite font-sans text-brand-charcoal">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-brand-sm bg-brand-green flex items-center justify-center text-white font-bold">
+    <div className="min-h-screen bg-[#07090e] font-sans text-gray-200">
+      {/* HUD Header */}
+      <header className="glass-panel sticky top-0 z-10 px-6 py-4 flex items-center justify-between shadow-brand-soft">
+        <div className="flex items-center space-x-3">
+          <div className="w-9 h-9 rounded-brand-md bg-gradient-to-br from-[#00ff66] to-[#00b347] flex items-center justify-center text-black font-extrabold shadow-brand-glow text-sm">
             SR
           </div>
-          <span className="text-lg font-bold tracking-tight text-brand-charcoal">
-            SYNCRIG <span className="text-brand-green text-xs font-normal">v1.0</span>
+          <span className="text-xl font-extrabold tracking-wider text-white">
+            SYNCRIG <span className="text-[#00ff66] text-xs font-mono font-bold tracking-normal bg-[#00ff66]/10 px-2 py-0.5 rounded ml-1.5 border border-[#00ff66]/20">v1.0</span>
           </span>
         </div>
 
-        {/* Nav Tabs */}
-        <nav className="flex space-x-1 bg-gray-100 p-1 rounded-brand-sm">
+        {/* HUD Nav Tabs */}
+        <nav className="flex space-x-1 bg-black/40 p-1 rounded-brand-md border border-white/5">
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`px-4 py-2 text-xs font-semibold rounded-brand-sm transition-all flex items-center gap-1 ${
-              activeTab === 'dashboard' ? 'bg-white text-brand-charcoal shadow-sm' : 'text-neutral-grayText hover:text-brand-charcoal'
+            className={`px-5 py-2.5 text-xs font-bold rounded-brand-sm transition-all duration-200 flex items-center gap-2 border ${
+              activeTab === 'dashboard'
+                ? 'bg-[#00ff66]/10 text-[#00ff66] border-[#00ff66]/30 shadow-brand-glow-subtle'
+                : 'text-gray-400 hover:text-white border-transparent'
             }`}
           >
             <BarChart3 size={14} /> 통합 대시보드
           </button>
           <button
             onClick={() => setActiveTab('hardware')}
-            className={`px-4 py-2 text-xs font-semibold rounded-brand-sm transition-all flex items-center gap-1 ${
-              activeTab === 'hardware' ? 'bg-white text-brand-charcoal shadow-sm' : 'text-neutral-grayText hover:text-brand-charcoal'
+            className={`px-5 py-2.5 text-xs font-bold rounded-brand-sm transition-all duration-200 flex items-center gap-2 border ${
+              activeTab === 'hardware'
+                ? 'bg-[#00ff66]/10 text-[#00ff66] border-[#00ff66]/30 shadow-brand-glow-subtle'
+                : 'text-gray-400 hover:text-white border-transparent'
             }`}
           >
             <Settings size={14} /> 내 PC 관리
           </button>
           <button
             onClick={() => setActiveTab('recommend')}
-            className={`px-4 py-2 text-xs font-semibold rounded-brand-sm transition-all flex items-center gap-1 ${
-              activeTab === 'recommend' ? 'bg-white text-brand-charcoal shadow-sm' : 'text-neutral-grayText hover:text-brand-charcoal'
+            className={`px-5 py-2.5 text-xs font-bold rounded-brand-sm transition-all duration-200 flex items-center gap-2 border ${
+              activeTab === 'recommend'
+                ? 'bg-[#00ff66]/10 text-[#00ff66] border-[#00ff66]/30 shadow-brand-glow-subtle'
+                : 'text-gray-400 hover:text-white border-transparent'
             }`}
           >
             <Gamepad2 size={14} /> 최적화 허브
@@ -82,17 +88,19 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-10">
         {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-brand-lg shadow-brand-soft border border-gray-100 flex items-center justify-between">
+          <div className="space-y-8">
+            <div className="glass-panel p-6 rounded-brand-lg shadow-brand-soft flex items-center justify-between border-l-4 border-l-[#00ff66]">
               <div>
-                <h1 className="text-2xl font-bold text-brand-charcoal">안녕하세요, 게이머님!</h1>
-                <p className="text-sm text-neutral-grayText mt-1">스팀과 라이엇 연동 데이터가 활성화되었습니다.</p>
+                <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+                  안녕하세요, 게이머님! <span className="animate-pulse inline-block w-2.5 h-2.5 rounded-full bg-[#00ff66]"></span>
+                </h1>
+                <p className="text-sm text-gray-400 mt-1">스팀과 라이엇 연동 데이터가 활성화되었습니다.</p>
               </div>
-              <div className="text-right hidden sm:block">
-                <span className="text-xs text-neutral-grayText block">기본 하드웨어</span>
-                <span className="text-sm font-semibold font-mono text-brand-green">{userSpec.gpu_model}</span>
+              <div className="text-right hidden sm:block bg-black/30 px-4 py-2.5 rounded-brand-md border border-white/5">
+                <span className="text-[10px] text-gray-500 block uppercase tracking-wider font-bold">기본 하드웨어</span>
+                <span className="text-sm font-bold font-mono text-[#00ff66]">{userSpec.gpu_model}</span>
               </div>
             </div>
 
@@ -101,26 +109,27 @@ export default function App() {
         )}
 
         {activeTab === 'hardware' && (
-          <div className="py-6">
+          <div className="py-4">
             <HardwareProfileForm onSave={handleHardwareUpdate} />
           </div>
         )}
 
         {activeTab === 'recommend' && (
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-brand-lg shadow-brand-soft border border-gray-100">
-              <h2 className="text-lg font-bold text-brand-charcoal">Cyberpunk 2077 추천 그래픽 최적화 세팅</h2>
-              <p className="text-xs text-neutral-grayText mt-1">
-                사용자의 <span className="font-semibold text-brand-green font-mono">{userSpec.gpu_model} / {userSpec.resolution}</span> 환경에서 가장 원활하게 60fps 이상 방어가 가능한 커뮤니티 데이터입니다.
+          <div className="space-y-8">
+            <div className="glass-panel p-6 rounded-brand-lg shadow-brand-soft border-l-4 border-l-[#00ff66]">
+              <h2 className="text-xl font-extrabold text-white tracking-tight">Cyberpunk 2077 추천 그래픽 최적화 세팅</h2>
+              <p className="text-sm text-gray-400 mt-1.5">
+                사용자의 <span className="font-bold text-[#00ff66] font-mono bg-[#00ff66]/10 px-2 py-0.5 rounded border border-[#00ff66]/20">{userSpec.gpu_model} / {userSpec.resolution}</span> 환경에서 가장 원활하게 60fps 이상 방어가 가능한 커뮤니티 데이터입니다.
               </p>
             </div>
 
             {isLoading ? (
-              <div className="text-center py-20">
-                <div className="animate-spin inline-block w-8 h-8 border-[3px] border-current border-t-transparent text-brand-green rounded-full" role="status">
-                  <span className="sr-only">Loading...</span>
+              <div className="text-center py-24 glass-panel rounded-brand-lg">
+                <div className="relative inline-flex">
+                  <div className="w-12 h-12 rounded-full border-4 border-[#00ff66]/20 border-t-[#00ff66] animate-spin"></div>
+                  <div className="absolute inset-0 rounded-full blur-md bg-[#00ff66]/20 animate-pulse"></div>
                 </div>
-                <p className="text-sm text-neutral-grayText mt-3">매칭 알고리즘 실행 중...</p>
+                <p className="text-sm font-bold text-gray-300 mt-5 tracking-wider">매칭 알고리즘 분석 및 가중치 매핑 중...</p>
               </div>
             ) : (
               <RecommendationList recommendations={recommendations} userSpec={userSpec} />
