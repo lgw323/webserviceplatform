@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-brand-green: #23ce6b;
+  --color-brand-charcoal: #272d2d;
+  --color-neutral-grayText: #6b7280;
+  --color-neutral-offwhite: #f9fafb;
+}
+
+/* Custom styles for SYNCRIG */
+.shadow-brand-soft {
+  box-shadow: 0 4px 20px -2px rgba(39, 45, 45, 0.05);
+}
+
+.shadow-brand-glow {
+  box-shadow: 0 0 15px rgba(35, 206, 107, 0.4);
+}
+
+.rounded-brand-lg {
+  border-radius: 1rem;
+}
+
+.rounded-brand-md {
+  border-radius: 0.75rem;
+}
+
+.rounded-brand-sm {
+  border-radius: 0.5rem;
+}
