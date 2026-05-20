@@ -6,15 +6,20 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Outfit', 'sans-serif'],
+      },
       colors: {
         brand: {
-          green: '#23ce6b',
-          charcoal: '#272d2d',
-          dark: '#1e2222',
+          green: '#00ff66', // brighter neon green
+          charcoal: '#f3f4f6', // high-contrast white text for default brand color
+          dark: '#0a0d10',
+          panel: '#13171d',
+          card: '#181e26',
         },
         neutral: {
-          offwhite: '#f9fafb',
-          grayText: '#6b7280',
+          offwhite: '#0e1115',
+          grayText: '#9ca3af',
         }
       },
       borderRadius: {
@@ -23,8 +28,9 @@ export default {
         'brand-sm': '0.5rem',
       },
       boxShadow: {
-        'brand-soft': '0 4px 20px -2px rgba(39, 45, 45, 0.05)',
-        'brand-glow': '0 0 15px rgba(35, 206, 107, 0.4)',
+        'brand-soft': '0 10px 30px -10px rgba(0, 0, 0, 0.5)',
+        'brand-glow': '0 0 20px rgba(0, 255, 102, 0.35)',
+        'brand-glow-subtle': '0 0 15px rgba(0, 255, 102, 0.15)',
       }
     },
   },
