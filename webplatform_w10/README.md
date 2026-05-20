@@ -7,15 +7,15 @@
 
 ## 2. 개발 내역
 ### 2.1. 풀스택 UI 통합 및 통신 계층 구현
-- [App.jsx](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w10/App.jsx):
+- [App.jsx](./src/App.jsx):
   - 메인 통합 레이아웃. 상단 글로벌 네비게이션을 통해 대시보드(통계), PC 관리(하드웨어 입력), 최적화 허브(유사도 정렬 목록) 탭 관리.
   - 리액트 state 기반으로 사용자의 실시간 하드웨어 입력 사양을 동적으로 반영 및 API 호출.
-- [api.js](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w10/api.js):
+- [api.js](./src/api.js):
   - 브라우저 표준 `fetch` 모듈을 이용해 백엔드 API 서비스 (`http://localhost:5000/api/v1/profiles/recommendations`) 비동기 호출.
   - **오프라인 회복 탄력성(Offline Fallback)**: 로컬 실습 및 백엔드 미동작 상황에 유연하게 대처할 수 있도록 클라이언트 측에서 즉각 구동하는 간이 로컬 매칭 필터 엔진 내장.
 
 ### 2.2. 플레이 통계 대시보드 구현
-- [DashboardCharts.jsx](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w10/DashboardCharts.jsx):
+- [DashboardCharts.jsx](./src/DashboardCharts.jsx):
   - 와이어프레임 기획 내용(Recharts 시각화)에 대응하는 커스텀 플레이 타임 게이지 차트 UI.
   - 스팀/라이엇 등 게임별 플레이 시간 비례 바 차트 및 업적 달성률/승률 등 종합 KPI 통계 카드 렌더링.
 
