@@ -2,72 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Base Reset ─── */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #27272a transparent;
-}
+* { scrollbar-width: thin; scrollbar-color: #1e293b transparent; }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #27272a; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #334155; }
 
-html {
-  scroll-behavior: smooth;
+::selection { background: rgba(59, 130, 246, 0.3); color: #f1f5f9; }
+
+.animation-fade-in {
+  animation: fadeIn 0.3s ease-out;
 }
-
-::selection {
-  background: rgba(109, 93, 252, 0.3);
-  color: #fafafa;
-}
-
-/* ─── Surface Layers ─── */
-@layer components {
-  .surface-card {
-    @apply bg-surface-2 border border-surface-4/50 rounded-2xl;
-  }
-  .surface-raised {
-    @apply bg-surface-3 border border-surface-4/50 rounded-xl;
-  }
-  .surface-inset {
-    @apply bg-surface-1 border border-surface-3/50 rounded-xl;
-  }
-
-  /* ─── Accent Pill Tags ─── */
-  .tag-accent {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide
-           bg-accent/10 text-accent-light border border-accent/20;
-  }
-  .tag-mint {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide
-           bg-mint/10 text-mint border border-mint/20;
-  }
-  .tag-rose {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide
-           bg-rose/10 text-rose border border-rose/20;
-  }
-  .tag-sky {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide
-           bg-sky/10 text-sky border border-sky/20;
-  }
-
-  /* ─── Form Input ─── */
-  .input-field {
-    @apply w-full px-4 py-3 bg-surface-1 rounded-xl border border-surface-4/50
-           text-txt-primary placeholder-txt-muted text-sm font-medium
-           focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20
-           transition-all duration-200;
-  }
-
-  /* ─── CTA Buttons ─── */
-  .btn-primary {
-    @apply px-6 py-3 bg-accent hover:bg-accent-light text-white font-bold text-sm rounded-xl
-           transition-all duration-200 shadow-glow-sm hover:shadow-glow
-           active:scale-[0.98];
-  }
-  .btn-ghost {
-    @apply px-4 py-2.5 bg-surface-3 hover:bg-surface-4 text-txt-secondary hover:text-txt-primary
-           font-semibold text-xs rounded-xl border border-surface-4/50
-           transition-all duration-200;
-  }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
