@@ -7,15 +7,15 @@
 
 ## 2. 개발 내역
 ### 2.1. 프로젝트 환경 구성
-- [package.json](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w7/package.json): React 18 및 Tailwind CSS, Icon 라이브러리(Lucide React), 그래프 컴포넌트(Recharts)가 명세된 보일러플레이트 구성.
-- [tailwind.config.js](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w7/tailwind.config.js): SYNCRIG 고유 테마 컬러 토큰 지정 (`brand-green`, `brand-charcoal`) 및 부드러운 라운딩 요소(`brand-lg`, `brand-md` 등), 디자인 규격 섀도우 정의.
+- [package.json](./package.json): React 18 및 Tailwind CSS, Icon 라이브러리(Lucide React), 그래프 컴포넌트(Recharts)가 명세된 보일러플레이트 구성.
+- [tailwind.config.js](./tailwind.config.js): SYNCRIG 고유 테마 컬러 토큰 지정 (`brand-green`, `brand-charcoal`) 및 부드러운 라운딩 요소(`brand-lg`, `brand-md` 등), 디자인 규격 섀도우 정의.
 
 ### 2.2. 컴포넌트 구현
-- [HardwareProfileForm.jsx](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w7/src/components/HardwareProfileForm.jsx):
+- [HardwareProfileForm.jsx](./src/components/HardwareProfileForm.jsx):
   - CPU 및 GPU 모델명 문자열 입력 폼.
   - RAM 용량(8/16/32/64 GB), 해상도(FHD/QHD/4K), 주사율(Hz) 등 필수 시스템 하드웨어 정량값 선택 옵션 제공.
   - 기본값 지정을 위한 체크박스 제어 및 UI 폼 유효성 검증 제공.
-- [RecommendationList.jsx](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w7/src/components/RecommendationList.jsx):
+- [RecommendationList.jsx](./src/components/RecommendationList.jsx):
   - 사용자 하드웨어 제원 기준 표시.
   - 유사도 백분율 점수 계산에 따른 시각 피드백 조건부 렌더링 (90% 이상은 비비드 그린 배지, 미만은 앰버 배지).
   - 평균 예상 프레임(FPS) 및 인게임 그래픽 설정 프리셋 렌더링.
