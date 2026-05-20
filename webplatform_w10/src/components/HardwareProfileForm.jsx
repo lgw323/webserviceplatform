@@ -7,14 +7,32 @@ const PRESETS = [
   { label: 'RTX 4090 플래그십', name: 'Flagship', cpu: 'Intel Core i9-14900K', gpu: 'NVIDIA GeForce RTX 4090', ram: '64', res: '4K', hz: '240' },
 ];
 
+import * as api from '../api';
+
 export default function HardwareProfileForm({ onSave }) {
-  const [profiles, setProfiles] = useState([
-    { id: 'hw-1', name: 'Main Gaming Rig', isDefault: true, cpu: 'AMD Ryzen 5 5600X', gpu: 'NVIDIA GeForce RTX 3060', ram: '16', resolution: 'FHD', refreshRate: '144' },
-  ]);
+  const [profiles, setProfiles] = React.useState([]);
 
   const [showForm, setShowForm] = useState(false);
   const [formStep, setFormStep] = useState(1);
   const [formData, setFormData] = useState({ name: '', cpu: '', gpu: '', ram: '', resolution: 'FHD', refreshRate: '' });
+
+  React.useEffect(() => {
+    async function load() {
+      const data = await api.fetchHardwareProfiles();
+      const mapped = data.map(p => ({
+        id: p.id,
+        name: p.name || `${p.gpu_model || p.gpu} Rig`,
+        isDefault: p.is_default || p.isDefault,
+        cpu: p.cpu_model || p.cpu,
+        gpu: p.gpu_model || p.gpu,
+        ram: (p.ram_gb || p.ram).toString(),
+        resolution: p.resolution,
+        refreshRate: (p.refresh_rate || p.refreshRate).toString()
+      }));
+      setProfiles(mapped);
+    }
+    load();
+  }, []);
 
   const handleInput = (e) => {
     const { name, value } = e.target;
@@ -25,8 +43,28 @@ export default function HardwareProfileForm({ onSave }) {
     setFormData({ name: p.name, cpu: p.cpu, gpu: p.gpu, ram: p.ram, resolution: p.res, refreshRate: p.hz });
   };
 
-  const handleSave = () => {
-    const np = { id: `hw-${Date.now()}`, ...formData, isDefault: profiles.length === 0 };
+  const handleSave = async () => {
+    const rawProfile = {
+      cpu: formData.cpu,
+      gpu: formData.gpu,
+      ram: formData.ram,
+      resolution: formData.resolution,
+      refreshRate: formData.refreshRate,
+      isDefault: profiles.length === 0
+    };
+
+    const saved = await api.saveHardwareProfile(rawProfile);
+    const np = {
+      id: saved.id,
+      name: formData.name || `${saved.gpu_model || saved.gpu} Rig`,
+      isDefault: saved.is_default || saved.isDefault,
+      cpu: saved.cpu_model || saved.cpu,
+      gpu: saved.gpu_model || saved.gpu,
+      ram: (saved.ram_gb || saved.ram).toString(),
+      resolution: saved.resolution,
+      refreshRate: (saved.refresh_rate || saved.refreshRate).toString()
+    };
+
     setProfiles(prev => [...prev, np]);
     setShowForm(false); setFormStep(1);
     setFormData({ name: '', cpu: '', gpu: '', ram: '', resolution: 'FHD', refreshRate: '' });
@@ -35,8 +73,17 @@ export default function HardwareProfileForm({ onSave }) {
     }
   };
 
-  const handleSetDefault = (id) => setProfiles(p => p.map(x => ({ ...x, isDefault: x.id === id })));
-  const handleDelete = (id) => {
+  const handleSetDefault = async (id) => {
+    await api.setDefaultHardwareProfile(id);
+    setProfiles(p => p.map(x => ({ ...x, isDefault: x.id === id })));
+    const target = profiles.find(x => x.id === id);
+    if (target && onSave) {
+      onSave({ cpu_model: target.cpu, gpu_model: target.gpu, ram_gb: parseInt(target.ram) || 16, resolution: target.resolution, refresh_rate: parseInt(target.refreshRate) || 144 });
+    }
+  };
+
+  const handleDelete = async (id) => {
+    await api.deleteHardwareProfile(id);
     setProfiles(p => {
       const f = p.filter(x => x.id !== id);
       if (f.length > 0 && !f.some(x => x.isDefault)) f[0].isDefault = true;
