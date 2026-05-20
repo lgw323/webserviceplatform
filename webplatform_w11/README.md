@@ -7,16 +7,16 @@
 
 ## 2. 개발 내역
 ### 2.1. QA 체크리스트 및 수용 검증
-- [qa_checklist.md](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w11/qa_checklist.md): 5개 핵심 유스케이스(OAuth 연동, 하드웨어 CRUD, 매칭 알고리즘, 대시보드 차트, 예외 핸들링)에 대한 시나리오 테스트 결과 명세. 전체 5개 테스트 케이스 PASS 완료.
+- [qa_checklist.md](./qa_checklist.md): 5개 핵심 유스케이스(OAuth 연동, 하드웨어 CRUD, 매칭 알고리즘, 대시보드 차트, 예외 핸들링)에 대한 시나리오 테스트 결과 명세. 전체 5개 테스트 케이스 PASS 완료.
 
 ### 2.2. 결함 관리 및 API 예외 처리 구축
-- [errorMiddleware.js](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w11/errorMiddleware.js):
+- [errorMiddleware.js](./errorMiddleware.js):
   - **입력 유효성 검사**: CPU, GPU 문자열 검증 및 RAM(1~256GB), 주사율(60~500Hz) 범위 제한 벨리데이터 구현.
   - **라우팅 예외**: 존재하지 않는 경로 요청 시 `NOT_FOUND` JSON 표준 에러 응답 미들웨어 구축.
   - **예외 로그 적재**: 예외 발생 시 스택 트레이스와 일시를 기록하는 중앙식 Exception Handler 구축.
 
 ### 2.3. 알고리즘 단위 검증
-- [testCases.js](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w11/testCases.js):
+- [testCases.js](./testCases.js):
   - Node.js 스크립트로 동작하는 단위 테스트 코드.
   - 100% 동일 하드웨어 세팅 매칭(1.0), 미세 사양 차이(RAM 용량 차이), 상이한 세대 하드웨어 사양 매칭 등 조건별 가중치 연산 범위 단언(Assert) 테스트 수행.
 
