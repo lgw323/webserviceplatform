@@ -1,0 +1,82 @@
+[
+  {
+    "id": "opt_001",
+    "game_id": "game_cyberpunk",
+    "game_title": "Cyberpunk 2077",
+    "hardware": {
+      "cpu_model": "AMD Ryzen 7 7800X3D",
+      "gpu_model": "NVIDIA GeForce RTX 4070 SUPER",
+      "ram_gb": 32,
+      "resolution": "QHD"
+    },
+    "settings": {
+      "Texture Quality": "High",
+      "Ray Tracing": "Ultra (DLSS Quality)",
+      "Shadow Quality": "Medium",
+      "Crowd Density": "High"
+    },
+    "avg_fps": 88.5,
+    "game_version": "v2.12",
+    "likes": 42
+  },
+  {
+    "id": "opt_002",
+    "game_id": "game_cyberpunk",
+    "game_title": "Cyberpunk 2077",
+    "hardware": {
+      "cpu_model": "Intel Core i7-13700K",
+      "gpu_model": "NVIDIA GeForce RTX 4070",
+      "ram_gb": 16,
+      "resolution": "QHD"
+    },
+    "settings": {
+      "Texture Quality": "High",
+      "Ray Tracing": "Medium",
+      "Shadow Quality": "Medium",
+      "Crowd Density": "Medium"
+    },
+    "avg_fps": 74.2,
+    "game_version": "v2.12",
+    "likes": 29
+  },
+  {
+    "id": "opt_003",
+    "game_id": "game_cyberpunk",
+    "game_title": "Cyberpunk 2077",
+    "hardware": {
+      "cpu_model": "Intel Core i9-14900K",
+      "gpu_model": "NVIDIA GeForce RTX 4090",
+      "ram_gb": 64,
+      "resolution": "4K"
+    },
+    "settings": {
+      "Texture Quality": "Ultra",
+      "Ray Tracing": "Overdrive (Path Tracing)",
+      "Shadow Quality": "Ultra",
+      "Crowd Density": "High"
+    },
+    "avg_fps": 95.0,
+    "game_version": "v2.12",
+    "likes": 124
+  },
+  {
+    "id": "opt_004",
+    "game_id": "game_cyberpunk",
+    "game_title": "Cyberpunk 2077",
+    "hardware": {
+      "cpu_model": "AMD Ryzen 5 5600X",
+      "gpu_model": "NVIDIA GeForce RTX 3060",
+      "ram_gb": 16,
+      "resolution": "FHD"
+    },
+    "settings": {
+      "Texture Quality": "Medium",
+      "Ray Tracing": "Off",
+      "Shadow Quality": "Low",
+      "Crowd Density": "Medium"
+    },
+    "avg_fps": 62.1,
+    "game_version": "v2.11",
+    "likes": 56
+  }
+]
