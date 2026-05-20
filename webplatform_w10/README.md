@@ -1,0 +1,24 @@
+# 10주차: 풀스택 연동 및 시각화 구현 보고서
+
+## 1. 수행 목표
+- 7주차에 설계 및 구현한 프론트엔드 UI 컴포넌트와 8~9주차에 개발한 백엔드 API 및 하드웨어 유사도 매칭 엔진 통합.
+- 런처 통합 게임 활동 통계 대시보드를 시각적으로 구현하여 스팀/라이엇 플레이타임 트래킹 모사.
+- 클라이언트-서버 간 HTTP 비동기 통신 레이어(Axios/Fetch) 구축 및 서버 연결 에러 시 로컬 대체(Fallback) 엔진 연동.
+
+## 2. 개발 내역
+### 2.1. 풀스택 UI 통합 및 통신 계층 구현
+- [App.jsx](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w10/App.jsx):
+  - 메인 통합 레이아웃. 상단 글로벌 네비게이션을 통해 대시보드(통계), PC 관리(하드웨어 입력), 최적화 허브(유사도 정렬 목록) 탭 관리.
+  - 리액트 state 기반으로 사용자의 실시간 하드웨어 입력 사양을 동적으로 반영 및 API 호출.
+- [api.js](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w10/api.js):
+  - 브라우저 표준 `fetch` 모듈을 이용해 백엔드 API 서비스 (`http://localhost:5000/api/v1/profiles/recommendations`) 비동기 호출.
+  - **오프라인 회복 탄력성(Offline Fallback)**: 로컬 실습 및 백엔드 미동작 상황에 유연하게 대처할 수 있도록 클라이언트 측에서 즉각 구동하는 간이 로컬 매칭 필터 엔진 내장.
+
+### 2.2. 플레이 통계 대시보드 구현
+- [DashboardCharts.jsx](file:///c:/Users/dlrjs/OneDrive/바탕 화면/대학교/webplatform/webplatform_git/webserviceplatform/webplatform_w10/DashboardCharts.jsx):
+  - 와이어프레임 기획 내용(Recharts 시각화)에 대응하는 커스텀 플레이 타임 게이지 차트 UI.
+  - 스팀/라이엇 등 게임별 플레이 시간 비례 바 차트 및 업적 달성률/승률 등 종합 KPI 통계 카드 렌더링.
+
+## 3. 결과 및 향후 계획
+- 기존 기획 자료가 단순 중복 복사되어 있던 10주차 폴더를 완전히 대체하고, 핵심 기획 의도였던 '다면적 대시보드 및 하드웨어 매칭 흐름'의 동작 모델 통합 완료.
+- 11주차에는 연동 과정에서 발생할 수 있는 결함(Bug) 분석 및 예외처리를 강화하기 위한 QA 테스트 시나리오를 구성할 예정.
