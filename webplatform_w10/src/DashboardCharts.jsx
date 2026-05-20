@@ -1,80 +1,76 @@
 import React from 'react';
-import { Play, Award, Clock } from 'lucide-react';
+import { Clock, Award, TrendingUp, Flame } from 'lucide-react';
 
 export default function DashboardCharts() {
-  // Mock gameplay statistics with premium gradient styles
   const gameStats = [
-    { name: 'Cyberpunk 2077', playTime: 120, achievement: 85, gradient: 'from-[#00ff66] to-[#00b347]', colorHex: '#00ff66' },
-    { name: 'League of Legends', playTime: 340, achievement: 60, gradient: 'from-[#00c6ff] to-[#0072ff]', colorHex: '#00c6ff' },
-    { name: 'Overwatch 2', playTime: 85, achievement: 45, gradient: 'from-[#f59e0b] to-[#d97706]', colorHex: '#f59e0b' },
-    { name: 'Valorant', playTime: 150, achievement: 70, gradient: 'from-[#ef4444] to-[#991b1b]', colorHex: '#ef4444' },
+    { name: 'Cyberpunk 2077', hours: 120, color: 'bg-accent', pct: 34 },
+    { name: 'League of Legends', hours: 340, color: 'bg-sky', pct: 97 },
+    { name: 'Overwatch 2', hours: 85, color: 'bg-rose', pct: 24 },
+    { name: 'Valorant', hours: 150, color: 'bg-mint', pct: 43 },
+  ];
+
+  const metrics = [
+    { label: '스팀 달성률', value: '74%', icon: Award, tag: 'tag-accent' },
+    { label: '라이엇 승률', value: '54.5%', icon: TrendingUp, tag: 'tag-sky' },
+    { label: '이번 주 플레이', value: '23.5h', icon: Flame, tag: 'tag-rose' },
   ];
 
   return (
-    <div className="grid gap-8 md:grid-cols-3">
-      {/* Playtime Bar Chart - Premium HUD */}
-      <div className="glass-panel p-6 rounded-brand-lg shadow-brand-soft md:col-span-2 border border-white/5">
-        <h3 className="text-sm font-extrabold text-white mb-6 uppercase tracking-wider flex items-center gap-2">
-          <Clock size={16} className="text-[#00ff66] drop-shadow-[0_0_8px_rgba(0,255,102,0.5)]" /> 게임 플랫폼별 총 플레이타임 (시간)
-        </h3>
-        
-        <div className="space-y-5 pt-1">
+    <div className="grid gap-5 md:grid-cols-3">
+
+      {/* ─── Playtime Chart ─── */}
+      <div className="surface-card p-6 md:col-span-2">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-sm font-bold text-txt-primary flex items-center gap-2">
+            <Clock size={15} className="text-accent" />
+            게임별 플레이타임
+          </h3>
+          <span className="text-[10px] font-mono text-txt-muted uppercase tracking-wider">총 {gameStats.reduce((s,g) => s+g.hours, 0)} 시간</span>
+        </div>
+
+        <div className="space-y-4">
           {gameStats.map((game) => (
-            <div key={game.name} className="space-y-2">
-              <div className="flex justify-between text-xs font-bold text-gray-300">
-                <span className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: game.colorHex }} />
-                  {game.name}
-                </span>
-                <span className="font-mono text-white bg-white/5 px-2 py-0.5 rounded border border-white/5">{game.playTime} Hrs</span>
+            <div key={game.name} className="group">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-medium text-txt-secondary group-hover:text-txt-primary transition-colors">{game.name}</span>
+                <span className="text-xs font-bold font-mono text-txt-primary">{game.hours}h</span>
               </div>
-              <div className="w-full bg-black/40 h-3 rounded-full overflow-hidden border border-white/5">
-                <div 
-                  className={`h-full rounded-full bg-gradient-to-r ${game.gradient} transition-all duration-700 relative`} 
-                  style={{ 
-                    width: `${Math.min(100, (game.playTime / 350) * 100)}%`
-                  }}
-                >
-                  {/* Subtle highlight effect inside progress bar */}
-                  <span className="absolute inset-0 bg-white/10 animate-pulse"></span>
-                </div>
+              <div className="h-2 bg-surface-1 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${game.color} transition-all duration-700 ease-out`}
+                  style={{ width: `${game.pct}%` }}
+                />
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Achievement / Overview Cards - Premium Glass */}
-      <div className="glass-panel p-6 rounded-brand-lg shadow-brand-soft flex flex-col justify-between border border-white/5">
-        <div>
-          <h3 className="text-sm font-extrabold text-white mb-6 uppercase tracking-wider flex items-center gap-2">
-            <Award size={16} className="text-[#00ff66] drop-shadow-[0_0_8px_rgba(0,255,102,0.5)]" /> 통합 업적 달성 지표
-          </h3>
+      {/* ─── Metrics Sidebar ─── */}
+      <div className="surface-card p-6 flex flex-col gap-4">
+        <h3 className="text-sm font-bold text-txt-primary flex items-center gap-2">
+          <Award size={15} className="text-accent" />
+          게임 통합 지표
+        </h3>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-black/30 rounded-brand-md border border-white/5 hover:border-[#00ff66]/20 transition-all duration-300">
-              <div className="flex items-center space-x-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#00ff66] shadow-[0_0_8px_rgba(0,255,102,0.7)]" />
-                <span className="text-xs font-bold text-gray-300">스팀 전체 달성률</span>
+        {metrics.map((m) => {
+          const Icon = m.icon;
+          return (
+            <div key={m.label} className="surface-inset p-4 flex items-center justify-between hover:border-accent/20 transition-colors duration-200">
+              <div className="flex items-center gap-3">
+                <div className={`p-1.5 rounded-lg ${m.tag.replace('tag-', 'bg-')}/10`}>
+                  <Icon size={14} className={`${m.tag.replace('tag-', 'text-')}`} />
+                </div>
+                <span className="text-xs font-medium text-txt-secondary">{m.label}</span>
               </div>
-              <span className="text-base font-extrabold font-mono text-white">74%</span>
+              <span className="text-base font-extrabold font-mono text-txt-primary">{m.value}</span>
             </div>
-            
-            <div className="flex items-center justify-between p-4 bg-black/30 rounded-brand-md border border-white/5 hover:border-[#00c6ff]/20 transition-all duration-300">
-              <div className="flex items-center space-x-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#00c6ff] shadow-[0_0_8px_rgba(0,198,255,0.7)]" />
-                <span className="text-xs font-bold text-gray-300">라이엇 전적 승률</span>
-              </div>
-              <span className="text-base font-extrabold font-mono text-white">54.5%</span>
-            </div>
-          </div>
-        </div>
+          );
+        })}
 
-        <div className="pt-6 border-t border-white/5 mt-6 flex justify-between items-center text-xs text-gray-400">
-          <span>최근 동기화: 10분 전</span>
-          <button className="text-[#00ff66] hover:text-[#33ff85] font-bold transition-colors flex items-center gap-1.5 focus:outline-none bg-[#00ff66]/5 px-3 py-1.5 rounded-brand-sm border border-[#00ff66]/10 hover:border-[#00ff66]/30">
-            지금 동기화
-          </button>
+        <div className="mt-auto pt-4 border-t border-surface-3/50 flex items-center justify-between">
+          <span className="text-[10px] text-txt-muted">최근 동기화: 10분 전</span>
+          <button className="btn-ghost text-[10px] py-1.5 px-3">동기화</button>
         </div>
       </div>
     </div>
