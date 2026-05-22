@@ -20,7 +20,7 @@ function generateToken(user) {
   return jwt.sign(
     { id: user.id, provider: user.provider, provider_id: user.provider_id },
     JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: '1h' }
   );
 }
 
