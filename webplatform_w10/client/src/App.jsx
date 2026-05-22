@@ -3,13 +3,15 @@ import * as api from './api/apiClient';
 import HardwareProfileForm from './components/HardwareProfileForm';
 import RecommendationList from './components/RecommendationList';
 import DashboardCharts from './features/dashboard/DashboardCharts';
-import { Gamepad2, LayoutDashboard, Cpu, Settings2, Bell, Search, Loader2, LogOut, Key, User, Plus, Check, RefreshCw } from 'lucide-react';
+import SettingsView from './features/settings/SettingsView';
+import { Gamepad2, LayoutDashboard, Cpu, Settings2, Settings, Bell, Search, Loader2, LogOut, Key, User, Plus, Check, RefreshCw } from 'lucide-react';
 
 /* ─── Sidebar Navigation ─── */
 const NAV = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'hardware', label: 'Hardware Profiles', icon: Cpu },
-  { id: 'recommend', label: 'Optimization Hub', icon: Settings2 },
+  { id: 'dashboard', label: '대시보드', icon: LayoutDashboard },
+  { id: 'hardware', label: '하드웨어 프로필', icon: Cpu },
+  { id: 'recommend', label: '최적화 허브', icon: Settings2 },
+  { id: 'settings', label: '환경 설정', icon: Settings },
 ];
 
 /* ─── Loading State ─── */
@@ -172,7 +174,7 @@ function AuthScreen({ onAuthSuccess }) {
 
         <div className="relative flex py-2 items-center">
           <div className="flex-grow border-t border-gray-800"></div>
-          <span className="flex-shrink mx-4 text-xs font-bold text-gray-500 uppercase tracking-widest">or connect account</span>
+          <span className="flex-shrink mx-4 text-xs font-bold text-gray-500 uppercase tracking-widest">또는 계정 연동</span>
           <div className="flex-grow border-t border-gray-800"></div>
         </div>
 
@@ -358,7 +360,7 @@ export default function App() {
 
         {/* Nav */}
         <div className="p-4 flex-1">
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">Menu</div>
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-2">메뉴</div>
           <nav className="space-y-1">
             {NAV.map(item => {
               const Icon = item.icon;
@@ -387,7 +389,7 @@ export default function App() {
             </div>
             <div className="ml-3 truncate max-w-[130px]">
               <p className="text-sm font-medium text-gray-200 truncate">{user.provider_id || 'User'}</p>
-              <p className="text-[10px] text-gray-500 capitalize">{user.provider} account</p>
+              <p className="text-[10px] text-gray-500 capitalize">{user.provider} 계정</p>
             </div>
           </div>
           <button
@@ -411,7 +413,7 @@ export default function App() {
           {/* Search */}
           <div className="hidden md:flex items-center bg-cyber-darker rounded-full px-4 py-2 border border-gray-800 w-96">
             <Search className="w-4 h-4 text-gray-500 mr-2" />
-            <input type="text" placeholder="Search games, profiles..." className="bg-transparent border-none outline-none text-sm w-full text-gray-200 placeholder-gray-500" />
+            <input type="text" placeholder="게임, 프로필 검색..." className="bg-transparent border-none outline-none text-sm w-full text-gray-200 placeholder-gray-500" />
           </div>
           <div className="flex items-center space-x-4">
             <button className="p-2 rounded-full hover:bg-cyber-dark transition-colors relative text-gray-400 hover:text-gray-200">
@@ -437,8 +439,8 @@ export default function App() {
               <div className="space-y-6 animation-fade-in">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-100 mb-2">Welcome back, {user.provider_id}</h1>
-                    <p className="text-gray-400">Here's your gaming and hardware summary for today.</p>
+                    <h1 className="text-2xl font-bold text-gray-100 mb-2">환영합니다, {user.provider_id}님</h1>
+                    <p className="text-gray-400">오늘의 게임 및 하드웨어 요약입니다.</p>
                   </div>
                   {/* Account linking status indicator */}
                   <div className="flex items-center gap-2">
@@ -475,8 +477,8 @@ export default function App() {
               <div className="space-y-6 animation-fade-in">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-100 mb-1">Optimization Hub</h1>
-                    <p className="text-gray-400">Discover the best graphics settings for your hardware.</p>
+                    <h1 className="text-2xl font-bold text-gray-100 mb-1">최적화 허브</h1>
+                    <p className="text-gray-400">보유하신 하드웨어에 가장 적합한 그래픽 설정을 찾아보세요.</p>
                   </div>
                 </div>
 
@@ -486,7 +488,7 @@ export default function App() {
                     <div className="flex items-center justify-between text-sm text-gray-400 bg-cyber-darker/50 p-3 rounded-lg border border-gray-800/50">
                       <div className="flex items-center">
                         <Cpu className="w-4 h-4 mr-2 text-cyber-success" />
-                        Matching against: <strong className="text-gray-200 ml-1">{userSpec.gpu_model}</strong>
+                        현재 매칭 기준: <strong className="text-gray-200 ml-1">{userSpec.gpu_model}</strong>
                       </div>
                     </div>
 
@@ -517,13 +519,19 @@ export default function App() {
                 )}
               </div>
             )}
+            {/* ─── Settings ─── */}
+            {activeTab === 'settings' && (
+              <div className="animation-fade-in">
+                <SettingsView user={user} onUpdateNickname={(name) => setUser({...user, provider_id: name})} />
+              </div>
+            )}
           </div>
         </main>
       </div>
 
       {/* ─── Mobile Bottom Nav ─── */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 bg-cyber-card/95 backdrop-blur border-t border-gray-800 z-50">
-        <div className="grid grid-cols-3 h-16">
+        <div className="grid grid-cols-4 h-16">
           {NAV.map(item => {
             const Icon = item.icon;
             return (
