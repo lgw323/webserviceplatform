@@ -23,27 +23,53 @@ export const createHardwareProfile = async (req, res, next) => {
       });
     }
 
-    if (is_default && db.isPgActive()) {
-      await db.query(
-        'UPDATE hardware_profiles SET is_default = false WHERE user_id = $1',
-        [req.user.id]
+    let result;
+    if (db.isPgActive()) {
+      const client = await db.getClient();
+      try {
+        await client.query('BEGIN');
+        if (is_default) {
+          await client.query(
+            'UPDATE hardware_profiles SET is_default = false WHERE user_id = $1',
+            [req.user.id]
+          );
+        }
+        result = await client.query(
+          `INSERT INTO hardware_profiles 
+           (user_id, is_default, cpu_model, gpu_model, ram_gb, resolution, refresh_rate) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+          [
+            req.user.id,
+            is_default || false,
+            cpu_model,
+            gpu_model,
+            parseInt(ram_gb),
+            resolution,
+            parseInt(refresh_rate)
+          ]
+        );
+        await client.query('COMMIT');
+      } catch (err) {
+        await client.query('ROLLBACK');
+        throw err;
+      } finally {
+        client.release();
+      }
+    } else {
+      // Mock db behavior
+      if (is_default) {
+        await db.query(
+          'UPDATE hardware_profiles SET is_default = false WHERE user_id = $1',
+          [req.user.id]
+        );
+      }
+      result = await db.query(
+        `INSERT INTO hardware_profiles 
+         (user_id, is_default, cpu_model, gpu_model, ram_gb, resolution, refresh_rate) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        [req.user.id, is_default || false, cpu_model, gpu_model, parseInt(ram_gb), resolution, parseInt(refresh_rate)]
       );
     }
-
-    const result = await db.query(
-      `INSERT INTO hardware_profiles 
-       (user_id, is_default, cpu_model, gpu_model, ram_gb, resolution, refresh_rate) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [
-        req.user.id,
-        is_default || false,
-        cpu_model,
-        gpu_model,
-        parseInt(ram_gb),
-        resolution,
-        parseInt(refresh_rate)
-      ]
-    );
 
     res.status(201).json({
       status: 'success',
@@ -60,14 +86,24 @@ export const setDefaultProfile = async (req, res, next) => {
     const { id } = req.params;
     
     if (db.isPgActive()) {
-      await db.query(
-        'UPDATE hardware_profiles SET is_default = false WHERE user_id = $1',
-        [req.user.id]
-      );
-      await db.query(
-        'UPDATE hardware_profiles SET is_default = true WHERE id = $1 AND user_id = $2',
-        [id, req.user.id]
-      );
+      const client = await db.getClient();
+      try {
+        await client.query('BEGIN');
+        await client.query(
+          'UPDATE hardware_profiles SET is_default = false WHERE user_id = $1',
+          [req.user.id]
+        );
+        await client.query(
+          'UPDATE hardware_profiles SET is_default = true WHERE id = $1 AND user_id = $2',
+          [id, req.user.id]
+        );
+        await client.query('COMMIT');
+      } catch (err) {
+        await client.query('ROLLBACK');
+        throw err;
+      } finally {
+        client.release();
+      }
     } else {
       await db.query('UPDATE hardware_profiles SET is_default = true WHERE id = $1', [id]);
     }
