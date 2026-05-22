@@ -7,7 +7,7 @@ const PRESETS = [
   { label: 'RTX 4090 플래그십', name: 'Flagship', cpu: 'Intel Core i9-14900K', gpu: 'NVIDIA GeForce RTX 4090', ram: '64', res: '4K', hz: '240' },
 ];
 
-import * as api from '../api';
+import * as api from '../api/apiClient';
 
 export default function HardwareProfileForm({ onSave }) {
   const [profiles, setProfiles] = React.useState([]);
