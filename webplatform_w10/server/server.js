@@ -56,8 +56,12 @@ app.use('/api/v1/games', gameRoutes);
 // ─── Global Error Handler ───
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`[SYNCRIG Local Server] Running on http://localhost:${PORT}`);
-  console.log(`[SYNCRIG Local Server] Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`[SYNCRIG Local Server] DB mode: ${process.env.DATABASE_URL ? 'PostgreSQL (Active)' : 'In-Memory Mock Fallback (Active)'}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`[SYNCRIG Local Server] Running on http://localhost:${PORT}`);
+    console.log(`[SYNCRIG Local Server] Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`[SYNCRIG Local Server] DB mode: ${process.env.DATABASE_URL ? 'PostgreSQL (Active)' : 'In-Memory Mock Fallback (Active)'}`);
+  });
+}
+
+export default app;
