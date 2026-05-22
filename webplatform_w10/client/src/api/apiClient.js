@@ -46,13 +46,7 @@ export async function login(username, password) {
     return json.data;
   } catch (err) {
     console.error('[API Login Error]:', err.message);
-    // Fallback Mock Login
-    if (username && password) {
-      const mockUser = { id: 'user-mock-id', provider: 'local', provider_id: username };
-      const mockToken = 'mock_jwt_token_for_' + username;
-      setToken(mockToken);
-      return { access_token: mockToken, user: mockUser };
-    }
+    console.error('[API Login Error]:', err.message);
     throw err;
   }
 }
@@ -70,11 +64,8 @@ export async function register(username, password) {
     return json.data;
   } catch (err) {
     console.error('[API Register Error]:', err.message);
-    // Fallback Mock Register
-    const mockUser = { id: 'user-mock-id', provider: 'local', provider_id: username };
-    const mockToken = 'mock_jwt_token_for_' + username;
-    setToken(mockToken);
-    return { access_token: mockToken, user: mockUser };
+    console.error('[API Register Error]:', err.message);
+    throw err;
   }
 }
 
@@ -89,10 +80,8 @@ export async function oauthCallback(provider, code) {
     return json.data;
   } catch (err) {
     console.error('[API OAuth Callback Error]:', err.message);
-    const mockUser = { id: 'user-mock-id', provider, provider_id: `external_${provider}_${code}` };
-    const mockToken = 'mock_jwt_token_for_' + mockUser.provider_id;
-    setToken(mockToken);
-    return { access_token: mockToken, user: mockUser };
+    console.error('[API OAuth Callback Error]:', err.message);
+    throw err;
   }
 }
 
@@ -107,10 +96,8 @@ export async function fetchHardwareProfiles() {
     return json.data;
   } catch (err) {
     console.error('[API fetchHardwareProfiles Fallback]:', err.message);
-    const saved = localStorage.getItem('hardware_profiles');
-    return saved ? JSON.parse(saved) : [
-      { id: 'hw-1', name: 'Main Gaming Rig', isDefault: true, cpu: 'AMD Ryzen 5 5600X', gpu: 'NVIDIA GeForce RTX 3060', ram: '16', resolution: 'FHD', refreshRate: '144' }
-    ];
+    console.error('[API fetchHardwareProfiles Error]:', err.message);
+    throw err;
   }
 }
 
@@ -134,8 +121,8 @@ export async function saveHardwareProfile(profile) {
     if (!res.ok) throw new Error(json.message || '사양 저장 실패');
     return json.data;
   } catch (err) {
-    console.error('[API saveHardwareProfile Fallback]:', err.message);
-    return { id: `hw-${Date.now()}`, ...profile };
+    console.error('[API saveHardwareProfile Error]:', err.message);
+    throw err;
   }
 }
 
@@ -149,8 +136,8 @@ export async function setDefaultHardwareProfile(id) {
     if (!res.ok) throw new Error(json.message || '기본 설정 변경 실패');
     return json;
   } catch (err) {
-    console.error('[API setDefaultHardwareProfile Fallback]:', err.message);
-    return { status: 'success' };
+    console.error('[API setDefaultHardwareProfile Error]:', err.message);
+    throw err;
   }
 }
 
@@ -164,8 +151,8 @@ export async function deleteHardwareProfile(id) {
     if (!res.ok) throw new Error(json.message || '사양 삭제 실패');
     return json;
   } catch (err) {
-    console.error('[API deleteHardwareProfile Fallback]:', err.message);
-    return { status: 'success' };
+    console.error('[API deleteHardwareProfile Error]:', err.message);
+    throw err;
   }
 }
 
@@ -188,8 +175,8 @@ export async function fetchRecommendations(userSpec, gameId = 'game_cyberpunk', 
     if (!res.ok) throw new Error(json.message || '추천 데이터 실패');
     return json.data;
   } catch (err) {
-    console.error('[API fetchRecommendations Fallback]:', err.message);
-    return getLocalMockRecommendations(userSpec);
+    console.error('[API fetchRecommendations Error]:', err.message);
+    throw err;
   }
 }
 
@@ -203,47 +190,8 @@ export async function syncGameLibrary() {
     if (!res.ok) throw new Error(json.message || '게임 동기화 실패');
     return json.data.games;
   } catch (err) {
-    console.error('[API syncGameLibrary Fallback]:', err.message);
-    return [
-      { id: 1, title: 'Cyberpunk 2077', playtime: 124, lastPlayed: '2 hours ago', platform: 'Steam' },
-      { id: 2, title: 'Valorant', playtime: 450, lastPlayed: 'Yesterday', platform: 'Riot Games' },
-      { id: 3, title: 'Elden Ring', playtime: 89, lastPlayed: '3 days ago', platform: 'Steam' },
-      { id: 4, title: 'The Witcher 3: Wild Hunt', playtime: 310, lastPlayed: '1 week ago', platform: 'Steam' }
-    ];
+    console.error('[API syncGameLibrary Error]:', err.message);
+    throw err;
   }
 }
 
-// Local mock data when backend is down
-function getLocalMockRecommendations(userSpec) {
-  const mockDatabase = [
-    {
-      id: 'opt_local_01',
-      hardware: { cpu_model: 'AMD Ryzen 5 5600X', gpu_model: 'NVIDIA GeForce RTX 3060', resolution: 'FHD', ram_gb: 16 },
-      settings: { '텍스처': '높음', '레이트레이싱': '끄기', '그림자': '보통', 'DLSS': '품질' },
-      avg_fps: 63.4,
-      game_version: 'v2.12',
-      likes: 12,
-      similarity_score: 0.96
-    },
-    {
-      id: 'opt_local_02',
-      hardware: { cpu_model: 'Intel Core i5-13400', gpu_model: 'NVIDIA GeForce RTX 3060', resolution: 'FHD', ram_gb: 16 },
-      settings: { '텍스처': '높음', '레이트레이싱': '끄기', '그림자': '낮음', 'DLSS': '균형' },
-      avg_fps: 59.8,
-      game_version: 'v2.12',
-      likes: 7,
-      similarity_score: 0.90
-    }
-  ];
-  
-  const targetGpu = (userSpec.gpu_model || userSpec.gpu || '').toLowerCase();
-
-  return {
-    userSpec,
-    recommendations: mockDatabase.filter(item => {
-      const gpuMatches = targetGpu.includes('3060');
-      const resMatches = userSpec.resolution.toUpperCase() === item.hardware.resolution;
-      return gpuMatches && resMatches;
-    })
-  };
-}
