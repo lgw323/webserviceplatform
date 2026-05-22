@@ -173,6 +173,10 @@ export async function initDb() {
 // ─── QUERY INTERFACE ───
 export const db = {
   isPgActive: () => isPgAvailable,
+  getClient: async () => {
+    if (isPgAvailable) return await pool.connect();
+    return null;
+  },
   
   // Custom query implementation supporting both PG pool and In-memory simulation
   query: async (text, params = []) => {
