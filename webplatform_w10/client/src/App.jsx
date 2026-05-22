@@ -218,16 +218,21 @@ export default function App() {
   useEffect(() => {
     const token = api.getToken();
     if (token) {
-      const isSteam = token.includes('steam');
-      const isRiot = token.includes('riot');
-      const provider = isSteam ? 'steam' : isRiot ? 'riot' : 'local';
-      const providerId = token.replace('mock_jwt_token_for_', '');
+      let sessionUser = { id: 'user-mock-id', provider: 'local', provider_id: 'User' };
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        sessionUser = { id: payload.id, provider: payload.provider, provider_id: payload.provider_id };
+      } catch(e) {
+        // Fallback for old tokens
+        const isSteam = token.includes('steam');
+        const isRiot = token.includes('riot');
+        const provider = isSteam ? 'steam' : isRiot ? 'riot' : 'local';
+        const providerId = token.replace('mock_jwt_token_for_', '');
+        sessionUser = { id: 'user-mock-id', provider, provider_id: providerId };
+      }
       
-      const sessionUser = {
-        id: 'user-mock-id',
-        provider,
-        provider_id: providerId
-      };
+      const linked = JSON.parse(localStorage.getItem('syncrig_linked_providers') || '[]');
+      sessionUser.linked_providers = linked;
       
       setUser(sessionUser);
       initializeUserData(sessionUser);
@@ -258,8 +263,9 @@ export default function App() {
       setUserSpec(null);
     }
 
-    // 2. Fetch games library if user registered via social, else empty
-    if (currentUser.provider === 'steam' || currentUser.provider === 'riot') {
+    // 2. Fetch games library if user registered via social or has linked accounts
+    const hasSocial = currentUser.provider === 'steam' || currentUser.provider === 'riot' || currentUser.linked_providers?.length > 0;
+    if (hasSocial) {
       try {
         const games = await api.syncGameLibrary();
         setGameLibrary(games);
@@ -299,6 +305,7 @@ export default function App() {
 
   const handleLogout = () => {
     api.setToken(null);
+    localStorage.removeItem('syncrig_linked_providers');
     setUser(null);
     setUserSpec(null);
     setGameLibrary([]);
@@ -309,11 +316,17 @@ export default function App() {
   const handleSyncAccount = async (provider) => {
     setIsSyncing(true);
     try {
-      const mockCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const data = await api.oauthCallback(provider, mockCode);
+      // API 통신 딜레이 시뮬레이션
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Update user state to Steam/Riot
-      setUser(data.user);
+      // 현재 유저 정보(sessionUser)를 덮어씌우지 않고, 연동된 프로바이더 목록만 추가
+      const newLinked = Array.from(new Set([...(user.linked_providers || []), provider]));
+      localStorage.setItem('syncrig_linked_providers', JSON.stringify(newLinked));
+      
+      setUser(prev => ({
+        ...prev,
+        linked_providers: newLinked
+      }));
       
       // Fetch libraries
       const games = await api.syncGameLibrary();
@@ -389,7 +402,9 @@ export default function App() {
             </div>
             <div className="ml-3 truncate max-w-[130px]">
               <p className="text-sm font-medium text-gray-200 truncate">{user.provider_id || 'User'}</p>
-              <p className="text-[10px] text-gray-500 capitalize">{user.provider} 계정</p>
+              <p className="text-[10px] text-gray-500 capitalize">
+                {user.provider} 계정 {user.linked_providers?.length > 0 && `(+ 연동)`}
+              </p>
             </div>
           </div>
           <button
