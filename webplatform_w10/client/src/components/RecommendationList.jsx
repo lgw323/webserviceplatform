@@ -16,7 +16,7 @@ export default function RecommendationList({ recommendations, userSpec }) {
   if (!recommendations || recommendations.length === 0) {
     return (
       <div className="col-span-full py-12 text-center text-gray-500 bg-cyber-darker/30 rounded-xl border border-gray-800 border-dashed">
-        No profiles match your hardware. Try adjusting your specifications.
+        하드웨어와 일치하는 프로필이 없습니다. 사양을 조정해보세요.
       </div>
     );
   }
@@ -54,7 +54,7 @@ export default function RecommendationList({ recommendations, userSpec }) {
                   <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyber-success to-green-300">
                     {item.avg_fps}
                   </div>
-                  <div className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Avg FPS</div>
+                  <div className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">평균 FPS</div>
                 </div>
               </div>
 
@@ -62,7 +62,7 @@ export default function RecommendationList({ recommendations, userSpec }) {
               <div className="p-5 flex-1 space-y-4">
                 {/* Similarity Bar */}
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-400">Hardware Similarity</div>
+                  <div className="text-sm text-gray-400">하드웨어 유사도</div>
                   <div className="flex items-center">
                     <div className="w-24 h-1.5 bg-gray-800 rounded-full mr-3 overflow-hidden">
                       <div
@@ -77,11 +77,11 @@ export default function RecommendationList({ recommendations, userSpec }) {
                 {/* Spec Grid */}
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="bg-cyber-darker p-2 rounded border border-gray-800">
-                    <span className="text-gray-500 block text-xs mb-0.5">Tested GPU</span>
+                    <span className="text-gray-500 block text-xs mb-0.5">테스트 환경 GPU</span>
                     <span className="text-gray-200 font-medium text-xs">{item.hardware.gpu || item.hardware.gpu_model}</span>
                   </div>
                   <div className="bg-cyber-darker p-2 rounded border border-gray-800">
-                    <span className="text-gray-500 block text-xs mb-0.5">Resolution</span>
+                    <span className="text-gray-500 block text-xs mb-0.5">해상도</span>
                     <span className="text-gray-200 font-medium">{item.hardware.resolution}</span>
                   </div>
                 </div>
@@ -96,7 +96,7 @@ export default function RecommendationList({ recommendations, userSpec }) {
                   onClick={() => setSelectedProfile(item)}
                   className="flex items-center text-sm font-medium text-cyber-accent hover:text-blue-400 transition-colors px-3 py-1.5 rounded-md hover:bg-cyber-accent/10"
                 >
-                  View Details
+                  상세 보기
                 </button>
               </div>
             </div>
@@ -126,28 +126,28 @@ export default function RecommendationList({ recommendations, userSpec }) {
               {/* Performance Stats */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="bg-cyber-darker p-4 rounded-lg border border-gray-800 text-center">
-                  <div className="text-xs text-gray-500 uppercase font-bold mb-1">Avg FPS</div>
+                  <div className="text-xs text-gray-500 uppercase font-bold mb-1">평균 FPS</div>
                   <div className="text-xl font-black text-cyber-success">{selectedProfile.avg_fps}</div>
                 </div>
                 <div className="bg-cyber-darker p-4 rounded-lg border border-gray-800 text-center">
-                  <div className="text-xs text-gray-500 uppercase font-bold mb-1">Similarity</div>
+                  <div className="text-xs text-gray-500 uppercase font-bold mb-1">유사도</div>
                   <div className="text-xl font-black text-cyber-accent">{Math.round(selectedProfile.similarity_score * 100)}%</div>
                 </div>
                 <div className="bg-cyber-darker p-4 rounded-lg border border-gray-800 text-center">
-                  <div className="text-xs text-gray-500 uppercase font-bold mb-1">Resolution</div>
+                  <div className="text-xs text-gray-500 uppercase font-bold mb-1">해상도</div>
                   <div className="text-xl font-black text-gray-200">{selectedProfile.hardware.resolution}</div>
                 </div>
               </div>
 
               {/* Settings Table */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-200 mb-3">Graphics Settings</h3>
+                <h3 className="text-lg font-semibold text-gray-200 mb-3">그래픽 설정 값</h3>
                 <div className="bg-cyber-darker border border-gray-800 rounded-lg overflow-hidden">
                   <table className="w-full text-sm text-left">
                     <thead className="bg-gray-900/50 text-gray-400 text-xs uppercase border-b border-gray-800">
                       <tr>
-                        <th className="px-4 py-3 font-medium">Setting</th>
-                        <th className="px-4 py-3 font-medium">Value</th>
+                        <th className="px-4 py-3 font-medium">설정 항목</th>
+                        <th className="px-4 py-3 font-medium">값</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
@@ -167,17 +167,17 @@ export default function RecommendationList({ recommendations, userSpec }) {
             <div className="p-5 border-t border-gray-800 bg-gray-900/30 flex flex-col sm:flex-row justify-between items-center gap-4">
               <div className="flex gap-2 w-full sm:w-auto">
                 <button className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors border border-gray-700">
-                  <ThumbsUp className="w-4 h-4 mr-2 text-gray-400" /> Helpful
+                  <ThumbsUp className="w-4 h-4 mr-2 text-gray-400" /> 도움됨
                 </button>
                 <button className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors border border-gray-700">
-                  <ThumbsDown className="w-4 h-4 mr-2 text-gray-400" /> Not working
+                  <ThumbsDown className="w-4 h-4 mr-2 text-gray-400" /> 작동 안함
                 </button>
               </div>
               <button
                 onClick={() => handleCopySettings(selectedProfile.settings)}
                 className={`w-full sm:w-auto flex items-center justify-center px-6 py-2 rounded-lg transition-all font-medium ${isCopied ? 'bg-cyber-success text-white' : 'bg-cyber-accent hover:bg-blue-600 text-white shadow-[0_0_15px_rgba(59,130,246,0.3)]'}`}
               >
-                {isCopied ? <><Check className="w-5 h-5 mr-2" /> Copied!</> : <><Copy className="w-5 h-5 mr-2" /> Copy Settings</>}
+                {isCopied ? <><Check className="w-5 h-5 mr-2" /> 복사됨!</> : <><Copy className="w-5 h-5 mr-2" /> 설정 복사</>}
               </button>
             </div>
           </div>
