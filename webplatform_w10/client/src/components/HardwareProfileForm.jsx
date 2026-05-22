@@ -96,12 +96,12 @@ export default function HardwareProfileForm({ onSave }) {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-100 mb-1">Hardware Profiles</h1>
-          <p className="text-gray-400">Manage your PC specifications for accurate optimization matching.</p>
+          <h1 className="text-2xl font-bold text-gray-100 mb-1">하드웨어 프로필</h1>
+          <p className="text-gray-400">정확한 최적화 매칭을 위해 PC 사양을 관리하세요.</p>
         </div>
         {!showForm && (
           <button onClick={() => setShowForm(true)} className="flex items-center px-4 py-2 bg-cyber-accent hover:bg-blue-600 text-white rounded-lg transition-colors font-medium shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-            <Plus className="w-5 h-5 mr-2" /> Add New Profile
+            <Plus className="w-5 h-5 mr-2" /> 새 프로필 추가
           </button>
         )}
       </div>
@@ -125,9 +125,9 @@ export default function HardwareProfileForm({ onSave }) {
 
           <div className="flex justify-between items-center mb-6 pt-2">
             <h2 className="text-xl font-bold text-gray-100">
-              Create Profile: <span className="text-cyber-accent">Step {formStep} of 3</span>
+              프로필 생성: <span className="text-cyber-accent">{formStep} / 3 단계</span>
             </h2>
-            <button onClick={() => { setShowForm(false); setFormStep(1); }} className="text-gray-500 hover:text-white text-sm">Cancel</button>
+            <button onClick={() => { setShowForm(false); setFormStep(1); }} className="text-gray-500 hover:text-white text-sm">취소</button>
           </div>
 
           {/* Quick Presets (Step 1 only) */}
@@ -150,35 +150,35 @@ export default function HardwareProfileForm({ onSave }) {
           <div className="mb-6 space-y-4">
             {formStep === 1 && (
               <div className="animation-fade-in space-y-4">
-                <p className="text-gray-400 text-sm">Let's start with a name and your core processing units.</p>
+                <p className="text-gray-400 text-sm">먼저 프로필 이름과 핵심 프로세서(CPU, GPU)를 입력해주세요.</p>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-300">Profile Name</label>
-                  <input name="name" value={formData.name} onChange={handleInput} placeholder="e.g. Living Room HTPC" className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors" />
+                  <label className="text-sm font-medium text-gray-300">프로필 이름</label>
+                  <input name="name" value={formData.name} onChange={handleInput} placeholder="e.g. 거실용 HTPC" className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-300">CPU Model</label>
+                  <label className="text-sm font-medium text-gray-300">CPU 모델명</label>
                   <input name="cpu" value={formData.cpu} onChange={handleInput} placeholder="e.g. Ryzen 5 5600X" className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-300">GPU Model</label>
+                  <label className="text-sm font-medium text-gray-300">GPU 모델명</label>
                   <input name="gpu" value={formData.gpu} onChange={handleInput} placeholder="e.g. RTX 3060" className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors" />
                 </div>
               </div>
             )}
             {formStep === 2 && (
               <div className="animation-fade-in space-y-4">
-                <p className="text-gray-400 text-sm">Next, input your system memory (RAM).</p>
+                <p className="text-gray-400 text-sm">다음으로 시스템 메모리(RAM) 용량을 입력해주세요.</p>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-300">RAM Capacity (GB)</label>
+                  <label className="text-sm font-medium text-gray-300">RAM 용량 (GB)</label>
                   <input name="ram" type="number" value={formData.ram} onChange={handleInput} placeholder="e.g. 16 or 32" className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors" />
                 </div>
               </div>
             )}
             {formStep === 3 && (
               <div className="animation-fade-in space-y-4">
-                <p className="text-gray-400 text-sm">Finally, what is your primary display setup?</p>
+                <p className="text-gray-400 text-sm">마지막으로 주 모니터 환경을 선택해주세요.</p>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-300">Target Resolution</label>
+                  <label className="text-sm font-medium text-gray-300">목표 해상도</label>
                   <select name="resolution" value={formData.resolution} onChange={handleInput} className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-cyber-accent appearance-none transition-colors">
                     <option value="FHD">1080p (FHD)</option>
                     <option value="QHD">1440p (QHD)</option>
@@ -186,7 +186,7 @@ export default function HardwareProfileForm({ onSave }) {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-300">Refresh Rate (Hz)</label>
+                  <label className="text-sm font-medium text-gray-300">주사율 (Hz)</label>
                   <input name="refreshRate" type="number" value={formData.refreshRate} onChange={handleInput} placeholder="e.g. 144" className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors" />
                 </div>
               </div>
@@ -197,17 +197,17 @@ export default function HardwareProfileForm({ onSave }) {
           <div className="flex justify-between pt-4 border-t border-gray-800">
             <button onClick={() => setFormStep(s => s - 1)} disabled={formStep === 1}
               className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${formStep === 1 ? 'text-gray-600 cursor-not-allowed' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              <ArrowLeft className="w-4 h-4 mr-2" /> 이전
             </button>
             {formStep < 3 ? (
               <button onClick={() => setFormStep(s => s + 1)} disabled={formStep === 1 && (!formData.name || !formData.cpu || !formData.gpu)}
                 className="flex items-center px-6 py-2 bg-cyber-accent hover:bg-blue-600 text-white rounded-lg transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed">
-                Next Step <ArrowRight className="w-4 h-4 ml-2" />
+                다음 단계 <ArrowRight className="w-4 h-4 ml-2" />
               </button>
             ) : (
               <button onClick={handleSave} disabled={!formData.resolution || !formData.refreshRate}
                 className="flex items-center px-6 py-2 bg-cyber-success hover:bg-green-600 text-white rounded-lg transition-all font-medium shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-50 disabled:cursor-not-allowed">
-                <Save className="w-4 h-4 mr-2" /> Save Profile
+                <Save className="w-4 h-4 mr-2" /> 프로필 저장
               </button>
             )}
           </div>
@@ -221,7 +221,7 @@ export default function HardwareProfileForm({ onSave }) {
             {profile.isDefault && (
               <div className="absolute -top-3 -right-3">
                 <div className="bg-cyber-accent text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center">
-                  <CheckCircle2 className="w-3 h-3 mr-1" /> Default
+                  <CheckCircle2 className="w-3 h-3 mr-1" /> 기본 프로필
                 </div>
               </div>
             )}
@@ -243,10 +243,10 @@ export default function HardwareProfileForm({ onSave }) {
 
             <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: Cpu, label: 'Processor', value: profile.cpu },
-                { icon: Monitor, label: 'Graphics', value: profile.gpu },
-                { icon: HardDrive, label: 'Memory', value: `${profile.ram} GB` },
-                { icon: Monitor, label: 'Display', value: `${profile.resolution} @ ${profile.refreshRate}Hz` },
+                { icon: Cpu, label: '프로세서', value: profile.cpu },
+                { icon: Monitor, label: '그래픽스', value: profile.gpu },
+                { icon: HardDrive, label: '메모리', value: `${profile.ram} GB` },
+                { icon: Monitor, label: '디스플레이', value: `${profile.resolution} @ ${profile.refreshRate}Hz` },
               ].map(spec => {
                 const Icon = spec.icon;
                 return (
@@ -263,7 +263,7 @@ export default function HardwareProfileForm({ onSave }) {
             {!profile.isDefault && (
               <div className="mt-6 pt-4 border-t border-gray-800">
                 <button onClick={() => handleSetDefault(profile.id)} className="text-sm font-medium text-cyber-accent hover:text-blue-400 transition-colors flex items-center">
-                  <CheckCircle2 className="w-4 h-4 mr-1.5" /> Set as Default Profile
+                  <CheckCircle2 className="w-4 h-4 mr-1.5" /> 기본 프로필로 설정
                 </button>
               </div>
             )}
