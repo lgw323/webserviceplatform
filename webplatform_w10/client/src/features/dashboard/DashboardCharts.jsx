@@ -19,10 +19,10 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
     const mp = isSynced ? Math.max(...gameLibrary.map(g => g.playtime || g.hours || 1)) : 1;
 
     const st = [
-      { title: 'Total Playtime', value: isSynced ? `${th.toLocaleString()} hrs` : '0 hrs', icon: Clock, color: 'text-cyber-accent' },
-      { title: 'Games Owned', value: isSynced ? `${gc}` : '0', icon: Gamepad2, color: 'text-cyber-purple' },
-      { title: 'Achievements', value: isSynced ? `${achievementsCount}` : '0', icon: Trophy, color: 'text-cyber-warning' },
-      { title: 'Active GPU', value: gpu, icon: Monitor, color: 'text-cyber-success' },
+      { title: '총 플레이 시간', value: isSynced ? `${th.toLocaleString()} 시간` : '0 시간', icon: Clock, color: 'text-cyber-accent' },
+      { title: '보유 게임', value: isSynced ? `${gc}` : '0', icon: Gamepad2, color: 'text-cyber-purple' },
+      { title: '달성 과제', value: isSynced ? `${achievementsCount}` : '0', icon: Trophy, color: 'text-cyber-warning' },
+      { title: '현재 GPU', value: gpu, icon: Monitor, color: 'text-cyber-success' },
     ];
 
     return { totalHours: th, gamesCount: gc, activeGpu: gpu, stats: st, maxWeekly: mw, maxPlaytime: mp };
@@ -54,8 +54,8 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
           <div>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-lg font-bold text-gray-100">Playtime Activity</h2>
-                <p className="text-sm text-gray-400">Hours played in the last 7 days</p>
+                <h2 className="text-lg font-bold text-gray-100">플레이 시간 통계</h2>
+                <p className="text-sm text-gray-400">최근 7일간 플레이 시간</p>
               </div>
               {isSynced && (
                 <span className="flex items-center text-cyber-success bg-cyber-success/10 px-2 py-1 rounded-md text-sm">
@@ -97,9 +97,9 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
         {/* Game Library */}
         <div className="bg-cyber-card rounded-xl border border-gray-800 shadow-lg flex flex-col overflow-hidden min-h-[300px]">
           <div className="p-5 border-b border-gray-800">
-            <h2 className="text-lg font-bold text-gray-100 mb-1">Game Library</h2>
+            <h2 className="text-lg font-bold text-gray-100 mb-1">게임 라이브러리</h2>
             <p className="text-xs text-gray-500">
-              {isSynced ? `${gameLibrary.length} games · ${totalHours} total hours` : '0 games'}
+              {isSynced ? `${gameLibrary.length}개 게임 · 총 ${totalHours}시간` : '0개 게임'}
             </p>
           </div>
 
@@ -111,7 +111,7 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
                   <div key={game.title} className="bg-cyber-darker p-3 rounded-lg border border-gray-800 hover:border-gray-700 transition-colors group cursor-pointer">
                     <div className="flex justify-between items-center mb-2">
                       <h3 className="text-sm font-semibold text-gray-200 group-hover:text-cyber-accent transition-colors truncate">{game.title}</h3>
-                      <span className="text-xs font-medium bg-gray-800 text-gray-300 px-2 py-1 rounded shrink-0">{hours} hrs</span>
+                      <span className="text-xs font-medium bg-gray-800 text-gray-300 px-2 py-1 rounded shrink-0">{hours} 시간</span>
                     </div>
                     <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
                       <div className={`h-full rounded-full ${COLOR_CLASSES[i % COLOR_CLASSES.length]} transition-all duration-700`} style={{ width: `${(hours / maxPlaytime) * 100}%` }} />
