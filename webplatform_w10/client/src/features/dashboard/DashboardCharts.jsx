@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Clock, Trophy, Gamepad2, Monitor, TrendingUp, RefreshCw } from 'lucide-react';
 
 const WEEKLY_PLAYTIME_TEMPLATE = [
@@ -11,19 +11,22 @@ const COLOR_CLASSES = ['bg-cyber-accent', 'bg-cyber-purple', 'bg-cyber-warning',
 export default function DashboardCharts({ userSpec, gameLibrary = [], achievementsCount = 0, onSyncAccount }) {
   const isSynced = gameLibrary.length > 0;
 
-  const totalHours = isSynced ? gameLibrary.reduce((s, g) => s + (g.playtime || g.hours || 0), 0) : 0;
-  const gamesCount = isSynced ? gameLibrary.length : 0;
-  const activeGpu = userSpec?.gpu_model?.split(' ').slice(-2).join(' ') || '등록 안 됨';
+  const { totalHours, gamesCount, activeGpu, stats, maxWeekly, maxPlaytime } = useMemo(() => {
+    const th = isSynced ? gameLibrary.reduce((s, g) => s + (g.playtime || g.hours || 0), 0) : 0;
+    const gc = isSynced ? gameLibrary.length : 0;
+    const gpu = userSpec?.gpu_model?.split(' ').slice(-2).join(' ') || '등록 안 됨';
+    const mw = isSynced ? Math.max(...WEEKLY_PLAYTIME_TEMPLATE.map(d => d.h)) : 1;
+    const mp = isSynced ? Math.max(...gameLibrary.map(g => g.playtime || g.hours || 1)) : 1;
 
-  const stats = [
-    { title: 'Total Playtime', value: isSynced ? `${totalHours.toLocaleString()} hrs` : '0 hrs', icon: Clock, color: 'text-cyber-accent' },
-    { title: 'Games Owned', value: isSynced ? `${gamesCount}` : '0', icon: Gamepad2, color: 'text-cyber-purple' },
-    { title: 'Achievements', value: isSynced ? `${achievementsCount}` : '0', icon: Trophy, color: 'text-cyber-warning' },
-    { title: 'Active GPU', value: activeGpu, icon: Monitor, color: 'text-cyber-success' },
-  ];
+    const st = [
+      { title: 'Total Playtime', value: isSynced ? `${th.toLocaleString()} hrs` : '0 hrs', icon: Clock, color: 'text-cyber-accent' },
+      { title: 'Games Owned', value: isSynced ? `${gc}` : '0', icon: Gamepad2, color: 'text-cyber-purple' },
+      { title: 'Achievements', value: isSynced ? `${achievementsCount}` : '0', icon: Trophy, color: 'text-cyber-warning' },
+      { title: 'Active GPU', value: gpu, icon: Monitor, color: 'text-cyber-success' },
+    ];
 
-  const maxWeekly = isSynced ? Math.max(...WEEKLY_PLAYTIME_TEMPLATE.map(d => d.h)) : 1;
-  const maxPlaytime = isSynced ? Math.max(...gameLibrary.map(g => g.playtime || g.hours || 1)) : 1;
+    return { totalHours: th, gamesCount: gc, activeGpu: gpu, stats: st, maxWeekly: mw, maxPlaytime: mp };
+  }, [isSynced, gameLibrary, userSpec, achievementsCount]);
 
   return (
     <div className="space-y-6">
