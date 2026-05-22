@@ -7,6 +7,6 @@
     "server"
   ],
   "scripts": {
-    "build": "npm run build --workspace=client"
+    "build": "npm --prefix client run build"
   }
 }
