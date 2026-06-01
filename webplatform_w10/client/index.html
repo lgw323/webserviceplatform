@@ -3,13 +3,68 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="SYNCRIG - AI 기반 PC 하드웨어 최적화 그래픽 세팅 추천 플랫폼" />
-    <title>SYNCRIG - 하드웨어 최적화 플랫폼</title>
+
+    <!-- ── Primary SEO Meta ── -->
+    <title>SYNCRIG - AI 기반 하드웨어 최적화 그래픽 세팅 추천 플랫폼</title>
+    <meta name="description" content="SYNCRIG은 PC 하드웨어 사양을 분석하여 가장 적합한 인게임 그래픽 세팅을 추천하는 AI 기반 웹 플랫폼입니다. GPU, CPU, RAM 등 스펙 기반 유사도 매칭 엔진을 제공합니다." />
+    <meta name="keywords" content="게임 최적화, 그래픽 설정, 하드웨어 매칭, GPU 벤치마크, FPS 최적화, PC 사양, SYNCRIG, 인게임 세팅 추천" />
+    <meta name="author" content="SYNCRIG Project Team" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://syncrig.vercel.app/" />
+
+    <!-- ── Open Graph (Facebook, KakaoTalk, Discord 등) ── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="SYNCRIG - AI 기반 하드웨어 최적화 플랫폼" />
+    <meta property="og:description" content="PC 사양을 입력하면 AI 매칭 엔진이 최적의 인게임 그래픽 세팅을 추천합니다." />
+    <meta property="og:url" content="https://syncrig.vercel.app/" />
+    <meta property="og:site_name" content="SYNCRIG" />
+    <meta property="og:locale" content="ko_KR" />
+
+    <!-- ── Twitter Card ── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SYNCRIG - AI 기반 하드웨어 최적화 플랫폼" />
+    <meta name="twitter:description" content="PC 사양을 입력하면 AI 매칭 엔진이 최적의 인게임 그래픽 세팅을 추천합니다." />
+
+    <!-- ── Theme & Favicon ── -->
+    <meta name="theme-color" content="#0b0f19" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>" />
+
+    <!-- ── Fonts ── -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- ── JSON-LD Structured Data (Schema.org) ── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SYNCRIG",
+      "url": "https://syncrig.vercel.app/",
+      "description": "AI 기반 PC 하드웨어 최적화 그래픽 세팅 추천 플랫폼",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Web Browser",
+      "inLanguage": "ko",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "KRW"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "SYNCRIG Project Team"
+      }
+    }
+    </script>
   </head>
   <body class="bg-[#0b0f19] text-gray-100 antialiased">
+    <!-- 자바스크립트 비활성화 시 대체 콘텐츠 (SEO 크롤러 대응) -->
+    <noscript>
+      <div style="padding:2rem;text-align:center;color:#e2e8f0;">
+        <h1>SYNCRIG - AI 기반 하드웨어 최적화 플랫폼</h1>
+        <p>이 웹 애플리케이션은 JavaScript가 필요합니다. 브라우저 설정에서 JavaScript를 활성화해 주세요.</p>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
