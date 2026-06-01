@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Globe, User, Save, Check } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function SettingsView({ user, onUpdateNickname }) {
   const [isLightMode, setIsLightMode] = useState(false);
@@ -42,7 +43,10 @@ export default function SettingsView({ user, onUpdateNickname }) {
     if (nickname.trim()) {
       onUpdateNickname(nickname.trim());
       setIsSaved(true);
+      toast.success('닉네임이 성공적으로 저장되었습니다.');
       setTimeout(() => setIsSaved(false), 2000);
+    } else {
+      toast.error('닉네임을 입력해주세요.');
     }
   };
 
