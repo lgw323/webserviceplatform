@@ -10,6 +10,51 @@
 
 ::selection { background: rgba(59, 130, 246, 0.3); color: #f1f5f9; }
 
+/* ── 웹접근성: 키보드 포커스 링 (focus-visible) ── */
+*:focus {
+  outline: none;
+}
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── 웹접근성: 스크린리더 전용 텍스트 ── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ── 웹접근성: 스킵 내비게이션 링크 ── */
+.skip-nav {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background-color: #3b82f6;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+.skip-nav:focus {
+  top: 0;
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
 .animation-fade-in {
   animation: fadeIn 0.3s ease-out;
 }
@@ -30,3 +75,24 @@ html.light-theme .recharts-surface,
 html.light-theme .lucide {
   filter: invert(1) hue-rotate(180deg);
 }
+
+/* ── 웹접근성: 고대비 모드 미디어쿼리 대응 ── */
+@media (prefers-contrast: high) {
+  *:focus-visible {
+    outline: 3px solid #ffffff;
+    outline-offset: 3px;
+  }
+}
+
+/* ── 웹접근성: 모션 감소 선호 사용자 대응 ── */
+@media (prefers-reduced-motion: reduce) {
+  .animation-fade-in {
+    animation: none;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
