@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Cpu, Monitor, HardDrive, Plus, CheckCircle2, Server, Trash2, ArrowRight, ArrowLeft, Save, AlertTriangle, Info, Zap } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const PRESETS = [
   { label: 'RTX 3060 보급형', name: 'Budget Gaming', cpu: 'AMD Ryzen 5 5600X', gpu: 'NVIDIA GeForce RTX 3060', ram: '16', res: 'FHD', hz: '144' },
@@ -44,51 +45,66 @@ export default function HardwareProfileForm({ onSave }) {
   };
 
   const handleSave = async () => {
-    const rawProfile = {
-      cpu: formData.cpu,
-      gpu: formData.gpu,
-      ram: formData.ram,
-      resolution: formData.resolution,
-      refreshRate: formData.refreshRate,
-      isDefault: profiles.length === 0
-    };
+    try {
+      const rawProfile = {
+        cpu: formData.cpu,
+        gpu: formData.gpu,
+        ram: formData.ram,
+        resolution: formData.resolution,
+        refreshRate: formData.refreshRate,
+        isDefault: profiles.length === 0
+      };
 
-    const saved = await api.saveHardwareProfile(rawProfile);
-    const np = {
-      id: saved.id,
-      name: formData.name || `${saved.gpu_model || saved.gpu} Rig`,
-      isDefault: saved.is_default || saved.isDefault,
-      cpu: saved.cpu_model || saved.cpu,
-      gpu: saved.gpu_model || saved.gpu,
-      ram: (saved.ram_gb || saved.ram).toString(),
-      resolution: saved.resolution,
-      refreshRate: (saved.refresh_rate || saved.refreshRate).toString()
-    };
+      const saved = await api.saveHardwareProfile(rawProfile);
+      const np = {
+        id: saved.id,
+        name: formData.name || `${saved.gpu_model || saved.gpu} Rig`,
+        isDefault: saved.is_default || saved.isDefault,
+        cpu: saved.cpu_model || saved.cpu,
+        gpu: saved.gpu_model || saved.gpu,
+        ram: (saved.ram_gb || saved.ram).toString(),
+        resolution: saved.resolution,
+        refreshRate: (saved.refresh_rate || saved.refreshRate).toString()
+      };
 
-    setProfiles(prev => [...prev, np]);
-    setShowForm(false); setFormStep(1);
-    setFormData({ name: '', cpu: '', gpu: '', ram: '', resolution: 'FHD', refreshRate: '' });
-    if (onSave) {
-      onSave({ cpu_model: np.cpu, gpu_model: np.gpu, ram_gb: parseInt(np.ram) || 16, resolution: np.resolution, refresh_rate: parseInt(np.refreshRate) || 144 });
+      setProfiles(prev => [...prev, np]);
+      setShowForm(false); setFormStep(1);
+      setFormData({ name: '', cpu: '', gpu: '', ram: '', resolution: 'FHD', refreshRate: '' });
+      toast.success('프로필이 저장되었습니다.');
+      if (onSave) {
+        onSave({ cpu_model: np.cpu, gpu_model: np.gpu, ram_gb: parseInt(np.ram) || 16, resolution: np.resolution, refresh_rate: parseInt(np.refreshRate) || 144 });
+      }
+    } catch (err) {
+      toast.error(err.message || '프로필 저장에 실패했습니다.');
     }
   };
 
   const handleSetDefault = async (id) => {
-    await api.setDefaultHardwareProfile(id);
-    setProfiles(p => p.map(x => ({ ...x, isDefault: x.id === id })));
-    const target = profiles.find(x => x.id === id);
-    if (target && onSave) {
-      onSave({ cpu_model: target.cpu, gpu_model: target.gpu, ram_gb: parseInt(target.ram) || 16, resolution: target.resolution, refresh_rate: parseInt(target.refreshRate) || 144 });
+    try {
+      await api.setDefaultHardwareProfile(id);
+      setProfiles(p => p.map(x => ({ ...x, isDefault: x.id === id })));
+      toast.success('기본 프로필이 변경되었습니다.');
+      const target = profiles.find(x => x.id === id);
+      if (target && onSave) {
+        onSave({ cpu_model: target.cpu, gpu_model: target.gpu, ram_gb: parseInt(target.ram) || 16, resolution: target.resolution, refresh_rate: parseInt(target.refreshRate) || 144 });
+      }
+    } catch (err) {
+      toast.error(err.message || '기본 프로필 변경 실패');
     }
   };
 
   const handleDelete = async (id) => {
-    await api.deleteHardwareProfile(id);
-    setProfiles(p => {
-      const f = p.filter(x => x.id !== id);
-      if (f.length > 0 && !f.some(x => x.isDefault)) f[0].isDefault = true;
-      return f;
-    });
+    try {
+      await api.deleteHardwareProfile(id);
+      setProfiles(p => {
+        const f = p.filter(x => x.id !== id);
+        if (f.length > 0 && !f.some(x => x.isDefault)) f[0].isDefault = true;
+        return f;
+      });
+      toast.success('프로필이 삭제되었습니다.');
+    } catch (err) {
+      toast.error(err.message || '삭제에 실패했습니다.');
+    }
   };
 
   const progressPercent = Math.round((formStep / 3) * 100);
