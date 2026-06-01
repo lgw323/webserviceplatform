@@ -1,0 +1,8 @@
+# SYNCRIG Crawler Policy
+# https://syncrig.vercel.app/
+
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://syncrig.vercel.app/sitemap.xml
