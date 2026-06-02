@@ -66,6 +66,7 @@ export function getRecommendedProfiles(userSpec, dbProfiles, threshold = 0.8) {
       const similarity_score = calculateSimilarity(userSpec, profile.hardware);
       return {
         ...profile,
+        settings: profile.settings || profile.settings_json || {},
         similarity_score
       };
     })
