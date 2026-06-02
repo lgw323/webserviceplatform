@@ -61,12 +61,21 @@ const useAuthStore = create((set, get) => ({
       set({ userSpec: null });
     }
 
-    // 2. Fetch game library if applicable
-    const hasSocial = user.provider === 'steam' || user.provider === 'riot' || user.linked_providers?.length > 0;
-    if (hasSocial) {
+    // 2. Fetch game library based on linked providers
+    const linkedProviders = user.linked_providers || [];
+    const providersList = [...linkedProviders];
+    // Include the login provider if it's a social one
+    if ((user.provider === 'steam' || user.provider === 'riot') && !providersList.includes(user.provider)) {
+      providersList.push(user.provider);
+    }
+
+    if (providersList.length > 0) {
       try {
-        const games = await api.syncGameLibrary();
-        set({ gameLibrary: games, achievementsCount: 854 });
+        const games = await api.syncGameLibrary(providersList);
+        // Calculate achievements based on actual game data
+        const totalPlaytime = games.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
+        const estimatedAchievements = Math.round(totalPlaytime * 0.88); // rough estimate based on playtime
+        set({ gameLibrary: games, achievementsCount: estimatedAchievements });
       } catch (e) {
         console.error('Failed to sync games', e);
       }
@@ -97,9 +106,12 @@ const useAuthStore = create((set, get) => ({
       user: { ...state.user, linked_providers: newLinked }
     }));
     
+    // Re-fetch games with updated provider list
     try {
-      const games = await api.syncGameLibrary();
-      set({ gameLibrary: games, achievementsCount: 854 });
+      const games = await api.syncGameLibrary(newLinked);
+      const totalPlaytime = games.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
+      const estimatedAchievements = Math.round(totalPlaytime * 0.88);
+      set({ gameLibrary: games, achievementsCount: estimatedAchievements });
     } catch (err) {
       console.error('Sync failed', err);
       throw err;
