@@ -4,11 +4,38 @@ import useAuthStore from '../store/useAuthStore';
 import DashboardCharts from '../features/dashboard/DashboardCharts';
 import useSEO from '../hooks/useSEO';
 
+function LinkedBadge({ linkedProviders }) {
+  if (!linkedProviders || linkedProviders.length === 0) {
+    return (
+      <span className="text-xs font-semibold bg-gray-800 border border-gray-700 text-a11y-muted px-3 py-1.5 rounded-full flex items-center gap-1.5" role="status">
+        미연동
+      </span>
+    );
+  }
+
+  const hasSteam = linkedProviders.includes('steam');
+  const hasRiot = linkedProviders.includes('riot');
+
+  let label = '';
+  if (hasSteam && hasRiot) label = 'Steam + Riot 활성됨';
+  else if (hasSteam) label = 'Steam 활성됨';
+  else if (hasRiot) label = 'Riot 활성됨';
+  else label = linkedProviders.join(', ') + ' 활성됨';
+
+  return (
+    <span className="text-xs font-semibold bg-cyber-success/10 border border-cyber-success/20 text-cyber-success px-3 py-1.5 rounded-full flex items-center gap-1.5" role="status">
+      <Check className="w-3 h-3" aria-hidden="true" /> {label}
+    </span>
+  );
+}
+
 export default function DashboardPage() {
   useSEO('dashboard');
   const { user, userSpec, gameLibrary, achievementsCount, syncAccount } = useAuthStore();
 
   if (!user) return null;
+
+  const linkedProviders = user.linked_providers || [];
 
   return (
     <section className="space-y-6 animation-fade-in" aria-labelledby="heading-dashboard">
@@ -19,15 +46,7 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-a11y-muted">계정 연동 상태:</span>
-          {gameLibrary.length > 0 ? (
-            <span className="text-xs font-semibold bg-cyber-success/10 border border-cyber-success/20 text-cyber-success px-3 py-1.5 rounded-full flex items-center gap-1.5" role="status">
-              <Check className="w-3 h-3" aria-hidden="true" /> Steam/Riot 활성됨
-            </span>
-          ) : (
-            <span className="text-xs font-semibold bg-gray-800 border border-gray-700 text-a11y-muted px-3 py-1.5 rounded-full flex items-center gap-1.5" role="status">
-              미연동
-            </span>
-          )}
+          <LinkedBadge linkedProviders={linkedProviders} />
         </div>
       </div>
       <DashboardCharts
@@ -35,6 +54,7 @@ export default function DashboardPage() {
         gameLibrary={gameLibrary}
         achievementsCount={achievementsCount}
         onSyncAccount={syncAccount}
+        linkedProviders={linkedProviders}
       />
     </section>
   );

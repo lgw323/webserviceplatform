@@ -33,9 +33,15 @@ export default function SettingsView({ user, onUpdateNickname }) {
   };
 
   const handleLanguageChange = (lang) => {
+    if (lang === 'en') {
+      toast('영어 지원은 현재 준비 중입니다.\n추후 업데이트를 통해 제공될 예정입니다.', {
+        icon: '🌐',
+        duration: 3000,
+      });
+      return;
+    }
     setLanguage(lang);
     localStorage.setItem('language', lang);
-    // In a real app, this would trigger a re-render with the new locale.
   };
 
   const handleSaveProfile = (e) => {

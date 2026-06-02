@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Gamepad2, User, Key, Loader2 } from 'lucide-react';
+import { Gamepad2, User, Key, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import * as api from '../api/apiClient';
-import toast from 'react-hot-toast';
 import useAuthStore from '../store/useAuthStore';
 
 export default function AuthPage() {
@@ -9,12 +8,17 @@ export default function AuthPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [inlineError, setInlineError] = useState('');
+  const [inlineSuccess, setInlineSuccess] = useState('');
   const { setUser, fetchUserData } = useAuthStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setInlineError('');
+    setInlineSuccess('');
+
     if (!username || !password) {
-      toast.error('모든 항목을 입력해주세요.');
+      setInlineError('모든 항목을 입력해주세요.');
       return;
     }
     setIsLoading(true);
@@ -23,15 +27,18 @@ export default function AuthPage() {
       let data;
       if (isLogin) {
         data = await api.login(username, password);
-        toast.success('로그인 성공!');
+        setInlineSuccess('로그인 성공! 잠시 후 이동합니다...');
       } else {
         data = await api.register(username, password);
-        toast.success('회원가입 성공!');
+        setInlineSuccess('회원가입 성공! 로그인 중입니다...');
       }
+      // Brief delay so user sees the success message
+      await new Promise(resolve => setTimeout(resolve, 600));
       setUser(data.user);
       await fetchUserData();
     } catch (err) {
-      toast.error(err.message || '인증 처리에 실패했습니다.');
+      const message = err.message || '인증 처리에 실패했습니다.';
+      setInlineError(message);
     } finally {
       setIsLoading(false);
     }
@@ -39,17 +46,26 @@ export default function AuthPage() {
 
   const handleOAuth = async (provider) => {
     setIsLoading(true);
+    setInlineError('');
+    setInlineSuccess('');
     try {
       const mockCode = Math.floor(100000 + Math.random() * 900000).toString();
       const data = await api.oauthCallback(provider, mockCode);
-      toast.success(`${provider} 연동 성공!`);
+      setInlineSuccess(`${provider} 연동 성공!`);
+      await new Promise(resolve => setTimeout(resolve, 600));
       setUser(data.user);
       await fetchUserData();
     } catch (err) {
-      toast.error(`${provider} 인증 연동 실패`);
+      setInlineError(`${provider} 인증 연동에 실패했습니다.`);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleTabSwitch = (loginMode) => {
+    setIsLogin(loginMode);
+    setInlineError('');
+    setInlineSuccess('');
   };
 
   return (
@@ -74,7 +90,7 @@ export default function AuthPage() {
             id="tab-login"
             aria-selected={isLogin}
             aria-controls="panel-auth"
-            onClick={() => setIsLogin(true)}
+            onClick={() => handleTabSwitch(true)}
             className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${
               isLogin ? 'bg-cyber-card text-cyber-accent shadow' : 'text-a11y-muted hover:text-gray-200'
             }`}
@@ -87,7 +103,7 @@ export default function AuthPage() {
             id="tab-register"
             aria-selected={!isLogin}
             aria-controls="panel-auth"
-            onClick={() => setIsLogin(false)}
+            onClick={() => handleTabSwitch(false)}
             className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${
               !isLogin ? 'bg-cyber-card text-cyber-accent shadow' : 'text-a11y-muted hover:text-gray-200'
             }`}
@@ -95,6 +111,20 @@ export default function AuthPage() {
             회원가입
           </button>
         </div>
+
+        {/* Inline Feedback Messages */}
+        {inlineError && (
+          <div className="flex items-center gap-2.5 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg animation-fade-in" role="alert">
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" aria-hidden="true" />
+            <p className="text-sm text-red-300 font-medium">{inlineError}</p>
+          </div>
+        )}
+        {inlineSuccess && (
+          <div className="flex items-center gap-2.5 px-4 py-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg animation-fade-in" role="status">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" aria-hidden="true" />
+            <p className="text-sm text-emerald-300 font-medium">{inlineSuccess}</p>
+          </div>
+        )}
 
         {/* Credentials Form */}
         <form onSubmit={handleSubmit} className="space-y-4" id="panel-auth" role="tabpanel" aria-labelledby={isLogin ? 'tab-login' : 'tab-register'}>
@@ -107,7 +137,7 @@ export default function AuthPage() {
               type="text"
               placeholder="username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => { setUsername(e.target.value); setInlineError(''); }}
               autoComplete="username"
               aria-required="true"
               className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors"
@@ -116,13 +146,14 @@ export default function AuthPage() {
           <div className="space-y-1">
             <label htmlFor="auth-password" className="text-xs font-semibold text-a11y-muted uppercase tracking-wider flex items-center gap-1.5">
               <Key className="w-3.5 h-3.5" aria-hidden="true" /> 비밀번호
+              {!isLogin && <span className="normal-case tracking-normal text-a11y-muted font-normal">(6자 이상, 숫자 포함)</span>}
             </label>
             <input
               id="auth-password"
               type="password"
               placeholder="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); setInlineError(''); }}
               autoComplete={isLogin ? 'current-password' : 'new-password'}
               aria-required="true"
               className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors"

@@ -36,9 +36,13 @@ apiClient.interceptors.request.use((config) => {
 // Response Interceptor
 apiClient.interceptors.response.use((response) => response, (error) => {
   if (error.response && error.response.status === 401) {
-    setToken(null);
-    localStorage.removeItem('syncrig_linked_providers');
-    window.location.href = '/'; // Unauthorized redirect
+    // Only redirect if there was an active session (token exists).
+    // If no token, this is a login/register attempt failure — let the caller handle it.
+    if (cachedToken) {
+      setToken(null);
+      localStorage.removeItem('syncrig_linked_providers');
+      window.location.href = '/';
+    }
   }
   return Promise.reject(error.response?.data || error);
 });
@@ -107,7 +111,8 @@ export async function fetchRecommendations(userSpec, gameId = 'game_cyberpunk', 
 }
 
 // ─── GAME LIBRARY SYNC ───
-export async function syncGameLibrary() {
-  const { data } = await apiClient.get('/games/library');
+export async function syncGameLibrary(providers = []) {
+  const params = providers.length > 0 ? `?providers=${providers.join(',')}` : '';
+  const { data } = await apiClient.get(`/games/library${params}`);
   return data.data.games;
 }
