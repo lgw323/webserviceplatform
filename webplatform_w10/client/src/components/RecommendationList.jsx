@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ThumbsUp, Star, Copy, Check, X, CheckCircle2, ShieldAlert, ThumbsDown } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function RecommendationList({ recommendations, userSpec }) {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [feedbackGiven, setFeedbackGiven] = useState(null); // 'helpful' | 'not_working' | null
 
   // 포커스 트랩 및 복원을 위한 ref
   const modalRef = useRef(null);
@@ -24,9 +26,10 @@ export default function RecommendationList({ recommendations, userSpec }) {
     setSelectedProfile(item);
   }, []);
 
-  // 모달 닫기: 포커스 복원
+  // 모달 닫기: 포커스 복원 + 피드백 초기화
   const closeModal = useCallback(() => {
     setSelectedProfile(null);
+    setFeedbackGiven(null);
     // 다음 렌더 사이클 후 이전 포커스 복원
     setTimeout(() => {
       previousFocusRef.current?.focus();
@@ -253,16 +256,42 @@ export default function RecommendationList({ recommendations, userSpec }) {
             <div className="p-5 border-t border-gray-800 bg-gray-900/30 flex flex-col sm:flex-row justify-between items-center gap-4">
               <div className="flex gap-2 w-full sm:w-auto" role="group" aria-label="프로필 피드백">
                 <button
-                  className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors border border-gray-700"
+                  onClick={() => {
+                    setFeedbackGiven('helpful');
+                    toast.success('피드백 감사합니다! 👍');
+                  }}
+                  disabled={feedbackGiven !== null}
                   aria-label="이 설정이 도움되었습니다"
+                  aria-pressed={feedbackGiven === 'helpful'}
+                  className={`flex-1 sm:flex-none flex items-center justify-center px-4 py-2 rounded-lg transition-colors border ${
+                    feedbackGiven === 'helpful'
+                      ? 'bg-cyber-success/20 text-cyber-success border-cyber-success/30'
+                      : feedbackGiven !== null
+                        ? 'bg-gray-800 text-a11y-muted border-gray-700 opacity-50 cursor-not-allowed'
+                        : 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700'
+                  }`}
                 >
-                  <ThumbsUp className="w-4 h-4 mr-2 text-a11y-muted" aria-hidden="true" /> 도움됨
+                  <ThumbsUp className="w-4 h-4 mr-2" aria-hidden="true" />
+                  {feedbackGiven === 'helpful' ? '감사합니다!' : '도움됨'}
                 </button>
                 <button
-                  className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors border border-gray-700"
+                  onClick={() => {
+                    setFeedbackGiven('not_working');
+                    toast('피드백이 반영되었습니다.', { icon: '📝' });
+                  }}
+                  disabled={feedbackGiven !== null}
                   aria-label="이 설정이 작동하지 않았습니다"
+                  aria-pressed={feedbackGiven === 'not_working'}
+                  className={`flex-1 sm:flex-none flex items-center justify-center px-4 py-2 rounded-lg transition-colors border ${
+                    feedbackGiven === 'not_working'
+                      ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                      : feedbackGiven !== null
+                        ? 'bg-gray-800 text-a11y-muted border-gray-700 opacity-50 cursor-not-allowed'
+                        : 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700'
+                  }`}
                 >
-                  <ThumbsDown className="w-4 h-4 mr-2 text-a11y-muted" aria-hidden="true" /> 작동 안함
+                  <ThumbsDown className="w-4 h-4 mr-2" aria-hidden="true" />
+                  {feedbackGiven === 'not_working' ? '반영됨' : '작동 안함'}
                 </button>
               </div>
               <div aria-live="polite">
