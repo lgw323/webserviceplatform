@@ -1,7 +1,10 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { Gamepad2, LayoutDashboard, Cpu, Settings2, Settings, Bell, Search, LogOut } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
+import useNotificationStore from '../../store/useNotificationStore';
+import { useSearch } from '../../hooks/useSearch';
+import NotificationDropdown from '../NotificationDropdown';
 import toast from 'react-hot-toast';
 
 const NAV = [
@@ -13,6 +16,9 @@ const NAV = [
 
 export default function MainLayout() {
   const { user, logout } = useAuthStore();
+  const { getUnreadCount } = useNotificationStore();
+  const { query, setQuery, results, isOpen, selectedIndex, selectResult, handleKeyDown, containerRef } = useSearch();
+  const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   const navRefs = useRef([]);
 
@@ -97,15 +103,55 @@ export default function MainLayout() {
             <Gamepad2 className="w-6 h-6 text-cyber-accent" aria-hidden="true" />
             <span className="font-bold text-lg">SYNCRIG</span>
           </div>
-          <div className="hidden md:flex items-center bg-cyber-darker rounded-full px-4 py-2 border border-gray-800 w-96">
+          <div className="hidden md:flex items-center bg-cyber-darker rounded-full px-4 py-2 border border-gray-800 w-96 relative" ref={containerRef}>
             <Search className="w-4 h-4 text-a11y-muted mr-2" aria-hidden="true" />
-            <input type="search" placeholder="게임, 프로필 검색..." className="bg-transparent border-none outline-none text-sm w-full text-gray-200" />
+            <input
+              type="search"
+              placeholder="게임, 프로필 검색..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              role="combobox"
+              aria-expanded={isOpen}
+              aria-haspopup="listbox"
+              aria-label="사이트 내 검색"
+              aria-autocomplete="list"
+              className="bg-transparent border-none outline-none text-sm w-full text-gray-200"
+            />
+            {isOpen && results.length > 0 && (
+              <ul role="listbox" className="absolute top-full left-0 w-full mt-2 bg-cyber-card border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden" aria-label="검색 결과">
+                {results.map((item, index) => (
+                  <li key={item.path} role="option" aria-selected={selectedIndex === index}>
+                    <button
+                      onClick={() => selectResult(item)}
+                      className={`w-full text-left px-4 py-3 text-sm flex items-center gap-3 transition-colors ${
+                        selectedIndex === index ? 'bg-cyber-dark text-cyber-accent' : 'text-gray-200 hover:bg-cyber-dark'
+                      }`}
+                    >
+                      <span className="text-base" aria-hidden="true">{item.icon}</span>
+                      <span className="font-medium">{item.label}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           <div className="flex items-center space-x-4">
-            <button className="p-2 rounded-full hover:bg-cyber-dark transition-colors relative text-a11y-muted hover:text-gray-200">
-              <Bell className="w-5 h-5" aria-hidden="true" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-cyber-danger rounded-full ring-2 ring-cyber-card"></span>
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="p-2 rounded-full hover:bg-cyber-dark transition-colors relative text-a11y-muted hover:text-gray-200"
+                aria-label={`알림 ${getUnreadCount()}개 읽지 않음`}
+                aria-haspopup="true"
+                aria-expanded={showNotifications}
+              >
+                <Bell className="w-5 h-5" aria-hidden="true" />
+                {getUnreadCount() > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-cyber-danger rounded-full ring-2 ring-cyber-card" />
+                )}
+              </button>
+              {showNotifications && <NotificationDropdown onClose={() => setShowNotifications(false)} />}
+            </div>
             <button onClick={handleLogout} className="md:hidden p-2 rounded-full hover:bg-cyber-dark text-a11y-muted hover:text-white transition-colors">
               <LogOut className="w-5 h-5" aria-hidden="true" />
             </button>
