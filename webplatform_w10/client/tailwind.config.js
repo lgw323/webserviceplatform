@@ -17,6 +17,17 @@ export default {
           warning: '#f59e0b',
           danger: '#ef4444',
         },
+        /* CSS Custom Properties 기반 테마 색상 */
+        theme: {
+          bg: 'var(--color-bg)',
+          card: 'var(--color-card)',
+          'card-hover': 'var(--color-card-hover)',
+          text: 'var(--color-text)',
+          'text-secondary': 'var(--color-text-secondary)',
+          'text-muted': 'var(--color-text-muted)',
+          border: 'var(--color-border)',
+          'input-bg': 'var(--color-input-bg)',
+        },
         /* WCAG AA 대비비 4.5:1 이상 확보된 보조 텍스트 색상 */
         a11y: {
           muted: '#9ca3af',    /* gray-400 — #0b0f19 위에서 대비비 약 7.5:1 */
