@@ -1,7 +1,7 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import rateLimit from 'express-rate-limit';
-import { register, login, oauthCallback } from '../controllers/authController.js';
+import { register, login, oauthCallback, refreshAccessToken } from '../controllers/authController.js';
 
 const router = express.Router();
 
@@ -37,6 +37,7 @@ const loginRules = [
 
 router.post('/register', authLimiter, registerRules, validateRequest, register);
 router.post('/login', authLimiter, loginRules, validateRequest, login);
+router.post('/refresh', refreshAccessToken);
 router.get('/:provider/callback', authLimiter, oauthCallback);
 
 export default router;
