@@ -63,17 +63,38 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Light Mode Filter Toggle ── */
-html.light-theme {
-  filter: invert(1) hue-rotate(180deg);
-  background-color: #0f172a; /* To prevent white flash before invert */
+/* ── Theme System: CSS Custom Properties ── */
+:root {
+  /* Dark Theme (기본) */
+  --color-bg: #0b0f19;
+  --color-card: #111827;
+  --color-card-hover: #1f2937;
+  --color-text: #f1f5f9;
+  --color-text-secondary: #e2e8f0;
+  --color-text-muted: #9ca3af;
+  --color-border: #1f2937;
+  --color-input-bg: #0f172a;
+  --color-overlay: rgba(0, 0, 0, 0.7);
 }
-html.light-theme img, 
-html.light-theme video, 
-html.light-theme iframe,
-html.light-theme .recharts-surface,
-html.light-theme .lucide {
-  filter: invert(1) hue-rotate(180deg);
+
+html.light-theme {
+  --color-bg: #f1f5f9;
+  --color-card: #ffffff;
+  --color-card-hover: #f8fafc;
+  --color-text: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-input-bg: #f1f5f9;
+  --color-overlay: rgba(0, 0, 0, 0.4);
+}
+
+/* 테마 전환 시 부드러운 애니메이션 */
+html {
+  transition: background-color 0.3s ease;
+}
+html.light-theme {
+  background-color: var(--color-bg);
 }
 
 /* ── 웹접근성: 고대비 모드 미디어쿼리 대응 ── */
