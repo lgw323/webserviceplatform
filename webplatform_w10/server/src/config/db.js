@@ -88,7 +88,7 @@ const MOCK_DB = {
 // ─── DATABASE AUTO-MIGRATION (POSTGRESQL) ───
 export async function initDb() {
   if (!isPgAvailable) {
-    console.log('[SYNCRIG DB] DATABASE_URL이 감지되지 않았습니다. 인메모리 대체 데이터베이스로 동작합니다.');
+    console.warn('⚠️ [SYNCRIG DB] DATABASE_URL이 설정되지 않았습니다.');\r\n    console.warn('⚠️ 인메모리 DB로 동작합니다 — 서버 재시작 시 모든 데이터가 삭제됩니다!');\r\n    if (process.env.NODE_ENV === 'production') {\r\n      console.error('🚨 프로덕션 환경에서 인메모리 DB 사용은 위험합니다. Vercel Postgres를 연결하세요.');\r\n    }
     return;
   }
 
