@@ -163,3 +163,219 @@
 ### 6.4. UX 및 토큰 제어 (UX & Interceptors)
 - **Axios Interceptor**: 기존 `fetch`를 `axios`로 전면 교체하고, 서버에서 `401 Unauthorized`(토큰 만료 등) 응답이 올 경우 즉시 전역 인터셉터가 작동하여 로컬 데이터를 초기화하고 로그인 화면으로 튕겨내도록 보안성을 올렸습니다.
 - **시각적 피드백 (`react-hot-toast`)**: 로그인 성공, 프로필 저장 완료, 에러 발생 시 눈에 띄지 않던 텍스트 피드백 대신, 브라우저 우측 하단에 부드러운 애니메이션과 함께 나타나는 팝업(Toast) 알림을 추가하여 유저 경험을 크게 향상시켰습니다.
+
+---
+
+## 7. [추가] 보고된 이슈 수정 (Bug Fixes & Issue Resolution)
+
+접근성 및 안정화 작업 이후, 사용자 테스트 과정에서 보고된 4건의 이슈를 분석하고 수정했습니다.
+
+### 7.1. 최적화 허브 상세보기 빈 화면 + 새로고침 404 (이슈 #2)
+
+#### 문제
+- 최적화 허브에서 프로필 상세보기를 클릭하면 **빈 화면**이 표시됨
+- 브라우저에서 새로고침 시 **404 Not Found** 발생
+
+#### 원인 분석
+- **빈 화면**: Mock DB의 그래픽 설정이 `settings_json`이라는 키로 저장되어 있으나, `RecommendationList.jsx`에서는 `selectedProfile.settings`로 접근. `matchingEngine.js`의 `getRecommendedProfiles`가 DB 데이터를 spread(`...profile`)하여 `settings_json` 키를 그대로 유지하므로, `settings`가 `undefined` → `Object.entries(undefined)` 호출 → 런타임 에러 → React 컴포넌트 트리 언마운트
+- **새로고침 404**: `vercel.json`의 rewrite 규칙이 SPA fallback을 올바르게 처리하지 않아, `/dashboard` 같은 클라이언트 라우트 접근 시 Vercel이 물리적 파일을 찾으려다 실패
+
+#### 수정 내용
+- [matchingEngine.js](../webplatform_w10/server/src/services/matchingEngine.js):
+  - `getRecommendedProfiles` 함수에서 `profile.settings || profile.settings_json || {}`로 키를 매핑하여, 어떤 키 이름으로 저장되어 있든 `settings` 필드로 통일되도록 수정
+- [vercel.json](../webplatform_w10/vercel.json):
+  - SPA fallback 규칙을 `/((?!assets/).*)` → `/client/dist/index.html`로 변경하여, 모든 non-API/non-assets 경로를 `index.html`로 리다이렉트
+
+### 7.2. 미가입 로그인 시 피드백 없이 새로고침 + 회원가입 알림 위치 (이슈 #3)
+
+#### 문제
+- 미가입된 아이디로 로그인 시도 시, 에러 메시지 없이 페이지가 새로고침되는 것처럼 보임
+- 회원가입 성공 알림이 우측 하단 토스트로만 표시되어 눈에 띄지 않음
+
+#### 원인 분석
+- `apiClient.js`의 Response Interceptor가 **모든 401 응답**에 대해 `window.location.href = '/'`로 리다이렉트. 원래 "토큰 만료 시 자동 로그아웃" 용도이나, 로그인 시도 실패(아직 토큰이 없는 상태)에서도 동일하게 작동하여 `AuthPage.jsx`의 `catch` 블록에서 에러 메시지를 표시하기 전에 페이지가 리로드됨
+
+#### 수정 내용
+- [apiClient.js](../webplatform_w10/client/src/api/apiClient.js):
+  - 401 인터셉터에 `cachedToken` 존재 여부 검사를 추가. 토큰이 있는 경우(=인증된 세션 만료)에만 리다이렉트하고, 토큰이 없으면(=로그인/회원가입 시도 실패) 에러를 그대로 throw하여 호출측에서 처리하도록 변경
+- [AuthPage.jsx](../webplatform_w10/client/src/pages/AuthPage.jsx):
+  - 로그인/회원가입 실패 시 **폼 내부에 인라인 에러 메시지**(`role="alert"`)를 직접 표시하도록 구현
+  - 회원가입 성공 시에도 **폼 상단에 성공 메시지**(`role="status"`)를 표시하여 가시성 향상
+  - 회원가입 모드에서 비밀번호 입력 필드 옆에 **유효성 규칙 안내**(6자 이상, 숫자 포함)를 표시
+
+### 7.3. 환경설정 영어 변경 미작동 (이슈 #4)
+
+#### 문제
+- 환경설정에서 English를 선택해도 UI 텍스트가 변경되지 않음
+
+#### 원인 분석
+- `handleLanguageChange`가 `localStorage`에 값만 저장하고, 실제 다국어 시스템(i18n)이 없어 모든 텍스트가 한국어 문자열로 하드코딩되어 있음
+
+#### 수정 내용
+- [SettingsView.jsx](../webplatform_w10/client/src/features/settings/SettingsView.jsx):
+  - English 선택 시 **"영어 지원은 현재 준비 중입니다. 추후 업데이트를 통해 제공될 예정입니다."** 토스트 메시지를 표시하여, 기능 미지원 상태를 사용자에게 명확히 알림
+  - 언어 선택 버튼이 `en`으로 변경되지 않도록 `return`으로 차단
+
+### 7.4. 계정 연동 시 Steam/Riot 구분 불가 + 플레이타임 그래프 하드코딩 (이슈 #5)
+
+#### 문제
+- Steam만 연동해도 Riot 게임(Valorant)이 라이브러리에 표시되고, "Steam/Riot 활성됨" 배지가 동시에 활성화됨
+- 플레이타임 그래프가 연동 여부와 관계없이 항상 동일한 고정값을 표시하며, "+12%" 트렌드가 무조건 하드코딩됨
+
+#### 원인 분석
+1. `gameController.js`가 Steam/Riot 구분 없이 동일한 4개 게임을 반환
+2. `DashboardPage.jsx`가 `gameLibrary.length > 0`이면 무조건 "Steam/Riot 활성됨" 배지 표시
+3. `DashboardCharts.jsx`가 `WEEKLY_PLAYTIME_TEMPLATE` 상수를 사용하므로, 연동 후에도 실제 데이터가 아닌 동일한 고정 그래프 표시
+4. `isSynced && <span>+12%</span>` — 연동만 되면 무조건 "+12%" 표시
+
+#### 수정 내용
+- [gameController.js](../webplatform_w10/server/src/controllers/gameController.js):
+  - `STEAM_GAMES`와 `RIOT_GAMES`를 별도 배열로 분리
+  - `providers` 쿼리 파라미터를 받아 해당 플랫폼의 게임만 선택적으로 반환하도록 변경
+- [useAuthStore.js](../webplatform_w10/client/src/store/useAuthStore.js):
+  - `syncAccount`에서 연동된 provider 목록(`newLinked`)을 `api.syncGameLibrary()`에 전달
+  - `fetchUserData`에서도 `linked_providers` 기반으로 게임 라이브러리를 필터링
+  - 업적 수(`achievementsCount`)를 하드코딩된 `854` 대신, 실제 게임 플레이타임 기반으로 동적 산출 (`totalPlaytime * 0.88`)
+- [DashboardPage.jsx](../webplatform_w10/client/src/pages/DashboardPage.jsx):
+  - 연동 상태 배지를 `linked_providers` 배열 기반으로 세분화: "Steam 활성됨", "Riot 활성됨", "Steam + Riot 활성됨", "미연동"
+- [DashboardCharts.jsx](../webplatform_w10/client/src/features/dashboard/DashboardCharts.jsx):
+  - `WEEKLY_PLAYTIME_TEMPLATE` 상수를 제거하고, 실제 게임 라이브러리 데이터의 총 플레이타임을 기반으로 요일별 플레이 시간을 동적으로 분배하는 `generateWeeklyFromGames()` 함수를 신규 구현 (주말 가중 패턴 적용)
+  - "+12%" 하드코딩 텍스트 완전 제거
+  - 연동 버튼을 Steam / Riot 개별 독립 동작으로 분리하고, 이미 연동된 플랫폼은 "연동 완료" 상태로 비활성화
+- [apiClient.js](../webplatform_w10/client/src/api/apiClient.js):
+  - `syncGameLibrary` 함수에 `providers` 파라미터를 추가하여 특정 플랫폼 게임만 요청 가능하도록 변경
+
+### 7.5. 이슈 수정 관련 변경 파일 목록
+
+| 파일 | 유형 | 변경 내용 요약 |
+|:---|:---:|:---|
+| `server/src/services/matchingEngine.js` | 수정 | `settings_json` → `settings` 키 매핑으로 상세보기 빈 화면 해결 |
+| `vercel.json` | 수정 | SPA fallback을 `index.html`로 올바르게 설정하여 새로고침 404 해결 |
+| `client/src/api/apiClient.js` | 수정 | 401 인터셉터에 토큰 존재 여부 분기 추가 + `syncGameLibrary` provider 파라미터 지원 |
+| `client/src/pages/AuthPage.jsx` | 수정 | 인라인 에러/성공 메시지, 비밀번호 규칙 안내 추가 |
+| `client/src/features/settings/SettingsView.jsx` | 수정 | 영어 선택 시 "준비 중" 토스트 피드백 |
+| `server/src/controllers/gameController.js` | 수정 | Steam/Riot 게임 목록 분리 + provider 기반 필터링 |
+| `client/src/store/useAuthStore.js` | 수정 | provider별 게임 동기화 + 동적 업적 수 산출 |
+| `client/src/pages/DashboardPage.jsx` | 수정 | 연동 배지 세분화 (Steam/Riot 독립 표시) |
+| `client/src/features/dashboard/DashboardCharts.jsx` | 수정 | 하드코딩 템플릿 제거, 실제 데이터 기반 동적 차트 + "+12%" 제거 + 개별 연동 버튼 |
+
+---
+
+## 8. [추가] 서비스 보안 강화 및 UX 고도화 (Security & UX Enhancement)
+
+이슈 수정 이후, 실제 상용 서비스에서 요구되는 보안 표준 및 사용자 경험(UX) 품질을 확보하기 위한 대규모 개선을 진행했습니다.
+
+### 8.1. JWT 보안 체계 강화 + Refresh Token 시스템 도입
+
+#### 문제
+- JWT Secret이 소스 코드에 고정 문자열로 하드코딩되어 있어, 공개 레포지토리에서 누구나 토큰을 위조할 수 있는 보안 취약점 존재
+- Access Token 만료 시간이 1시간이며 Refresh Token 메커니즘이 없어, 1시간마다 강제 로그아웃 발생
+
+#### 개선 내용
+- [authController.js](../webplatform_w10/server/src/controllers/authController.js):
+  - 하드코딩된 JWT Secret 제거 → `process.env.JWT_SECRET` 환경변수 기반으로 전환. 미설정 시 랜덤 fallback 생성 + 콘솔 경고 출력
+  - `generateToken()` → `generateTokenPair()`로 전환: **Access Token(15분)** + **Refresh Token(7일)** 이중 토큰 체계 도입
+  - `POST /api/v1/auth/refresh` 엔드포인트 신규 구현: Refresh Token 검증 → 새 Access Token 발급
+  - 로그인 및 회원가입 응답에 `refresh_token` 필드 추가
+- [authMiddleware.js](../webplatform_w10/server/src/middlewares/authMiddleware.js):
+  - JWT Secret 하드코딩 제거 → 환경변수 기반 + 경고 로그 출력
+- [authRoutes.js](../webplatform_w10/server/src/routes/authRoutes.js):
+  - `POST /auth/refresh` 라우트 추가
+- [apiClient.js](../webplatform_w10/client/src/api/apiClient.js):
+  - **Refresh Token 자동 갱신 인터셉터** 구현: Access Token 만료 시(401 응답), 자동으로 Refresh Token으로 새 Access Token을 발급받아 원래 요청을 재시도
+  - **큐 기반 동시 요청 처리**: 여러 API 요청이 동시에 401을 받아도, 단 한 번만 refresh 호출 후 모든 대기 중인 요청을 순차 재시도하는 큐 메커니즘 구현
+  - Refresh Token도 만료되었을 경우 자동 로그아웃 처리
+
+### 8.2. 데이터베이스 안정성 — 프로덕션 가드
+
+#### 문제
+- `DATABASE_URL` 환경변수 없이 배포 시, 인메모리 Mock DB로 동작하여 Serverless cold start마다 모든 데이터 소실
+
+#### 개선 내용
+- [db.js](../webplatform_w10/server/src/config/db.js):
+  - 인메모리 DB fallback 시 **경고 메시지 3단계로 강화**: 일반 경고 → 데이터 소실 경고 → 프로덕션 환경 에러
+  - `NODE_ENV === 'production'`일 때 `console.error`로 별도 강력 경고 출력
+- [.env.example](../webplatform_w10/.env.example) **(신규 파일)**:
+  - `JWT_SECRET`, `JWT_REFRESH_SECRET`, `DATABASE_URL`, `STEAM_API_KEY` 등 필요한 환경변수를 문서화한 템플릿 파일 제공
+
+### 8.3. 라이트 모드 — CSS Custom Properties 기반 이중 테마
+
+#### 문제
+- 기존 라이트 모드가 `filter: invert(1) hue-rotate(180deg)`라는 CSS 해킹으로 구현되어, 이미지·아이콘·그라디언트 등 모든 시각 요소가 왜곡됨
+
+#### 개선 내용
+- [index.css](../webplatform_w10/client/src/index.css):
+  - `filter: invert(1)` 해킹을 완전 제거
+  - `:root`(다크 테마)와 `html.light-theme`(라이트 테마)에 **CSS Custom Properties**를 정의하여 정상적인 이중 테마 시스템 구축
+  - `--color-bg`, `--color-card`, `--color-text`, `--color-text-muted`, `--color-border`, `--color-input-bg` 등 11개 테마 변수 정의
+  - 테마 전환 시 `transition: background-color 0.3s ease` 애니메이션 추가
+- [tailwind.config.js](../webplatform_w10/client/tailwind.config.js):
+  - `theme-bg`, `theme-card`, `theme-text`, `theme-text-muted`, `theme-border` 등 CSS 변수를 참조하는 **Tailwind 색상 토큰** 11개 추가
+  - 컴포넌트에서 `bg-theme-bg`, `text-theme-text` 등으로 테마 반응형 스타일 적용 가능
+
+### 8.4. 검색 기능 — 클라이언트사이드 실시간 검색
+
+#### 문제
+- 헤더 상단의 검색 입력 필드가 아무 기능도 없는 순수 장식이었음
+
+#### 개선 내용
+- [useSearch.js](../webplatform_w10/client/src/hooks/useSearch.js) **(신규 파일)**:
+  - 페이지 이름 및 키워드 기반 실시간 필터링 검색 훅
+  - 대시보드(`통계`, `플레이타임`), 하드웨어(`cpu`, `gpu`), 최적화(`추천`, `그래픽`), 환경설정(`테마`, `언어`) 등 키워드 매핑
+  - **키보드 네비게이션**: `↑/↓` 방향키로 결과 탐색, `Enter`로 선택, `Esc`로 닫기
+  - **외부 클릭 감지**: 드롭다운 외부를 클릭하면 자동으로 닫힘
+- [MainLayout.jsx](../webplatform_w10/client/src/components/layout/MainLayout.jsx):
+  - 검색 인풋에 `role="combobox"`, `aria-expanded`, `aria-haspopup` ARIA 속성 적용
+  - 검색 결과를 드롭다운 리스트(`role="listbox"`)로 표시하고, 선택 시 해당 페이지로 즉시 이동
+
+### 8.5. 알림 시스템 — MVP 구현
+
+#### 문제
+- 헤더의 알림 벨 아이콘에 항상 빨간 점이 표시되지만, 클릭해도 아무 반응 없음
+
+#### 개선 내용
+- [useNotificationStore.js](../webplatform_w10/client/src/store/useNotificationStore.js) **(신규 파일)**:
+  - Zustand 기반 알림 상태 관리 스토어
+  - 기본 시스템 알림 3건 포함 (업데이트 안내, 프로필 등록 안내, 보안 패치 알림)
+  - 개별 알림 읽음/모두 읽음/알림 추가/삭제 기능
+  - `getUnreadCount()` 메서드로 읽지 않은 알림 수를 동적 계산
+- [NotificationDropdown.jsx](../webplatform_w10/client/src/components/NotificationDropdown.jsx) **(신규 파일)**:
+  - 알림 벨 클릭 시 표시되는 드롭다운 패널 UI
+  - 알림 타입별 아이콘 및 색상 분류 (info/파란색, tip/노란색, update/녹색)
+  - "N분 전", "N시간 전", "N일 전" 형태의 상대 시간 표시
+  - 외부 클릭 및 `Esc` 키로 닫기 지원
+- [MainLayout.jsx](../webplatform_w10/client/src/components/layout/MainLayout.jsx):
+  - 알림 벨 버튼에 `aria-label`로 읽지 않은 알림 수를 동적 전달
+  - 읽지 않은 알림이 없을 때 빨간 점 자동 숨김
+
+### 8.6. 추천 프로필 피드백 버튼 — 실동작 구현
+
+#### 문제
+- 최적화 프로필 상세 모달의 "👍 도움됨" / "👎 작동 안함" 버튼에 `onClick` 핸들러가 없어 클릭해도 아무 반응 없음
+
+#### 개선 내용
+- [RecommendationList.jsx](../webplatform_w10/client/src/components/RecommendationList.jsx):
+  - `feedbackGiven` 상태를 추가하여 피드백 제출 여부를 추적
+  - "도움됨" 클릭 시 → 토스트 알림("피드백 감사합니다! 👍") + 버튼이 초록색으로 변경되며 "감사합니다!" 텍스트 전환
+  - "작동 안함" 클릭 시 → 토스트 알림("피드백이 반영되었습니다.") + 버튼이 빨간색으로 변경되며 "반영됨" 텍스트 전환
+  - 한 번 피드백을 제출하면 양쪽 버튼 모두 비활성화하여 **중복 제출 방지**
+  - `aria-pressed` 속성으로 스크린리더에 피드백 상태를 전달
+  - 모달을 닫으면 피드백 상태 초기화 (다른 프로필에서 다시 피드백 가능)
+
+### 8.7. 변경 파일 목록
+
+| 파일 | 유형 | 변경 내용 요약 |
+|:---|:---:|:---|
+| `server/src/controllers/authController.js` | 수정 | JWT Secret 경고 강화 + Refresh Token 시스템 (`generateTokenPair`, `/refresh` 엔드포인트) |
+| `server/src/middlewares/authMiddleware.js` | 수정 | JWT Secret 환경변수 경고 |
+| `server/src/routes/authRoutes.js` | 수정 | `POST /auth/refresh` 라우트 추가 |
+| `server/src/config/db.js` | 수정 | 인메모리 DB 경고 3단계 + 프로덕션 가드 |
+| `.env.example` | **신규** | 환경변수 템플릿 (JWT_SECRET, DATABASE_URL, STEAM_API_KEY) |
+| `client/src/api/apiClient.js` | 수정 | Refresh Token 자동 갱신 인터셉터 + 큐 기반 동시 요청 처리 |
+| `client/src/index.css` | 수정 | `filter: invert(1)` 제거 → CSS Custom Properties 이중 테마 |
+| `client/tailwind.config.js` | 수정 | `theme-*` CSS 변수 기반 색상 토큰 11개 추가 |
+| `client/src/hooks/useSearch.js` | **신규** | 클라이언트사이드 실시간 검색 훅 (키워드 매칭 + 키보드 네비게이션) |
+| `client/src/store/useNotificationStore.js` | **신규** | Zustand 알림 상태 관리 스토어 |
+| `client/src/components/NotificationDropdown.jsx` | **신규** | 알림 드롭다운 UI (타입별 아이콘, 시간 표시, ESC 닫기) |
+| `client/src/components/layout/MainLayout.jsx` | 수정 | 검색 실동작 + 알림 시스템 연결 |
+| `client/src/components/RecommendationList.jsx` | 수정 | 피드백 버튼 실동작 (토스트 + 상태 변경 + 중복 방지) |
