@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'syncrig_secret_key_129847129487';
+const JWT_SECRET = process.env.JWT_SECRET || 'syncrig_dev_fallback_key';\r\nif (!process.env.JWT_SECRET) {\r\n  console.warn('⚠️ [authMiddleware] JWT_SECRET 환경변수 미설정. 개발용 fallback 사용.');\r\n}
 
 export function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
