@@ -21,6 +21,14 @@ export function setToken(token) {
   }
 }
 
+export function setRefreshToken(token) {
+  if (token) {
+    localStorage.setItem('syncrig_refresh_token', token);
+  } else {
+    localStorage.removeItem('syncrig_refresh_token');
+  }
+}
+
 export function getToken() {
   return cachedToken;
 }
@@ -33,17 +41,70 @@ apiClient.interceptors.request.use((config) => {
   return config;
 }, (error) => Promise.reject(error));
 
-// Response Interceptor
-apiClient.interceptors.response.use((response) => response, (error) => {
-  if (error.response && error.response.status === 401) {
-    // Only redirect if there was an active session (token exists).
-    // If no token, this is a login/register attempt failure — let the caller handle it.
-    if (cachedToken) {
+// Response Interceptor — Refresh Token 자동 갱신
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) prom.reject(error);
+    else prom.resolve(token);
+  });
+  failedQueue = [];
+};
+
+apiClient.interceptors.response.use((response) => response, async (error) => {
+  const originalRequest = error.config;
+
+  if (error.response && error.response.status === 401 && cachedToken && !originalRequest._retry) {
+    const refreshToken = localStorage.getItem('syncrig_refresh_token');
+
+    if (!refreshToken) {
+      // Refresh token 없음 → 완전 로그아웃
       setToken(null);
+      setRefreshToken(null);
       localStorage.removeItem('syncrig_linked_providers');
       window.location.href = '/';
+      return Promise.reject(error.response?.data || error);
+    }
+
+    if (isRefreshing) {
+      // 이미 갱신 중이면 큐에 추가
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      }).then(token => {
+        originalRequest.headers['Authorization'] = `Bearer ${token}`;
+        return apiClient(originalRequest);
+      }).catch(err => Promise.reject(err));
+    }
+
+    originalRequest._retry = true;
+    isRefreshing = true;
+
+    try {
+      const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, { refresh_token: refreshToken });
+      const newAccessToken = data.data.access_token;
+      setToken(newAccessToken);
+      processQueue(null, newAccessToken);
+      originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+      return apiClient(originalRequest);
+    } catch (refreshError) {
+      processQueue(refreshError, null);
+      setToken(null);
+      setRefreshToken(null);
+      localStorage.removeItem('syncrig_linked_providers');
+      window.location.href = '/';
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
     }
   }
+
+  // 토큰이 없는 상태(로그인 시도 실패 등) — 에러를 그대로 throw
+  if (error.response && error.response.status === 401 && !cachedToken) {
+    return Promise.reject(error.response?.data || error);
+  }
+
   return Promise.reject(error.response?.data || error);
 });
 
@@ -51,12 +112,14 @@ apiClient.interceptors.response.use((response) => response, (error) => {
 export async function login(username, password) {
   const { data } = await apiClient.post('/auth/login', { username, password });
   setToken(data.data.access_token);
+  if (data.data.refresh_token) setRefreshToken(data.data.refresh_token);
   return data.data;
 }
 
 export async function register(username, password) {
   const { data } = await apiClient.post('/auth/register', { username, password });
   setToken(data.data.access_token);
+  if (data.data.refresh_token) setRefreshToken(data.data.refresh_token);
   return data.data;
 }
 
