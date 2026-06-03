@@ -2,7 +2,14 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { db } from '../config/db.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'syncrig_secret_key_129847129487';
+// ── JWT 보안 설정 ──
+const JWT_SECRET = process.env.JWT_SECRET || ('syncrig_dev_' + crypto.randomBytes(16).toString('hex'));
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || JWT_SECRET + '_refresh';
+
+if (!process.env.JWT_SECRET) {
+  console.warn('⚠️ [SECURITY] JWT_SECRET 환경변수가 설정되지 않았습니다. 랜덤 fallback을 사용합니다.');
+  console.warn('⚠️ Vercel 배포 시 반드시 Environment Variables에 JWT_SECRET을 설정하세요.');
+}
 
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString('hex');
@@ -16,12 +23,18 @@ function verifyPassword(password, storedHash) {
   return hash === originalHash;
 }
 
-function generateToken(user) {
-  return jwt.sign(
+function generateTokenPair(user) {
+  const accessToken = jwt.sign(
     { id: user.id, provider: user.provider, provider_id: user.provider_id },
     JWT_SECRET,
-    { expiresIn: '1h' }
+    { expiresIn: '15m' }
   );
+  const refreshToken = jwt.sign(
+    { id: user.id, type: 'refresh' },
+    JWT_REFRESH_SECRET,
+    { expiresIn: '7d' }
+  );
+  return { accessToken, refreshToken };
 }
 
 export const register = async (req, res, next) => {
@@ -47,11 +60,11 @@ export const register = async (req, res, next) => {
     );
 
     const user = result.rows[0];
-    const token = generateToken(user);
+    const { accessToken, refreshToken } = generateTokenPair(user);
 
     res.status(201).json({
       status: 'success',
-      data: { access_token: token, user }
+      data: { access_token: accessToken, refresh_token: refreshToken, user }
     });
   } catch (err) {
     next(err);
@@ -75,11 +88,12 @@ export const login = async (req, res, next) => {
       return res.status(401).json({ status: 'error', message: '아이디 또는 비밀번호가 잘못되었습니다.' });
     }
 
-    const token = generateToken(user);
+    const { accessToken, refreshToken } = generateTokenPair(user);
     res.json({
       status: 'success',
       data: {
-        access_token: token,
+        access_token: accessToken,
+        refresh_token: refreshToken,
         user: { id: user.id, provider: user.provider, provider_id: user.provider_id }
       }
     });
@@ -113,10 +127,41 @@ export const oauthCallback = async (req, res, next) => {
       user = insertResult.rows[0];
     }
 
-    const token = generateToken(user);
+    const { accessToken, refreshToken } = generateTokenPair(user);
     res.json({
       status: 'success',
-      data: { access_token: token, user }
+      data: { access_token: accessToken, refresh_token: refreshToken, user }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── Refresh Token 엔드포인트 ──
+export const refreshAccessToken = async (req, res, next) => {
+  try {
+    const { refresh_token } = req.body;
+    if (!refresh_token) {
+      return res.status(400).json({ status: 'error', message: 'Refresh token이 필요합니다.' });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(refresh_token, JWT_REFRESH_SECRET);
+    } catch (err) {
+      return res.status(401).json({ status: 'error', message: 'Refresh token이 만료되었거나 유효하지 않습니다.' });
+    }
+
+    const result = await db.query('SELECT * FROM users WHERE id = $1', [decoded.id]);
+    const user = result.rows[0];
+    if (!user) {
+      return res.status(401).json({ status: 'error', message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    const { accessToken } = generateTokenPair(user);
+    res.json({
+      status: 'success',
+      data: { access_token: accessToken }
     });
   } catch (err) {
     next(err);
