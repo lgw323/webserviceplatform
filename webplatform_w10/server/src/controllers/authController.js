@@ -104,7 +104,13 @@ export const login = async (req, res, next) => {
 
 export const oauthCallback = async (req, res, next) => {
   try {
-    const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
+    // 0. 동적 CLIENT_URL 추론 (Vercel Preview 등 대응)
+    let CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
+    
+    // 세션에 저장해둔 redirectUrl이 있다면 최우선 사용
+    if (req.session && req.session.redirectOrigin) {
+      CLIENT_URL = req.session.redirectOrigin;
+    }
 
     if (!req.user) {
       return res.redirect(`${CLIENT_URL}/?error=auth_failed`);

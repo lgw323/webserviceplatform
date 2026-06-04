@@ -34,11 +34,23 @@ const loginRules = [
 ];
 
 // ── 토큰 임시 저장 미들웨어 (연동 시 사용) ──
-const saveLinkToken = (req, res, next) => {
+const saveAuthContext = (req, res, next) => {
   if (req.query.token) {
     // 세션에 토큰 저장 (연동 시 기존 로그인 유저를 식별하기 위함)
     req.session.linkToken = req.query.token;
   }
+  
+  // Vercel Preview 대응: 클라이언트에서 넘어올 때의 도메인을 기억해둠
+  const referer = req.headers.referer;
+  if (referer) {
+    try {
+      const url = new URL(referer);
+      req.session.redirectOrigin = url.origin;
+    } catch (e) {
+      console.error('Invalid referer:', referer);
+    }
+  }
+  
   next();
 };
 
@@ -67,11 +79,11 @@ const checkRiotAuth = (req, res, next) => {
 };
 
 // ── Steam 인증 ──
-router.get('/steam', authLimiter, saveLinkToken, checkSteamAuth);
+router.get('/steam', authLimiter, saveAuthContext, checkSteamAuth);
 router.get('/steam/callback', authLimiter, checkSteamAuth, oauthCallback);
 
 // ── Riot 인증 ──
-router.get('/riot', authLimiter, saveLinkToken, checkRiotAuth);
+router.get('/riot', authLimiter, saveAuthContext, checkRiotAuth);
 router.get('/riot/callback', authLimiter, checkRiotAuth, oauthCallback);
 
 export default router;
