@@ -5,6 +5,7 @@ import useAuthStore from '../../store/useAuthStore';
 import useNotificationStore from '../../store/useNotificationStore';
 import { useSearch } from '../../hooks/useSearch';
 import NotificationDropdown from '../NotificationDropdown';
+import PremiumBannerWidget from '../widgets/PremiumBannerWidget';
 import toast from 'react-hot-toast';
 
 const NAV = [
@@ -79,6 +80,9 @@ export default function MainLayout() {
         </div>
 
         <div className="p-4 border-t border-gray-800 space-y-3">
+          <div className="mb-2">
+            <PremiumBannerWidget />
+          </div>
           <div className="flex items-center px-3 py-2">
             <div className="w-8 h-8 rounded-full bg-cyber-dark flex items-center justify-center border border-gray-700 text-sm font-bold text-cyber-accent uppercase" aria-hidden="true">
               {user?.provider_id ? user.provider_id.substring(0, 1) : 'U'}

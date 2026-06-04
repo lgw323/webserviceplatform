@@ -5,7 +5,6 @@ import DashboardCharts from '../features/dashboard/DashboardCharts';
 import useSEO from '../hooks/useSEO';
 
 import ProfileSummaryWidget from '../components/widgets/ProfileSummaryWidget';
-import PremiumBannerWidget from '../components/widgets/PremiumBannerWidget';
 import TrendingProfilesWidget from '../components/widgets/TrendingProfilesWidget';
 import TargetedAdWidget from '../components/widgets/TargetedAdWidget';
 
@@ -55,17 +54,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 3-Column Grid Layout */}
+      {/* 2-Column Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Left Sidebar (25%) */}
-        <div className="lg:col-span-3 space-y-6">
-          <ProfileSummaryWidget />
-          <PremiumBannerWidget />
-        </div>
-
-        {/* Center Main Area (50%) */}
-        <div className="lg:col-span-6 space-y-6">
+        {/* Center Main Area (67%) - 넓어진 차트 영역 */}
+        <div className="lg:col-span-8 space-y-6">
           <DashboardCharts
             userSpec={userSpec}
             gameLibrary={gameLibrary}
@@ -75,8 +68,9 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Right Sidebar (25%) */}
-        <div className="lg:col-span-3 space-y-6">
+        {/* Right Sidebar (33%) - 위젯 모음 */}
+        <div className="lg:col-span-4 space-y-6">
+          <ProfileSummaryWidget />
           <TargetedAdWidget />
           <TrendingProfilesWidget />
         </div>
