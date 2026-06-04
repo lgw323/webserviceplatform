@@ -122,81 +122,33 @@ export default function LandingPage() {
         </div>
       </main>
       
-      {/* ── Feature Highlights (Bento Grid) ── */}
+      {/* ── Feature Highlights (Before & After) ── */}
       <section className="w-full max-w-7xl px-6 pb-24 animation-fade-in" style={{ animationDelay: '0.4s' }}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px]">
-          
-          {/* 1번 카드: 넓은 카드 (2칸 차지) */}
-          <div className="md:col-span-2 group relative p-8 bg-cyber-card border border-gray-800 rounded-3xl overflow-hidden hover:border-cyber-accent/50 transition-all duration-500">
-            <div className="absolute inset-0 bg-gradient-to-br from-cyber-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative z-10 flex flex-col h-full">
-              <div className="w-12 h-12 bg-cyber-dark/80 backdrop-blur rounded-2xl flex items-center justify-center mb-auto border border-gray-700/50">
-                <Cpu className="w-6 h-6 text-cyber-accent" />
-              </div>
-              <div className="mt-8">
-                <h3 className="text-2xl font-bold mb-3 text-white group-hover:text-cyber-accent transition-colors">초정밀 하드웨어 분석</h3>
-                <p className="text-a11y-muted leading-relaxed max-w-md">
-                  내 PC의 스펙을 정확히 진단하고 병목 구간(Bottleneck)을 파악하여 쾌적한 플레이 환경을 위한 데이터 인사이트를 제공합니다.
-                </p>
-              </div>
-            </div>
-            {/* 배경 데코레이션 */}
-            <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-cyber-accent/10 rounded-full blur-3xl group-hover:bg-cyber-accent/20 transition-colors duration-700" />
-          </div>
-
-          {/* 2번 카드: 길쭉한 카드 (1칸) */}
-          <div className="md:row-span-2 group relative p-8 bg-cyber-card border border-gray-800 rounded-3xl overflow-hidden hover:border-cyber-purple/50 transition-all duration-500">
-            <div className="absolute inset-0 bg-gradient-to-b from-cyber-purple/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative z-10 flex flex-col h-full">
-              <div className="w-12 h-12 bg-cyber-dark/80 backdrop-blur rounded-2xl flex items-center justify-center mb-8 border border-gray-700/50 shadow-[0_0_15px_rgba(180,100,255,0.2)]">
-                <Crosshair className="w-6 h-6 text-cyber-purple" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold mb-3 text-white group-hover:text-cyber-purple transition-colors">스팀 & 라이엇 완벽 연동</h3>
-                <p className="text-a11y-muted leading-relaxed mb-8">
-                  클릭 한 번으로 내가 보유한 게임의 플레이 타임을 분석하고, 각 게임에 최적화된 맞춤형 프로필을 대시보드에 즉시 동기화합니다.
-                </p>
-              </div>
-              {/* 카드 내부 미니 UI 장식 */}
-              <div className="mt-auto space-y-3">
-                <div className="h-12 w-full bg-gray-900/50 rounded-xl border border-gray-800 flex items-center px-4 gap-3">
-                   <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center"><Gamepad2 className="w-3 h-3 text-blue-400" /></div>
-                   <div className="h-2 w-20 bg-gray-700 rounded-full" />
+        <div className="flex flex-col md:flex-row gap-4 items-stretch">
+            {/* Before (Bad) */}
+            <div className="flex-1 bg-[#1a0f0f] border border-red-900/50 rounded-3xl p-10 flex flex-col items-center justify-center min-h-[350px] hover:animate-glitch cursor-crosshair">
+                <div className="text-red-500 font-mono text-7xl font-bold mb-4 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">45<span className="text-3xl ml-2 text-red-500/70">FPS</span></div>
+                <div className="bg-red-950 px-4 py-2 rounded text-red-400 text-sm font-bold border border-red-900">심각한 병목 현상 및 스터터링</div>
+                <div className="mt-10 w-full max-w-xs h-2 bg-red-900/30 rounded-full overflow-hidden">
+                    <div className="w-[30%] h-full bg-red-500" />
                 </div>
-                <div className="h-12 w-full bg-gray-900/50 rounded-xl border border-gray-800 flex items-center px-4 gap-3 opacity-50">
-                   <div className="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center"><Zap className="w-3 h-3 text-red-400" /></div>
-                   <div className="h-2 w-16 bg-gray-700 rounded-full" />
-                </div>
-              </div>
             </div>
-          </div>
-
-          {/* 3번 카드: 가로형 카드 (2칸 차지) */}
-          <div className="md:col-span-2 group relative p-8 bg-cyber-card border border-gray-800 rounded-3xl overflow-hidden hover:border-cyber-success/50 transition-all duration-500">
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-cyber-success/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative z-10 flex flex-col sm:flex-row gap-8 items-center h-full">
-              <div className="flex-1">
-                <div className="w-12 h-12 bg-cyber-dark/80 backdrop-blur rounded-2xl flex items-center justify-center mb-6 border border-gray-700/50">
-                  <Zap className="w-6 h-6 text-cyber-success" />
+            
+            {/* Middle Arrow */}
+            <div className="flex items-center justify-center md:-mx-8 z-10 py-4">
+                <div className="bg-gray-800 border-2 border-gray-700 px-6 py-3 rounded-full text-sm font-bold text-cyber-accent shadow-xl backdrop-blur-md">
+                    SYNCRIG ON ⚡
                 </div>
-                <h3 className="text-2xl font-bold mb-3 text-white group-hover:text-cyber-success transition-colors">AI 그래픽 세팅 추천</h3>
-                <p className="text-a11y-muted leading-relaxed max-w-md">
-                  가장 비슷한 하드웨어를 사용하는 전 세계 상위권 랭커들의 그래픽 설정값을 찾습니다. 게임 내 옵션 타협 없이 최적의 프레임을 경험하세요.
-                </p>
-              </div>
-              {/* 우측 시각적 포인트 */}
-              <div className="hidden sm:flex flex-col gap-2 w-48 shrink-0">
-                 <div className="w-full flex justify-between items-end">
-                    <span className="text-xs text-gray-500">FPS Gain</span>
-                    <span className="text-cyber-success font-bold">+42%</span>
-                 </div>
-                 <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                    <div className="w-[85%] h-full bg-gradient-to-r from-cyber-dark to-cyber-success" />
-                 </div>
-              </div>
             </div>
-          </div>
 
+            {/* After (Good) */}
+            <div className="flex-1 bg-cyber-success/5 border border-cyber-success/30 rounded-3xl p-10 flex flex-col items-center justify-center min-h-[350px] hover:border-cyber-success transition-all duration-300 shadow-[0_0_30px_rgba(16,185,129,0.05)] hover:shadow-[0_0_60px_rgba(16,185,129,0.15)] group cursor-pointer">
+                <div className="text-cyber-success font-mono text-8xl font-bold mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_20px_rgba(16,185,129,0.8)]">144<span className="text-3xl ml-2 text-cyber-success/70">FPS</span></div>
+                <div className="bg-cyber-success/10 px-4 py-2 rounded text-cyber-success text-sm font-bold border border-cyber-success/20">완벽한 프로필 최적화 적용됨</div>
+                <div className="mt-10 w-full max-w-xs h-2 bg-cyber-success/20 rounded-full overflow-hidden">
+                    <div className="w-[95%] h-full bg-cyber-success shadow-[0_0_10px_#10b981]" />
+                </div>
+            </div>
         </div>
       </section>
     </div>
