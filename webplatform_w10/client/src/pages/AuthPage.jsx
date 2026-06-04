@@ -44,22 +44,14 @@ export default function AuthPage() {
     }
   };
 
-  const handleOAuth = async (provider) => {
+  const handleOAuth = (provider) => {
     setIsLoading(true);
-    setInlineError('');
-    setInlineSuccess('');
-    try {
-      const mockCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const data = await api.oauthCallback(provider, mockCode);
-      setInlineSuccess(`${provider} 연동 성공!`);
-      await new Promise(resolve => setTimeout(resolve, 600));
-      setUser(data.user);
-      await fetchUserData();
-    } catch (err) {
-      setInlineError(`${provider} 인증 연동에 실패했습니다.`);
-    } finally {
-      setIsLoading(false);
-    }
+    // 백엔드의 소셜 로그인 엔드포인트로 리다이렉트합니다.
+    const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost' 
+      ? 'http://localhost:5000/api/v1' 
+      : '/api/v1';
+    
+    window.location.href = `${API_BASE_URL}/auth/${provider}`;
   };
 
   const handleTabSwitch = (loginMode) => {

@@ -104,34 +104,33 @@ export const login = async (req, res, next) => {
 
 export const oauthCallback = async (req, res, next) => {
   try {
-    const { provider } = req.params;
-    const { code } = req.query;
+    const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 
-    if (!code) {
-      return res.status(400).json({ status: 'error', message: 'Authorization Code가 필요합니다.' });
+    // req.user는 Passport에서 왔거나 Fallback 미들웨어에서 생성됨
+    if (!req.user) {
+      return res.redirect(`${CLIENT_URL}/?error=auth_failed`);
     }
 
-    const mockId = `external_${provider}_${code}`;
-    
+    const { provider, provider_id } = req.user;
+
     let result = await db.query(
       'SELECT * FROM users WHERE provider = $1 AND provider_id = $2',
-      [provider, mockId]
+      [provider, provider_id]
     );
 
     let user = result.rows[0];
     if (!user) {
       const insertResult = await db.query(
         'INSERT INTO users (provider, provider_id) VALUES ($1, $2) RETURNING id, provider, provider_id',
-        [provider, mockId]
+        [provider, provider_id]
       );
       user = insertResult.rows[0];
     }
 
     const { accessToken, refreshToken } = generateTokenPair(user);
-    res.json({
-      status: 'success',
-      data: { access_token: accessToken, refresh_token: refreshToken, user }
-    });
+    
+    // 프론트엔드의 콜백 라우트로 토큰을 전달하며 리다이렉트
+    return res.redirect(`${CLIENT_URL}/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`);
   } catch (err) {
     next(err);
   }

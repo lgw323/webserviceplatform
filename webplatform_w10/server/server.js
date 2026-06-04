@@ -20,6 +20,19 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
+import session from 'express-session';
+import passport from './src/config/passport.js';
+
+app.use(session({
+  secret: process.env.JWT_SECRET || 'syncrig_fallback_session_secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: process.env.NODE_ENV === 'production' }
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Add Trace ID to request
 app.use((req, res, next) => {
   req.traceId = uuidv4();

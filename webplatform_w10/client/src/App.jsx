@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import useAuthStore from './store/useAuthStore';
 import AuthPage from './pages/AuthPage';
+import AuthCallback from './pages/AuthCallback';
 import MainLayout from './components/layout/MainLayout';
 import DashboardPage from './pages/DashboardPage';
 import HardwarePage from './pages/HardwarePage';
@@ -27,6 +28,7 @@ export default function App() {
   if (!user) {
     return (
       <Routes>
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<AuthPage />} />
       </Routes>
     );
