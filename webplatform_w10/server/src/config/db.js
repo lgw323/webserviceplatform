@@ -107,6 +107,7 @@ export async function initDb() {
         provider VARCHAR(50) NOT NULL,
         provider_id VARCHAR(255) NOT NULL,
         password_hash VARCHAR(255),
+        linked_providers JSONB DEFAULT '[]'::jsonb NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
         UNIQUE(provider, provider_id)
       );
@@ -209,9 +210,26 @@ export const db = {
         const provider = params[0];
         const providerId = params[1];
         const passwordHash = params[2];
-        const newUser = { id, provider, provider_id: providerId, password_hash: passwordHash, created_at: new Date() };
+        const newUser = { id, provider, provider_id: providerId, password_hash: passwordHash, linked_providers: [], created_at: new Date() };
         MOCK_DB.users.push(newUser);
         return { rows: [newUser] };
+      }
+
+      // 2.5. UPDATE users (linked_providers)
+      if (normalizedQuery.includes('update users') && normalizedQuery.includes('linked_providers =')) {
+         // Simplified mock update for linked_providers
+         const linkedProvidersStr = params[0];
+         const userId = params[1];
+         const userIndex = MOCK_DB.users.findIndex(u => u.id === userId);
+         if (userIndex !== -1) {
+             try {
+                 MOCK_DB.users[userIndex].linked_providers = JSON.parse(linkedProvidersStr);
+             } catch (e) {
+                 MOCK_DB.users[userIndex].linked_providers = linkedProvidersStr;
+             }
+             return { rows: [MOCK_DB.users[userIndex]] };
+         }
+         return { rows: [] };
       }
 
       // 3. SELECT FROM hardware_profiles WHERE user_id = $1

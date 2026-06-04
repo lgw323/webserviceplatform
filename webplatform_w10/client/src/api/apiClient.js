@@ -179,3 +179,10 @@ export async function syncGameLibrary(providers = []) {
   const { data } = await apiClient.get(`/games/library${params}`);
   return data.data.games;
 }
+
+export async function unlinkAccount(provider) {
+  const { data } = await apiClient.delete(`/auth/unlink/${provider}`);
+  setToken(data.data.access_token);
+  if (data.data.refresh_token) setRefreshToken(data.data.refresh_token);
+  return data.data;
+}

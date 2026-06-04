@@ -1,7 +1,7 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import rateLimit from 'express-rate-limit';
-import { register, login, oauthCallback, refreshAccessToken } from '../controllers/authController.js';
+import { register, login, oauthCallback, refreshAccessToken, unlinkAccount } from '../controllers/authController.js';
 import passport from 'passport';
 
 const router = express.Router();
@@ -33,10 +33,20 @@ const loginRules = [
   body('password').notEmpty().withMessage('비밀번호를 입력해주세요.')
 ];
 
+// ── 토큰 임시 저장 미들웨어 (연동 시 사용) ──
+const saveLinkToken = (req, res, next) => {
+  if (req.query.token) {
+    // 세션에 토큰 저장 (연동 시 기존 로그인 유저를 식별하기 위함)
+    req.session.linkToken = req.query.token;
+  }
+  next();
+};
+
 // ── 일반 계정 인증 ──
 router.post('/register', authLimiter, registerRules, validateRequest, register);
 router.post('/login', authLimiter, loginRules, validateRequest, login);
 router.post('/refresh', refreshAccessToken);
+router.delete('/unlink/:provider', authLimiter, unlinkAccount);
 
 // ── 소셜 인증 미들웨어 (Fallback) ──
 const checkSteamAuth = (req, res, next) => {
@@ -57,11 +67,11 @@ const checkRiotAuth = (req, res, next) => {
 };
 
 // ── Steam 인증 ──
-router.get('/steam', authLimiter, checkSteamAuth);
+router.get('/steam', authLimiter, saveLinkToken, checkSteamAuth);
 router.get('/steam/callback', authLimiter, checkSteamAuth, oauthCallback);
 
 // ── Riot 인증 ──
-router.get('/riot', authLimiter, checkRiotAuth);
+router.get('/riot', authLimiter, saveLinkToken, checkRiotAuth);
 router.get('/riot/callback', authLimiter, checkRiotAuth, oauthCallback);
 
 export default router;
