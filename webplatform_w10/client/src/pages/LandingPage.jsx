@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Gamepad2, Cpu, Zap, Crosshair } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Gamepad2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import useSEO from '../hooks/useSEO';
 import useAuthStore from '../store/useAuthStore';
 
@@ -20,6 +20,19 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [isConverging, setIsConverging] = useState(false);
+  const [radius, setRadius] = useState(800);
+
+  // Calculate dynamic radius based on window size
+  useEffect(() => {
+    const updateRadius = () => {
+      // Find the diagonal or just a large enough number to spawn off-screen
+      const r = Math.max(window.innerWidth, window.innerHeight) * 0.7;
+      setRadius(r);
+    };
+    updateRadius();
+    window.addEventListener('resize', updateRadius);
+    return () => window.removeEventListener('resize', updateRadius);
+  }, []);
 
   if (user) {
     return <Navigate to="/dashboard" replace />;
@@ -27,203 +40,133 @@ export default function LandingPage() {
 
   const handleLoginBtnClick = () => {
     setIsConverging(true);
-    // Wait for vortex animation to finish converging before navigating
+    // Wait for the fast "suck-in" animation to complete
     setTimeout(() => {
       navigate('/login');
     }, 800); 
   };
 
   return (
-    <div className="min-h-screen bg-cyber-darker text-gray-100 flex flex-col items-center overflow-x-hidden">
-      {/* ── Header ── */}
-      <header className="w-full max-w-7xl px-6 py-6 flex items-center justify-between relative z-20">
+    <div className="relative min-h-screen bg-[#030303] text-gray-100 flex items-center justify-center overflow-hidden font-sans">
+      
+      {/* ── Background Starfield / Glow ── */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyber-accent/10 blur-[120px] rounded-full" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-cyber-purple/10 blur-[80px] rounded-full" />
+      </div>
+
+      {/* ── Top Header Navbar ── */}
+      <header className="absolute top-0 left-0 w-full px-8 py-6 flex items-center justify-between z-50">
         <div className="flex items-center gap-3">
-          <Gamepad2 className="w-8 h-8 text-cyber-accent" />
-          <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyber-accent to-cyber-purple tracking-wider">
-            SYNCRIG
-          </span>
+          <Gamepad2 className="w-8 h-8 text-white" />
         </div>
+        <nav className="hidden md:flex items-center bg-white/5 border border-white/10 rounded-full px-6 py-2 backdrop-blur-md gap-6 text-sm font-medium">
+          <span className="text-gray-400 hover:text-white cursor-pointer transition-colors">Platform</span>
+          <span className="text-gray-400 hover:text-white cursor-pointer transition-colors">Games</span>
+          <span className="text-gray-400 hover:text-white cursor-pointer transition-colors">Community</span>
+        </nav>
         <button
           onClick={handleLoginBtnClick}
-          className="px-6 py-2.5 bg-cyber-dark border border-gray-700 hover:border-cyber-accent hover:text-cyber-accent rounded-lg text-sm font-semibold transition-all"
+          className="px-6 py-2.5 bg-white text-black hover:bg-gray-200 rounded-full text-sm font-bold transition-all transform hover:scale-105"
         >
-          로그인
+          Sign In
         </button>
       </header>
 
-      {/* ── Hero Section (2-Column) ── */}
-      <main className="flex-1 w-full max-w-7xl px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mt-8 mb-24 relative z-10">
-        
-        {/* Left: Copy & Call to Action */}
-        <div className="flex flex-col items-start text-left relative z-10">
-          <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyber-success/10 border border-cyber-success/30 text-cyber-success text-sm font-medium animation-fade-in">
-            <Zap size={16} className="animate-pulse" />
-            <span>머신러닝 기반 하드웨어 매칭 엔진</span>
-          </div>
+      {/* ── Full Screen Cosmos Vortex ── */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none perspective-[1500px]">
+        {/* Rotating container to naturally create curved/spiral trajectories */}
+        <motion.div 
+          className="relative w-full h-full flex items-center justify-center"
+          animate={isConverging ? {} : { rotate: 360 }}
+          transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
+        >
+          {GAMES.map((game, i) => {
+            // Hexagon logic (6 corners)
+            const angle = (i * 60) * (Math.PI / 180);
+            const startX = Math.cos(angle) * radius;
+            const startY = Math.sin(angle) * radius;
+            
+            // Randomize trajectory slightly per card for organic feel
+            const midX = startX * 0.4 + (Math.random() * 100 - 50);
+            const midY = startY * 0.4 + (Math.random() * 100 - 50);
 
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 tracking-tight leading-tight animation-slide-up">
-            진짜 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-accent to-cyber-purple">잠재력</span>을<br />
-            끌어내세요
+            return (
+              <motion.div
+                key={i}
+                className="absolute w-40 h-28 md:w-64 md:h-40 rounded-xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] border border-white/10 bg-black/50"
+                style={{ zIndex: 10 - i }}
+                initial={{ 
+                  x: startX, 
+                  y: startY, 
+                  scale: 0, 
+                  opacity: 0, 
+                  rotateZ: angle * (180 / Math.PI)
+                }}
+                animate={
+                  isConverging
+                    ? { 
+                        x: 0, 
+                        y: 0, 
+                        scale: 0, 
+                        opacity: 0, 
+                        rotateZ: "+=180",
+                        transition: { duration: 0.6, ease: "backIn" } 
+                      }
+                    : { 
+                        // The card is "thrown": starts big, scales down as it falls into the center
+                        x: [startX, midX, 0],
+                        y: [startY, midY, 0],
+                        scale: [0, 1.2, 0.6, 0], 
+                        opacity: [0, 1, 0.8, 0],
+                        // Adds a spinning/tumbling effect like a card being thrown
+                        rotateZ: [angle * (180 / Math.PI), angle * (180 / Math.PI) + 180, angle * (180 / Math.PI) + 360],
+                        rotateY: [0, 15, 30, 45]
+                      }
+                }
+                transition={
+                  isConverging
+                    ? undefined
+                    : {
+                        duration: 8, // Takes 8 seconds to fall into the black hole
+                        ease: "easeInOut",
+                        repeat: Infinity,
+                        delay: i * (8 / 6) // Perfectly staggered so someone throws a card every 1.33 seconds
+                      }
+                }
+              >
+                <img src={game} alt={`Game ${i}`} className="w-full h-full object-cover opacity-80 mix-blend-lighten" />
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </div>
+
+      {/* ── Center Content (The "Black Hole" Core) ── */}
+      <div className="relative z-20 flex flex-col items-center justify-center text-center px-4 pointer-events-none">
+        <motion.div
+          animate={isConverging ? { scale: 0, opacity: 0 } : { scale: 1, opacity: 1 }}
+          transition={{ duration: 0.6, ease: "anticipate" }}
+          className="flex flex-col items-center"
+        >
+          <div className="w-3 h-3 bg-white rounded-full shadow-[0_0_40px_20px_rgba(255,255,255,0.2)] mb-8" />
+          
+          <h1 className="text-6xl md:text-8xl lg:text-9xl font-extrabold tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">
+            SYNCRIG
           </h1>
-
-          <p className="text-lg md:text-xl text-a11y-muted max-w-lg mb-10 animation-slide-up" style={{ animationDelay: '0.1s' }}>
-            스팀 연동 한 번으로, 내 PC 사양에 완벽하게 맞는 인게임 최적화 세팅을 찾아냅니다. 프레임 드랍 없는 완벽한 게이밍을 경험하세요.
+          <p className="text-gray-400 text-lg md:text-2xl max-w-xl font-light tracking-wide mb-10 border border-white/10 bg-black/40 backdrop-blur-md px-6 py-2 rounded-full">
+            A hardware matching engine for gamers
           </p>
-
+          
           <button
             onClick={handleLoginBtnClick}
-            className="px-8 py-4 bg-cyber-accent hover:bg-cyber-accent/90 text-black font-bold rounded-lg text-lg transition-transform hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(0,255,157,0.3)] animation-slide-up" style={{ animationDelay: '0.2s' }}
+            className="pointer-events-auto px-10 py-4 bg-white hover:bg-gray-200 text-black rounded-full font-bold text-lg transition-transform transform hover:scale-105 shadow-[0_0_30px_rgba(255,255,255,0.2)]"
           >
-            무료로 시작하기
+            Get Started
           </button>
-        </div>
-
-        {/* Right: Visual Showcase (Cosmos Vortex) */}
-        <div className="relative w-full h-[500px] flex items-center justify-center animation-fade-in" style={{ animationDelay: '0.3s' }}>
-          {/* 배경 글로우 효과 */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-cyber-accent/5 blur-[100px] rounded-full pointer-events-none" />
-
-          {/* Vortex Container */}
-          <div className="relative w-full h-full flex items-center justify-center pointer-events-none perspective-[1200px]">
-            {/* Center black hole glow */}
-            <div className="absolute w-4 h-4 bg-black rounded-full shadow-[0_0_40px_20px_rgba(0,255,157,0.4)] z-20" />
-
-            {GAMES.map((game, i) => {
-              // Calculate Hexagon Points (Radius 280)
-              const angle = (i * 60) * (Math.PI / 180);
-              const radius = 280;
-              const startX = Math.cos(angle) * radius;
-              const startY = Math.sin(angle) * radius;
-
-              // Tilt elements to point towards center or follow orbit
-              const rotateZ = angle * (180 / Math.PI) + 90;
-
-              return (
-                <motion.div
-                  key={i}
-                  className="absolute w-36 h-24 md:w-48 md:h-32 rounded-xl overflow-hidden border border-white/20 shadow-2xl bg-black"
-                  style={{ transformStyle: 'preserve-3d', zIndex: 10 - i }}
-                  initial={{ 
-                    x: startX, 
-                    y: startY, 
-                    scale: 0, 
-                    opacity: 0, 
-                    rotateZ 
-                  }}
-                  animate={
-                    isConverging
-                      ? { 
-                          x: 0, 
-                          y: 0, 
-                          scale: 0, 
-                          opacity: 0, 
-                          transition: { duration: 0.8, ease: "anticipate" } 
-                        }
-                      : { 
-                          x: [startX, 0],
-                          y: [startY, 0],
-                          scale: [1, 0.1],
-                          opacity: [0, 0.8, 0],
-                          // slight spin as it falls in
-                          rotateZ: [rotateZ, rotateZ + 45]
-                        }
-                  }
-                  transition={
-                    isConverging
-                      ? undefined
-                      : {
-                          duration: 6, // Continuous loop duration
-                          ease: "easeIn", // Accelerates as it approaches center
-                          repeat: Infinity,
-                          delay: i * (6 / 6) // Staggered exactly by 1 sec
-                        }
-                  }
-                >
-                  <img src={game} alt={`Game ${i}`} className="w-full h-full object-cover opacity-60 mix-blend-screen" />
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </main>
+        </motion.div>
+      </div>
       
-      {/* ── Feature Highlights (Bento Grid) ── */}
-      <section className="w-full max-w-7xl px-6 pb-24 animation-fade-in" style={{ animationDelay: '0.4s' }}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px]">
-          
-          {/* 1번 카드: 넓은 카드 (2칸 차지) */}
-          <div className="md:col-span-2 group relative p-8 bg-cyber-card border border-gray-800 rounded-3xl overflow-hidden hover:border-cyber-accent/50 transition-all duration-500">
-            <div className="absolute inset-0 bg-gradient-to-br from-cyber-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative z-10 flex flex-col h-full">
-              <div className="w-12 h-12 bg-cyber-dark/80 backdrop-blur rounded-2xl flex items-center justify-center mb-auto border border-gray-700/50">
-                <Cpu className="w-6 h-6 text-cyber-accent" />
-              </div>
-              <div className="mt-8">
-                <h3 className="text-2xl font-bold mb-3 text-white group-hover:text-cyber-accent transition-colors">초정밀 하드웨어 분석</h3>
-                <p className="text-a11y-muted leading-relaxed max-w-md">
-                  내 PC의 스펙을 정확히 진단하고 병목 구간(Bottleneck)을 파악하여 쾌적한 플레이 환경을 위한 데이터 인사이트를 제공합니다.
-                </p>
-              </div>
-            </div>
-            {/* 배경 데코레이션 */}
-            <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-cyber-accent/10 rounded-full blur-3xl group-hover:bg-cyber-accent/20 transition-colors duration-700" />
-          </div>
-
-          {/* 2번 카드: 길쭉한 카드 (1칸) */}
-          <div className="md:row-span-2 group relative p-8 bg-cyber-card border border-gray-800 rounded-3xl overflow-hidden hover:border-cyber-purple/50 transition-all duration-500">
-            <div className="absolute inset-0 bg-gradient-to-b from-cyber-purple/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative z-10 flex flex-col h-full">
-              <div className="w-12 h-12 bg-cyber-dark/80 backdrop-blur rounded-2xl flex items-center justify-center mb-8 border border-gray-700/50 shadow-[0_0_15px_rgba(180,100,255,0.2)]">
-                <Crosshair className="w-6 h-6 text-cyber-purple" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold mb-3 text-white group-hover:text-cyber-purple transition-colors">스팀 & 라이엇 완벽 연동</h3>
-                <p className="text-a11y-muted leading-relaxed mb-8">
-                  클릭 한 번으로 내가 보유한 게임의 플레이 타임을 분석하고, 각 게임에 최적화된 맞춤형 프로필을 대시보드에 즉시 동기화합니다.
-                </p>
-              </div>
-              {/* 카드 내부 미니 UI 장식 */}
-              <div className="mt-auto space-y-3">
-                <div className="h-12 w-full bg-gray-900/50 rounded-xl border border-gray-800 flex items-center px-4 gap-3">
-                   <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center"><Gamepad2 className="w-3 h-3 text-blue-400" /></div>
-                   <div className="h-2 w-20 bg-gray-700 rounded-full" />
-                </div>
-                <div className="h-12 w-full bg-gray-900/50 rounded-xl border border-gray-800 flex items-center px-4 gap-3 opacity-50">
-                   <div className="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center"><Zap className="w-3 h-3 text-red-400" /></div>
-                   <div className="h-2 w-16 bg-gray-700 rounded-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 3번 카드: 가로형 카드 (2칸 차지) */}
-          <div className="md:col-span-2 group relative p-8 bg-cyber-card border border-gray-800 rounded-3xl overflow-hidden hover:border-cyber-success/50 transition-all duration-500">
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-cyber-success/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative z-10 flex flex-col sm:flex-row gap-8 items-center h-full">
-              <div className="flex-1">
-                <div className="w-12 h-12 bg-cyber-dark/80 backdrop-blur rounded-2xl flex items-center justify-center mb-6 border border-gray-700/50">
-                  <Zap className="w-6 h-6 text-cyber-success" />
-                </div>
-                <h3 className="text-2xl font-bold mb-3 text-white group-hover:text-cyber-success transition-colors">AI 그래픽 세팅 추천</h3>
-                <p className="text-a11y-muted leading-relaxed max-w-md">
-                  가장 비슷한 하드웨어를 사용하는 전 세계 상위권 랭커들의 그래픽 설정값을 찾습니다. 게임 내 옵션 타협 없이 최적의 프레임을 경험하세요.
-                </p>
-              </div>
-              {/* 우측 시각적 포인트 */}
-              <div className="hidden sm:flex flex-col gap-2 w-48 shrink-0">
-                 <div className="w-full flex justify-between items-end">
-                    <span className="text-xs text-gray-500">FPS Gain</span>
-                    <span className="text-cyber-success font-bold">+42%</span>
-                 </div>
-                 <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                    <div className="w-[85%] h-full bg-gradient-to-r from-cyber-dark to-cyber-success" />
-                 </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
     </div>
   );
 }
