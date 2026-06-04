@@ -67,7 +67,7 @@
 | **11주차** | **QA & Fixes** | Steam 계정 연동 세션 충돌 오류 픽스 및 예외 처리 고도화 |
 | **12주차** | **Deployment** | 모노레포 환경 Vercel 상용 자동화 배포 및 크로스플랫폼(glibc/musl) 버그 트러블슈팅 성공 |
 | **13주차** | **A11y & SEO** | WCAG 2.1 웹접근성(시맨틱 HTML, ARIA, 포커스 트랩, 키보드 내비) 및 SEO(OG/Twitter, JSON-LD, 동적 메타) 전면 적용 |
-| **14주차** | **OAuth & UI** | Passport.js 소셜 로그인(Steam/Riot) 연동 및 B2B/B2C 비즈니스 모델을 반영한 2-Column 대시보드 위젯 UI 개편 |
+| **13주차+** | **OAuth & Security** | Passport.js 소셜 로그인(Steam/Riot) 연동, Fallback 시스템 구축, 대시보드 위젯 UI 개편 |
 
 ---
 
