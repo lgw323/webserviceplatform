@@ -3,11 +3,11 @@ import jwt from 'jsonwebtoken';
 import { db } from '../config/db.js';
 
 // ── JWT 보안 설정 ──
-const JWT_SECRET = process.env.JWT_SECRET || ('syncrig_dev_' + crypto.randomBytes(16).toString('hex'));
+const JWT_SECRET = process.env.JWT_SECRET || 'syncrig_dev_fallback_key';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || JWT_SECRET + '_refresh';
 
 if (!process.env.JWT_SECRET) {
-  console.warn('⚠️ [SECURITY] JWT_SECRET 환경변수가 설정되지 않았습니다. 랜덤 fallback을 사용합니다.');
+  console.warn('⚠️ [SECURITY] JWT_SECRET 환경변수가 설정되지 않았습니다. 개발용 fallback을 사용합니다.');
   console.warn('⚠️ Vercel 배포 시 반드시 Environment Variables에 JWT_SECRET을 설정하세요.');
 }
 

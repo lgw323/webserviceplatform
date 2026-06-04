@@ -16,11 +16,17 @@
   - 가중치가 부여된 정규화 L1-노름(Weighted Normalized Manhattan Distance) 기반 알고리즘 탑재
   - GPU(50%), CPU(30%), RAM(10%), 해상도(10%) 가중치 기반 유사도(Similarity) 산출 및 랭킹 시스템
 - 📊 **통합 대시보드 (Interactive Dashboard)**
-  - Recharts를 활용한 스팀/라이엇 게임 플레이타임 및 업적 달성률 게이지 차트 시각화
-  - 외부 소셜 계정(Steam) 연동 시뮬레이션 및 데이터 병합(Sync) 기능 구현
+  - 스팀/라이엇 게임 플레이타임 및 업적 달성률 게이지 차트 시각화
+  - 외부 소셜 계정(Steam/Riot) 연동 시뮬레이션 및 데이터 병합(Sync) 기능 구현
 - ⚡ **풀스택 계층형 아키텍처 (Layered Architecture)**
   - React/Vite 기반의 클라이언트와 Express 기반의 API 서버 분리 (MVC 패턴)
-  - 브라우저 비동기 Fetch 통신 및 JWT 기반 인증 프로세스 구현
+  - JWT Access/Refresh Token 이중 토큰 인증 + 자동 갱신 인터셉터
+- 🔒 **보안 강화 (Security Hardening)**
+  - JWT Secret 환경변수 기반 관리 + 프로덕션 가드
+  - In-Memory DB 경고 시스템 + Vercel Postgres(Neon) 연동 준비
+- 🎨 **UX 고도화 (UX Enhancement)**
+  - CSS Custom Properties 기반 다크/라이트 이중 테마 시스템
+  - 클라이언트사이드 실시간 검색 + 알림 시스템 MVP + 피드백 버튼 실동작
 
 ---
 
@@ -28,13 +34,14 @@
 
 ### Frontend
 - **Framework**: React 18 (Vite)
-- **Styling**: TailwindCSS, PostCSS
+- **Styling**: TailwindCSS, PostCSS, CSS Custom Properties
+- **State**: Zustand
 - **Visualization**: Recharts, Lucide-React
 
 ### Backend & Algorithm
 - **Environment**: Node.js, Express.js
 - **Database**: PostgreSQL (pg), In-Memory Mock Fallback
-- **Security**: JWT (JSON Web Tokens), Crypto
+- **Security**: JWT (Access + Refresh Token), Crypto, express-rate-limit
 
 ### DevOps & Deployment
 - **Hosting / CI/CD**: Vercel (Serverless Functions)
@@ -58,6 +65,7 @@
 | **11주차** | **QA & Fixes** | Steam 계정 연동 세션 충돌 오류 픽스 및 예외 처리 고도화 |
 | **12주차** | **Deployment** | 모노레포 환경 Vercel 상용 자동화 배포 및 크로스플랫폼(glibc/musl) 버그 트러블슈팅 성공 |
 | **13주차** | **A11y & SEO** | WCAG 2.1 웹접근성(시맨틱 HTML, ARIA, 포커스 트랩, 키보드 내비) 및 SEO(OG/Twitter, JSON-LD, 동적 메타) 전면 적용 |
+| **13주차+** | **Security & UX** | JWT Refresh Token 이중 토큰 체계, CSS Custom Properties 테마, 검색/알림/피드백 실동작 구현, 모바일 반응형 개선 |
 
 ---
 
@@ -69,11 +77,15 @@
 # 1. 최종 작업 디렉토리로 이동
 cd webplatform_w10
 
-# 2. 의존성 패키지 설치
+# 2. 환경변수 설정 (선택 — 없으면 개발용 fallback으로 동작)
+cp .env.example .env
+# .env 파일을 열어 JWT_SECRET 등 실제 값을 입력하세요
+
+# 3. 의존성 패키지 설치
 npm install
 cd client && npm install && cd ..
 
-# 3. 로컬 개발 서버 실행 (프론트엔드 + 백엔드 동시 실행)
+# 4. 로컬 개발 서버 실행 (프론트엔드 + 백엔드 동시 실행)
 npm run dev
 ```
 - Frontend: `http://localhost:3000`

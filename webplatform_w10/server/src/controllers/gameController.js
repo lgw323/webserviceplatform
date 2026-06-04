@@ -1,33 +1,38 @@
-const STEAM_GAMES = [
-  { id: 1, title: 'Cyberpunk 2077', playtime: 124, lastPlayed: '2 hours ago', platform: 'steam' },
-  { id: 3, title: 'Elden Ring', playtime: 89, lastPlayed: '3 days ago', platform: 'steam' },
-  { id: 4, title: 'The Witcher 3: Wild Hunt', playtime: 310, lastPlayed: '1 week ago', platform: 'steam' },
-];
+import { fetchSteamGames } from '../services/steamService.js';
 
 const RIOT_GAMES = [
   { id: 2, title: 'Valorant', playtime: 450, lastPlayed: 'Yesterday', platform: 'riot' },
+  { id: 10, title: 'League of Legends', playtime: 1200, lastPlayed: '2 hours ago', platform: 'riot' }
 ];
 
-export const getGameLibrary = (req, res) => {
-  const providersParam = req.query.providers || '';
-  const providers = providersParam ? providersParam.split(',').map(p => p.trim().toLowerCase()) : [];
+export const getGameLibrary = async (req, res) => {
+  try {
+    const providersParam = req.query.providers || '';
+    const providers = providersParam ? providersParam.split(',').map(p => p.trim().toLowerCase()) : [];
 
-  let games = [];
+    // req.user는 authMiddleware에서 파싱되어 넘어옴
+    const user = req.user || { provider_id: 'mock_id' }; 
 
-  if (providers.length === 0) {
-    // No specific provider requested — return empty (shouldn't happen in normal flow)
-    games = [];
-  } else {
-    if (providers.includes('steam')) {
-      games = games.concat(STEAM_GAMES);
+    let games = [];
+
+    if (providers.length === 0) {
+      games = [];
+    } else {
+      if (providers.includes('steam')) {
+        const steamGames = await fetchSteamGames(user.provider_id);
+        games = games.concat(steamGames);
+      }
+      if (providers.includes('riot')) {
+        games = games.concat(RIOT_GAMES);
+      }
     }
-    if (providers.includes('riot')) {
-      games = games.concat(RIOT_GAMES);
-    }
+
+    res.json({
+      status: 'success',
+      data: { games }
+    });
+  } catch (error) {
+    console.error('[GameController] 오류:', error);
+    res.status(500).json({ status: 'error', message: '게임 라이브러리를 동기화하는 중 오류가 발생했습니다.' });
   }
-
-  res.json({
-    status: 'success',
-    data: { games }
-  });
 };

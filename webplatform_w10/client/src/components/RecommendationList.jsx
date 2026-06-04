@@ -191,7 +191,7 @@ export default function RecommendationList({ recommendations, userSpec }) {
           ref={modalRef}
           onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
         >
-          <div className="bg-cyber-card border border-gray-700 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+          <div className="bg-cyber-card border border-gray-700 rounded-xl w-full max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto shadow-[0_0_40px_rgba(0,0,0,0.5)]">
             {/* Modal Header */}
             <div className="sticky top-0 bg-cyber-card/95 backdrop-blur z-10 border-b border-gray-800 p-5 flex justify-between items-center">
               <div>

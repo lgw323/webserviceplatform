@@ -86,7 +86,7 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
                     <div key={d.day} className="flex flex-col items-center flex-1 gap-2">
                       <div className="w-full flex items-end justify-center" style={{ height: '100%' }}>
                         <div
-                          className="w-full max-w-[40px] bg-cyber-accent/20 hover:bg-cyber-accent/40 rounded-t-md transition-all duration-300 relative group"
+                          className="w-full max-w-[28px] sm:max-w-[40px] bg-cyber-accent/20 hover:bg-cyber-accent/40 rounded-t-md transition-all duration-300 relative group"
                           style={{ height: d.h > 0 ? `${(d.h / maxWeekly) * 100}%` : '2%' }}
                         >
                           <div
