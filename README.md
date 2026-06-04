@@ -17,13 +17,15 @@
   - GPU(50%), CPU(30%), RAM(10%), 해상도(10%) 가중치 기반 유사도(Similarity) 산출 및 랭킹 시스템
 - 📊 **통합 대시보드 (Interactive Dashboard)**
   - 스팀/라이엇 게임 플레이타임 및 업적 달성률 게이지 차트 시각화
-  - 외부 소셜 계정(Steam/Riot) 연동 시뮬레이션 및 데이터 병합(Sync) 기능 구현
+- 🔐 **외부 소셜 계정 연동 (Passport.js OAuth 2.0 / OpenID)**
+  - `passport-steam` 및 `passport-oauth2`를 활용한 실제 스팀/라이엇 인증 서버 리다이렉트 구현
+  - Vercel 클라우드 배포 시 API 키 누락 방어를 위한 In-Memory Fallback(우회 로그인) 미들웨어 탑재
 - ⚡ **풀스택 계층형 아키텍처 (Layered Architecture)**
   - React/Vite 기반의 클라이언트와 Express 기반의 API 서버 분리 (MVC 패턴)
   - JWT Access/Refresh Token 이중 토큰 인증 + 자동 갱신 인터셉터
-- 🔒 **보안 강화 (Security Hardening)**
+- 🔒 **인프라 및 보안 강화 (DevOps & Security)**
   - JWT Secret 환경변수 기반 관리 + 프로덕션 가드
-  - In-Memory DB 경고 시스템 + Vercel Postgres(Neon) 연동 준비
+  - Vercel Postgres(Neon Cloud DB) 완벽 연동 및 In-Memory Fallback 시스템 구축
 - 🎨 **UX 고도화 (UX Enhancement)**
   - CSS Custom Properties 기반 다크/라이트 이중 테마 시스템
   - 클라이언트사이드 실시간 검색 + 알림 시스템 MVP + 피드백 버튼 실동작
@@ -65,7 +67,7 @@
 | **11주차** | **QA & Fixes** | Steam 계정 연동 세션 충돌 오류 픽스 및 예외 처리 고도화 |
 | **12주차** | **Deployment** | 모노레포 환경 Vercel 상용 자동화 배포 및 크로스플랫폼(glibc/musl) 버그 트러블슈팅 성공 |
 | **13주차** | **A11y & SEO** | WCAG 2.1 웹접근성(시맨틱 HTML, ARIA, 포커스 트랩, 키보드 내비) 및 SEO(OG/Twitter, JSON-LD, 동적 메타) 전면 적용 |
-| **13주차+** | **Security & UX** | JWT Refresh Token 이중 토큰 체계, CSS Custom Properties 테마, 검색/알림/피드백 실동작 구현, 모바일 반응형 개선 |
+| **14주차** | **OAuth & UI** | Passport.js 소셜 로그인(Steam/Riot) 연동 및 B2B/B2C 비즈니스 모델을 반영한 2-Column 대시보드 위젯 UI 개편 |
 
 ---
 

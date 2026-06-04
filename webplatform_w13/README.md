@@ -378,4 +378,4 @@
 | `client/src/store/useNotificationStore.js` | **신규** | Zustand 알림 상태 관리 스토어 |
 | `client/src/components/NotificationDropdown.jsx` | **신규** | 알림 드롭다운 UI (타입별 아이콘, 시간 표시, ESC 닫기) |
 | `client/src/components/layout/MainLayout.jsx` | 수정 | 검색 실동작 + 알림 시스템 연결 |
-| `client/src/components/RecommendationList.jsx` | 수정 | 피드백 버튼 실동작 (토스트 + 상태 변경 + 중복 방지) |
+| `client/src/components/RecommendationList.jsx` | 수정 | 피드백 버튼 실동작 (토스트 + 상태 변경 + 중복 방지) |\r\n\r\n---\r\n\r\n> **안내**: 본 문서(13주차) 작성 이후 진행된 **Passport.js 기반 실제 소셜 연동(Steam/Riot)** 및 **B2B/B2C 아이디어 반영 UI 위젯 대규모 개편(14주차)** 작업 내역은 프로젝트 최상위 루트 경로의 `README.md` 로드맵 및 PR 내역을 참고해 주시기 바랍니다.
