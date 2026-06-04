@@ -1,14 +1,19 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import useAuthStore from './store/useAuthStore';
+import { Loader2 } from 'lucide-react';
+
+// Pages
+import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import AuthCallback from './pages/AuthCallback';
-import MainLayout from './components/layout/MainLayout';
 import DashboardPage from './pages/DashboardPage';
 import HardwarePage from './pages/HardwarePage';
 import RecommendPage from './pages/RecommendPage';
 import SettingsPage from './pages/SettingsPage';
-import { Loader2 } from 'lucide-react';
+
+// Layout
+import MainLayout from './components/layout/MainLayout';
 
 export default function App() {
   const { user, initialize, isLoading } = useAuthStore();
@@ -25,23 +30,32 @@ export default function App() {
     );
   }
 
+  // 비로그인 상태 라우팅
   if (!user) {
     return (
       <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<AuthPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="*" element={<AuthPage />} />
+        {/* 없는 주소는 모두 랜딩 페이지로 리다이렉트 */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
 
+  // 로그인 상태 라우팅
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
+        {/* 루트 접속 시 대시보드로 리다이렉트 */}
         <Route index element={<Navigate to="/dashboard" replace />} />
+        {/* 로그인한 유저가 /login 이나 / 에 직접 접근해도 대시보드로 */}
+        <Route path="login" element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="hardware" element={<HardwarePage />} />
         <Route path="recommend" element={<RecommendPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        {/* 없는 주소는 모두 대시보드로 리다이렉트 */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
     </Routes>

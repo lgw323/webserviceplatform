@@ -176,11 +176,16 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
                   <p className="text-sm font-medium text-gray-300">연동된 라이브러리 없음</p>
                   <p className="text-xs text-a11y-muted max-w-[200px] mx-auto">Steam 또는 Riot 계정을 동기화하여 플레이 통계를 불러오세요.</p>
                 </div>
-                <div className="flex flex-col gap-2 pt-2 px-4" role="group" aria-label="계정 연동 동기화">
+                <div className="flex flex-col gap-2 pt-2 px-4" role="group" aria-label="계정 연동하기">
                   <button
-                    onClick={() => onSyncAccount('steam')}
+                    onClick={() => {
+                      const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                        ? 'http://localhost:5000/api/v1'
+                        : '/api/v1';
+                      window.location.href = `${API_BASE_URL}/auth/steam`;
+                    }}
                     disabled={hasSteam}
-                    aria-label={hasSteam ? 'Steam 계정 이미 연동됨' : 'Steam 계정 연동 동기화'}
+                    aria-label={hasSteam ? 'Steam 계정 이미 연동됨' : 'Steam 계정 연동 시작하기'}
                     className={`w-full py-2 text-xs font-bold rounded-lg border transition-colors ${
                       hasSteam
                         ? 'bg-cyber-success/10 border-cyber-success/30 text-cyber-success cursor-default'
@@ -189,12 +194,17 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
                   >
                     {hasSteam ? (
                       <span className="flex items-center justify-center gap-1.5"><Check className="w-3 h-3" aria-hidden="true" /> Steam 연동 완료</span>
-                    ) : 'Steam 연동 동기화'}
+                    ) : 'Steam 연동 시작하기'}
                   </button>
                   <button
-                    onClick={() => onSyncAccount('riot')}
+                    onClick={() => {
+                      const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                        ? 'http://localhost:5000/api/v1'
+                        : '/api/v1';
+                      window.location.href = `${API_BASE_URL}/auth/riot`;
+                    }}
                     disabled={hasRiot}
-                    aria-label={hasRiot ? 'Riot Games 계정 이미 연동됨' : 'Riot Games 계정 연동 동기화'}
+                    aria-label={hasRiot ? 'Riot Games 계정 이미 연동됨' : 'Riot Games 계정 연동 시작하기'}
                     className={`w-full py-2 text-xs font-bold rounded-lg border transition-colors ${
                       hasRiot
                         ? 'bg-cyber-success/10 border-cyber-success/30 text-cyber-success cursor-default'
@@ -203,7 +213,7 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
                   >
                     {hasRiot ? (
                       <span className="flex items-center justify-center gap-1.5"><Check className="w-3 h-3" aria-hidden="true" /> Riot 연동 완료</span>
-                    ) : 'Riot Games 연동 동기화'}
+                    ) : 'Riot Games 연동 시작하기'}
                   </button>
                 </div>
               </div>
