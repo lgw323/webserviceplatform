@@ -1,17 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Gamepad2, Cpu, Zap, Crosshair } from 'lucide-react';
+import { motion } from 'framer-motion';
 import useSEO from '../hooks/useSEO';
 import useAuthStore from '../store/useAuthStore';
+
+// Famous Game Splash Arts for the Vortex
+const GAMES = [
+  "https://image.api.playstation.com/vulcan/ap/rnd/202311/2812/28d0eb5f34bc481cc8ccddb2a6a68cd1ffeb63990263f9eb.jpg", // Cyberpunk 2077
+  "https://image.api.playstation.com/vulcan/ap/rnd/202211/1511/V1xKSTq28bC1O4Vd4x0eF040.png", // Rainbow Six Siege
+  "https://cdn.dribbble.com/users/2348/screenshots/10696082/media/4a24583ea649f9df1415775a37c84ae5.jpg", // Valorant
+  "https://media.contentapi.ea.com/content/dam/apex-legends/images/2019/01/apex-featured-image-16x9.jpg.adapt.crop16x9.1023w.jpg", // Apex Legends
+  "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Ahri_0.jpg", // League of Legends
+  "https://blz-contentstack-images.akamaized.net/v3/assets/blt9c12f249ac15c7ec/bltc18a0eb1d2b77a7b/632cfb53e346b9112a1f28b4/Overwatch2_Secondary_KeyArt.jpg" // Overwatch 2
+];
 
 export default function LandingPage() {
   useSEO('landing');
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const [isConverging, setIsConverging] = useState(false);
 
   if (user) {
     return <Navigate to="/dashboard" replace />;
   }
+
+  const handleLoginBtnClick = () => {
+    setIsConverging(true);
+    // Wait for vortex animation to finish converging before navigating
+    setTimeout(() => {
+      navigate('/login');
+    }, 800); 
+  };
 
   return (
     <div className="min-h-screen bg-cyber-darker text-gray-100 flex flex-col items-center overflow-x-hidden">
@@ -24,7 +44,7 @@ export default function LandingPage() {
           </span>
         </div>
         <button
-          onClick={() => navigate('/login')}
+          onClick={handleLoginBtnClick}
           className="px-6 py-2.5 bg-cyber-dark border border-gray-700 hover:border-cyber-accent hover:text-cyber-accent rounded-lg text-sm font-semibold transition-all"
         >
           로그인
@@ -35,7 +55,7 @@ export default function LandingPage() {
       <main className="flex-1 w-full max-w-7xl px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mt-8 mb-24 relative z-10">
         
         {/* Left: Copy & Call to Action */}
-        <div className="flex flex-col items-start text-left">
+        <div className="flex flex-col items-start text-left relative z-10">
           <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyber-success/10 border border-cyber-success/30 text-cyber-success text-sm font-medium animation-fade-in">
             <Zap size={16} className="animate-pulse" />
             <span>머신러닝 기반 하드웨어 매칭 엔진</span>
@@ -51,73 +71,78 @@ export default function LandingPage() {
           </p>
 
           <button
-            onClick={() => navigate('/login')}
+            onClick={handleLoginBtnClick}
             className="px-8 py-4 bg-cyber-accent hover:bg-cyber-accent/90 text-black font-bold rounded-lg text-lg transition-transform hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(0,255,157,0.3)] animation-slide-up" style={{ animationDelay: '0.2s' }}
           >
             무료로 시작하기
           </button>
         </div>
 
-        {/* Right: Visual Showcase (Mock UI) */}
-        <div className="relative w-full h-[500px] hidden sm:flex items-center justify-center animation-fade-in" style={{ animationDelay: '0.3s' }}>
+        {/* Right: Visual Showcase (Cosmos Vortex) */}
+        <div className="relative w-full h-[500px] flex items-center justify-center animation-fade-in" style={{ animationDelay: '0.3s' }}>
           {/* 배경 글로우 효과 */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-cyber-accent/5 blur-[100px] rounded-full pointer-events-none" />
 
-          {/* 메인 대시보드 Mockup */}
-          <div className="absolute top-4 left-4 w-72 bg-cyber-card border border-gray-800 rounded-xl p-4 shadow-2xl z-10 transform -rotate-6 hover:rotate-0 transition-transform duration-500">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-cyber-purple/20 rounded-lg flex items-center justify-center">
-                <Crosshair className="w-5 h-5 text-cyber-purple" />
-              </div>
-              <div>
-                <p className="text-xs text-a11y-muted">연동 완료</p>
-                <p className="font-bold text-sm">Steam Library Sync</p>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="h-2 bg-gray-800 rounded-full w-full overflow-hidden">
-                 <div className="h-full bg-cyber-purple w-[85%] animate-pulse" />
-              </div>
-              <p className="text-[10px] text-right text-gray-400">142 Games Found</p>
-            </div>
-          </div>
+          {/* Vortex Container */}
+          <div className="relative w-full h-full flex items-center justify-center pointer-events-none perspective-[1200px]">
+            {/* Center black hole glow */}
+            <div className="absolute w-4 h-4 bg-black rounded-full shadow-[0_0_40px_20px_rgba(0,255,157,0.4)] z-20" />
 
-          {/* 내 스펙 & 분석 카드 Mockup */}
-          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-80 bg-cyber-card border border-gray-700/50 rounded-xl p-5 shadow-2xl z-20 backdrop-blur-sm">
-            <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-800">
-              <div className="flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-cyber-accent" />
-                <span className="font-bold text-sm">내 PC 분석 결과</span>
-              </div>
-              <span className="text-xs bg-cyber-success/20 text-cyber-success px-2 py-0.5 rounded">최상위 8%</span>
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-400">GPU</span>
-                <span className="font-medium">RTX 4070 SUPER</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-400">CPU</span>
-                <span className="font-medium">Ryzen 5 7600</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-gray-400">예상 프레임 (사이버펑크 2077)</span>
-                <span className="font-bold text-cyber-accent">114 FPS</span>
-              </div>
-            </div>
-          </div>
+            {GAMES.map((game, i) => {
+              // Calculate Hexagon Points (Radius 280)
+              const angle = (i * 60) * (Math.PI / 180);
+              const radius = 280;
+              const startX = Math.cos(angle) * radius;
+              const startY = Math.sin(angle) * radius;
 
-          {/* 팝업 알림 Mockup */}
-          <div className="absolute top-24 -right-4 w-64 bg-gray-900 border border-cyber-accent/30 rounded-xl p-3 shadow-2xl z-30 transform rotate-3 animate-bounce" style={{ animationDuration: '3s' }}>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-cyber-accent/20 flex items-center justify-center shrink-0">
-                <Zap className="w-4 h-4 text-cyber-accent" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-gray-100">최적화 프로필 발견!</p>
-                <p className="text-[10px] text-gray-400">나와 동일한 하드웨어 유저의 세팅 적용</p>
-              </div>
-            </div>
+              // Tilt elements to point towards center or follow orbit
+              const rotateZ = angle * (180 / Math.PI) + 90;
+
+              return (
+                <motion.div
+                  key={i}
+                  className="absolute w-36 h-24 md:w-48 md:h-32 rounded-xl overflow-hidden border border-white/20 shadow-2xl bg-black"
+                  style={{ transformStyle: 'preserve-3d', zIndex: 10 - i }}
+                  initial={{ 
+                    x: startX, 
+                    y: startY, 
+                    scale: 0, 
+                    opacity: 0, 
+                    rotateZ 
+                  }}
+                  animate={
+                    isConverging
+                      ? { 
+                          x: 0, 
+                          y: 0, 
+                          scale: 0, 
+                          opacity: 0, 
+                          transition: { duration: 0.8, ease: "anticipate" } 
+                        }
+                      : { 
+                          x: [startX, 0],
+                          y: [startY, 0],
+                          scale: [1, 0.1],
+                          opacity: [0, 0.8, 0],
+                          // slight spin as it falls in
+                          rotateZ: [rotateZ, rotateZ + 45]
+                        }
+                  }
+                  transition={
+                    isConverging
+                      ? undefined
+                      : {
+                          duration: 6, // Continuous loop duration
+                          ease: "easeIn", // Accelerates as it approaches center
+                          repeat: Infinity,
+                          delay: i * (6 / 6) // Staggered exactly by 1 sec
+                        }
+                  }
+                >
+                  <img src={game} alt={`Game ${i}`} className="w-full h-full object-cover opacity-60 mix-blend-screen" />
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </main>
