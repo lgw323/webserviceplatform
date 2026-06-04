@@ -179,40 +179,52 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
                 <div className="flex flex-col gap-2 pt-2 px-4" role="group" aria-label="계정 연동하기">
                   <button
                     onClick={() => {
+                      if (hasSteam) {
+                        if (window.confirm('Steam 계정 연동을 해제하시겠습니까?')) {
+                          useAuthStore.getState().unlinkAccount('steam').catch(err => alert(err.message || '해제 실패'));
+                        }
+                        return;
+                      }
                       const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
                         ? 'http://localhost:5000/api/v1'
                         : '/api/v1';
-                      window.location.href = `${API_BASE_URL}/auth/steam`;
+                      const token = localStorage.getItem('syncrig_token');
+                      window.location.href = `${API_BASE_URL}/auth/steam?token=${token || ''}`;
                     }}
-                    disabled={hasSteam}
-                    aria-label={hasSteam ? 'Steam 계정 이미 연동됨' : 'Steam 계정 연동 시작하기'}
+                    aria-label={hasSteam ? 'Steam 연동 해제하기' : 'Steam 계정 연동 시작하기'}
                     className={`w-full py-2 text-xs font-bold rounded-lg border transition-colors ${
                       hasSteam
-                        ? 'bg-cyber-success/10 border-cyber-success/30 text-cyber-success cursor-default'
+                        ? 'bg-cyber-success/10 border-cyber-success/30 text-cyber-success hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30'
                         : 'bg-gray-800 hover:bg-gray-700 text-gray-200 border-gray-700'
                     }`}
                   >
                     {hasSteam ? (
-                      <span className="flex items-center justify-center gap-1.5"><Check className="w-3 h-3" aria-hidden="true" /> Steam 연동 완료</span>
+                      <span className="flex items-center justify-center gap-1.5"><Check className="w-3 h-3" aria-hidden="true" /> Steam 연동됨 (클릭 시 해제)</span>
                     ) : 'Steam 연동 시작하기'}
                   </button>
                   <button
                     onClick={() => {
+                      if (hasRiot) {
+                        if (window.confirm('Riot Games 계정 연동을 해제하시겠습니까?')) {
+                          useAuthStore.getState().unlinkAccount('riot').catch(err => alert(err.message || '해제 실패'));
+                        }
+                        return;
+                      }
                       const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
                         ? 'http://localhost:5000/api/v1'
                         : '/api/v1';
-                      window.location.href = `${API_BASE_URL}/auth/riot`;
+                      const token = localStorage.getItem('syncrig_token');
+                      window.location.href = `${API_BASE_URL}/auth/riot?token=${token || ''}`;
                     }}
-                    disabled={hasRiot}
-                    aria-label={hasRiot ? 'Riot Games 계정 이미 연동됨' : 'Riot Games 계정 연동 시작하기'}
+                    aria-label={hasRiot ? 'Riot Games 연동 해제하기' : 'Riot Games 계정 연동 시작하기'}
                     className={`w-full py-2 text-xs font-bold rounded-lg border transition-colors ${
                       hasRiot
-                        ? 'bg-cyber-success/10 border-cyber-success/30 text-cyber-success cursor-default'
+                        ? 'bg-cyber-success/10 border-cyber-success/30 text-cyber-success hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30'
                         : 'bg-gray-800 hover:bg-gray-700 text-gray-200 border-gray-700'
                     }`}
                   >
                     {hasRiot ? (
-                      <span className="flex items-center justify-center gap-1.5"><Check className="w-3 h-3" aria-hidden="true" /> Riot 연동 완료</span>
+                      <span className="flex items-center justify-center gap-1.5"><Check className="w-3 h-3" aria-hidden="true" /> Riot 연동됨 (클릭 시 해제)</span>
                     ) : 'Riot Games 연동 시작하기'}
                   </button>
                 </div>

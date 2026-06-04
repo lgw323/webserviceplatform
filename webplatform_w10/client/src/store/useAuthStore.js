@@ -116,6 +116,28 @@ const useAuthStore = create((set, get) => ({
       console.error('Sync failed', err);
       throw err;
     }
+  },
+
+  unlinkAccount: async (provider) => {
+    try {
+      const data = await api.unlinkAccount(provider);
+      set({ user: data.user });
+      
+      const newLinked = data.user.linked_providers || [];
+      localStorage.setItem('syncrig_linked_providers', JSON.stringify(newLinked));
+
+      if (newLinked.length > 0 || data.user.provider === 'steam' || data.user.provider === 'riot') {
+        const games = await api.syncGameLibrary(newLinked);
+        const totalPlaytime = games.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
+        const estimatedAchievements = Math.round(totalPlaytime * 0.88);
+        set({ gameLibrary: games, achievementsCount: estimatedAchievements });
+      } else {
+        set({ gameLibrary: [], achievementsCount: 0 });
+      }
+    } catch (err) {
+      console.error('Unlink failed', err);
+      throw err;
+    }
   }
 }));
 

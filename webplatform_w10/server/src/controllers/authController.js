@@ -106,13 +106,46 @@ export const oauthCallback = async (req, res, next) => {
   try {
     const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 
-    // req.user는 Passport에서 왔거나 Fallback 미들웨어에서 생성됨
     if (!req.user) {
       return res.redirect(`${CLIENT_URL}/?error=auth_failed`);
     }
 
     const { provider, provider_id } = req.user;
 
+    // 1. 연동(Link) 모드 체크
+    if (req.session && req.session.linkToken) {
+      try {
+        const decoded = jwt.verify(req.session.linkToken, JWT_SECRET);
+        const userId = decoded.id;
+
+        // 기존 유저 조회
+        const userResult = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+        if (userResult.rows.length > 0) {
+          let targetUser = userResult.rows[0];
+          let linked = targetUser.linked_providers || [];
+          if (typeof linked === 'string') linked = JSON.parse(linked);
+          
+          if (!linked.includes(provider)) {
+            linked.push(provider);
+            // 업데이트
+            await db.query('UPDATE users SET linked_providers = $1 WHERE id = $2', [JSON.stringify(linked), userId]);
+          }
+          
+          // 사용 완료된 토큰 삭제
+          delete req.session.linkToken;
+          
+          // 기존 유저로 토큰 발급 후 대시보드로 복귀
+          targetUser.linked_providers = linked;
+          const { accessToken, refreshToken } = generateTokenPair(targetUser);
+          return res.redirect(`${CLIENT_URL}/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`);
+        }
+      } catch (err) {
+        console.error('Link token verification failed:', err.message);
+        // 검증 실패 시 아래 신규 가입 로직으로 Fallback
+      }
+    }
+
+    // 2. 일반 로그인/가입 모드
     let result = await db.query(
       'SELECT * FROM users WHERE provider = $1 AND provider_id = $2',
       [provider, provider_id]
@@ -121,16 +154,58 @@ export const oauthCallback = async (req, res, next) => {
     let user = result.rows[0];
     if (!user) {
       const insertResult = await db.query(
-        'INSERT INTO users (provider, provider_id) VALUES ($1, $2) RETURNING id, provider, provider_id',
-        [provider, provider_id]
+        'INSERT INTO users (provider, provider_id, linked_providers) VALUES ($1, $2, $3) RETURNING id, provider, provider_id, linked_providers',
+        [provider, provider_id, '[]']
       );
       user = insertResult.rows[0];
     }
 
     const { accessToken, refreshToken } = generateTokenPair(user);
-    
-    // 프론트엔드의 콜백 라우트로 토큰을 전달하며 리다이렉트
     return res.redirect(`${CLIENT_URL}/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const unlinkAccount = async (req, res, next) => {
+  try {
+    const { provider } = req.params;
+    // 인증 처리를 위해 헤더에서 JWT 추출 (임시로 컨트롤러 내에서 직접 처리)
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ status: 'error', message: '인증 토큰이 없습니다.' });
+    }
+    const token = authHeader.split(' ')[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ status: 'error', message: '유효하지 않은 토큰입니다.' });
+    }
+
+    const userId = decoded.id;
+    const userResult = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ status: 'error', message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    let user = userResult.rows[0];
+    let linked = user.linked_providers || [];
+    if (typeof linked === 'string') linked = JSON.parse(linked);
+
+    if (linked.includes(provider)) {
+      linked = linked.filter(p => p !== provider);
+      await db.query('UPDATE users SET linked_providers = $1 WHERE id = $2', [JSON.stringify(linked), userId]);
+      // 연동 해제 시 관련된 하드웨어나 최적화 정보 중 해당 프로바이더의 데이터(게임 등)를 삭제하는 로직도 가능
+    }
+
+    user.linked_providers = linked;
+    const { accessToken, refreshToken } = generateTokenPair(user);
+
+    res.json({
+      status: 'success',
+      data: { access_token: accessToken, refresh_token: refreshToken, user }
+    });
   } catch (err) {
     next(err);
   }
