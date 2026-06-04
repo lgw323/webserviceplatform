@@ -39,6 +39,8 @@ function MatchingLoader() {
   );
 }
 
+import RecommendFilterWidget from '../components/widgets/RecommendFilterWidget';
+
 export default function RecommendPage() {
   useSEO('recommend');
   const { user, userSpec } = useAuthStore();
@@ -63,8 +65,8 @@ export default function RecommendPage() {
   }, [userSpec, user]);
 
   return (
-    <section className="space-y-6 animation-fade-in" aria-labelledby="heading-recommend">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <section className="animation-fade-in" aria-labelledby="heading-recommend">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h1 id="heading-recommend" className="text-2xl font-bold text-gray-100 mb-1">최적화 허브</h1>
           <p className="text-a11y-muted">보유하신 하드웨어에 가장 적합한 그래픽 설정을 찾아보세요.</p>
@@ -72,20 +74,29 @@ export default function RecommendPage() {
       </div>
 
       {userSpec ? (
-        <>
-          <div className="flex items-center justify-between text-sm text-a11y-muted bg-cyber-darker/50 p-3 rounded-lg border border-gray-800/50">
-            <div className="flex items-center">
-              <Cpu className="w-4 h-4 mr-2 text-cyber-success" aria-hidden="true" />
-              현재 매칭 기준: <strong className="text-gray-200 ml-1">{userSpec.gpu_model}</strong>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* 좌측 사이드바 필터 (33%) */}
+          <div className="lg:col-span-4">
+            <RecommendFilterWidget />
           </div>
 
-          {isLoading ? (
-            <MatchingLoader />
-          ) : (
-            <RecommendationList recommendations={recommendations} userSpec={userSpec} />
-          )}
-        </>
+          {/* 우측 매칭 리스트 영역 (67%) */}
+          <div className="lg:col-span-8 space-y-4">
+            <div className="flex items-center justify-between text-sm text-a11y-muted bg-cyber-darker/50 p-3 rounded-lg border border-gray-800/50">
+              <div className="flex items-center">
+                <Cpu className="w-4 h-4 mr-2 text-cyber-success" aria-hidden="true" />
+                현재 매칭 기준: <strong className="text-gray-200 ml-1">{userSpec.gpu_model}</strong>
+              </div>
+              <span className="text-xs">총 {recommendations.length}개의 프로필</span>
+            </div>
+
+            {isLoading ? (
+              <MatchingLoader />
+            ) : (
+              <RecommendationList recommendations={recommendations} userSpec={userSpec} />
+            )}
+          </div>
+        </div>
       ) : (
         <div className="text-center py-16 bg-cyber-card rounded-xl border border-gray-800 max-w-lg mx-auto space-y-6 animation-fade-in">
           <div className="inline-flex p-4 bg-cyber-accent/10 text-cyber-accent rounded-full border border-cyber-accent/20" aria-hidden="true">

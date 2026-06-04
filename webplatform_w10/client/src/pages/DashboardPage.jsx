@@ -4,6 +4,11 @@ import useAuthStore from '../store/useAuthStore';
 import DashboardCharts from '../features/dashboard/DashboardCharts';
 import useSEO from '../hooks/useSEO';
 
+import ProfileSummaryWidget from '../components/widgets/ProfileSummaryWidget';
+import PremiumBannerWidget from '../components/widgets/PremiumBannerWidget';
+import TrendingProfilesWidget from '../components/widgets/TrendingProfilesWidget';
+import TargetedAdWidget from '../components/widgets/TargetedAdWidget';
+
 function LinkedBadge({ linkedProviders }) {
   if (!linkedProviders || linkedProviders.length === 0) {
     return (
@@ -38,24 +43,45 @@ export default function DashboardPage() {
   const linkedProviders = user.linked_providers || [];
 
   return (
-    <section className="space-y-6 animation-fade-in" aria-labelledby="heading-dashboard">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <section className="animation-fade-in" aria-labelledby="heading-dashboard">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 id="heading-dashboard" className="text-2xl font-bold text-gray-100 mb-2">환영합니다, {user.provider_id}님</h1>
-          <p className="text-a11y-muted">오늘의 게임 및 하드웨어 요약입니다.</p>
+          <h1 id="heading-dashboard" className="text-2xl font-bold text-gray-100 mb-2">대시보드</h1>
+          <p className="text-a11y-muted">통합 하드웨어 분석 및 게이밍 허브</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-a11y-muted">계정 연동 상태:</span>
           <LinkedBadge linkedProviders={linkedProviders} />
         </div>
       </div>
-      <DashboardCharts
-        userSpec={userSpec}
-        gameLibrary={gameLibrary}
-        achievementsCount={achievementsCount}
-        onSyncAccount={syncAccount}
-        linkedProviders={linkedProviders}
-      />
+
+      {/* 3-Column Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Left Sidebar (25%) */}
+        <div className="lg:col-span-3 space-y-6">
+          <ProfileSummaryWidget />
+          <PremiumBannerWidget />
+        </div>
+
+        {/* Center Main Area (50%) */}
+        <div className="lg:col-span-6 space-y-6">
+          <DashboardCharts
+            userSpec={userSpec}
+            gameLibrary={gameLibrary}
+            achievementsCount={achievementsCount}
+            onSyncAccount={syncAccount}
+            linkedProviders={linkedProviders}
+          />
+        </div>
+
+        {/* Right Sidebar (25%) */}
+        <div className="lg:col-span-3 space-y-6">
+          <TargetedAdWidget />
+          <TrendingProfilesWidget />
+        </div>
+
+      </div>
     </section>
   );
 }
