@@ -122,33 +122,100 @@ export default function LandingPage() {
         </div>
       </main>
       
-      {/* ── Feature Highlights (Before & After) ── */}
+      {/* ── Feature Highlights (Glassmorphism Bento 2.0) ── */}
       <section className="w-full max-w-7xl px-6 pb-24 animation-fade-in" style={{ animationDelay: '0.4s' }}>
-        <div className="flex flex-col md:flex-row gap-4 items-stretch">
-            {/* Before (Bad) */}
-            <div className="flex-1 bg-[#1a0f0f] border border-red-900/50 rounded-3xl p-10 flex flex-col items-center justify-center min-h-[350px] hover:animate-glitch cursor-crosshair">
-                <div className="text-red-500 font-mono text-7xl font-bold mb-4 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">45<span className="text-3xl ml-2 text-red-500/70">FPS</span></div>
-                <div className="bg-red-950 px-4 py-2 rounded text-red-400 text-sm font-bold border border-red-900">심각한 병목 현상 및 스터터링</div>
-                <div className="mt-10 w-full max-w-xs h-2 bg-red-900/30 rounded-full overflow-hidden">
-                    <div className="w-[30%] h-full bg-red-500" />
-                </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[280px]">
+          
+          {/* Card 1: Radar (Span 2) */}
+          <div className="md:col-span-2 relative rounded-3xl p-[1px] overflow-hidden group">
+            {/* 1px Gradient Border */}
+            <div className="absolute inset-0 bg-gradient-to-r from-cyber-accent/30 via-transparent to-cyber-purple/30 opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
             
-            {/* Middle Arrow */}
-            <div className="flex items-center justify-center md:-mx-8 z-10 py-4">
-                <div className="bg-gray-800 border-2 border-gray-700 px-6 py-3 rounded-full text-sm font-bold text-cyber-accent shadow-xl backdrop-blur-md">
-                    SYNCRIG ON ⚡
+            {/* Inner Content (Glassmorphism) */}
+            <div className="relative h-full bg-cyber-darker/60 backdrop-blur-xl rounded-[23px] p-8 flex flex-col justify-between overflow-hidden">
+                {/* Glow Background */}
+                <div className="absolute -left-20 -top-20 w-64 h-64 bg-cyber-accent/10 rounded-full blur-3xl group-hover:bg-cyber-accent/20 transition-colors duration-700 pointer-events-none" />
+                
+                <div className="relative z-10 flex justify-between items-start">
+                    <div>
+                        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center mb-4 border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+                            <Cpu className="w-5 h-5 text-cyber-accent" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">초정밀 스탯 레이더</h3>
+                        <p className="text-gray-400 text-sm max-w-xs">병목 구간을 투명하게 스캔하여 최적의 환경을 분석합니다.</p>
+                    </div>
                 </div>
-            </div>
 
-            {/* After (Good) */}
-            <div className="flex-1 bg-cyber-success/5 border border-cyber-success/30 rounded-3xl p-10 flex flex-col items-center justify-center min-h-[350px] hover:border-cyber-success transition-all duration-300 shadow-[0_0_30px_rgba(16,185,129,0.05)] hover:shadow-[0_0_60px_rgba(16,185,129,0.15)] group cursor-pointer">
-                <div className="text-cyber-success font-mono text-8xl font-bold mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_20px_rgba(16,185,129,0.8)]">144<span className="text-3xl ml-2 text-cyber-success/70">FPS</span></div>
-                <div className="bg-cyber-success/10 px-4 py-2 rounded text-cyber-success text-sm font-bold border border-cyber-success/20">완벽한 프로필 최적화 적용됨</div>
-                <div className="mt-10 w-full max-w-xs h-2 bg-cyber-success/20 rounded-full overflow-hidden">
-                    <div className="w-[95%] h-full bg-cyber-success shadow-[0_0_10px_#10b981]" />
+                {/* Abstract Graph UI */}
+                <div className="relative z-10 mt-auto h-24 w-full max-w-md">
+                    <div className="absolute inset-0 bg-gradient-to-t from-cyber-accent/20 to-transparent opacity-30 rounded-t-xl" />
+                    <svg className="w-full h-full" viewBox="0 0 100 40" preserveAspectRatio="none">
+                        <path d="M0,40 L0,20 Q10,35 20,20 T40,15 T60,25 T80,10 L100,20 L100,40 Z" fill="rgba(59, 130, 246, 0.1)" />
+                        <path d="M0,20 Q10,35 20,20 T40,15 T60,25 T80,10 L100,20" fill="none" stroke="#00ffcc" strokeWidth="1" className="drop-shadow-[0_0_8px_rgba(0,255,204,0.8)]" />
+                    </svg>
                 </div>
             </div>
+          </div>
+
+          {/* Card 2: Vertical Flow (Span 2 rows) */}
+          <div className="md:row-span-2 relative rounded-3xl p-[1px] overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-b from-cyber-purple/30 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+            
+            <div className="relative h-full bg-cyber-darker/60 backdrop-blur-xl rounded-[23px] p-8 flex flex-col overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-cyber-purple/10 rounded-full blur-3xl group-hover:bg-cyber-purple/20 transition-colors duration-700 pointer-events-none" />
+                
+                <div className="relative z-10">
+                    <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center mb-4 border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+                        <Crosshair className="w-5 h-5 text-cyber-purple" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">계정 연동</h3>
+                    <p className="text-gray-400 text-sm mb-8">Steam & Riot 라이브러리를 동기화합니다.</p>
+                </div>
+
+                {/* Abstract Nodes UI */}
+                <div className="relative z-10 flex-1 flex flex-col items-center justify-center gap-6 mt-auto">
+                     <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center relative shadow-[0_0_30px_rgba(180,100,255,0.15)] group-hover:shadow-[0_0_40px_rgba(180,100,255,0.3)] transition-shadow duration-500">
+                         <div className="absolute inset-0 rounded-full border border-cyber-purple/50 animate-ping opacity-20" />
+                         <Gamepad2 className="w-6 h-6 text-cyber-purple" />
+                     </div>
+                     <div className="h-16 w-[1px] bg-gradient-to-b from-cyber-purple/50 to-transparent" />
+                     <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                         <Zap className="w-6 h-6 text-gray-500 group-hover:text-cyber-accent transition-colors duration-500" />
+                     </div>
+                </div>
+            </div>
+          </div>
+
+          {/* Card 3: Horizontal (Span 2) */}
+          <div className="md:col-span-2 relative rounded-3xl p-[1px] overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-cyber-success/30 opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+            
+            <div className="relative h-full bg-cyber-darker/60 backdrop-blur-xl rounded-[23px] p-8 flex flex-col sm:flex-row gap-8 items-center overflow-hidden">
+                <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-cyber-success/10 rounded-full blur-3xl group-hover:bg-cyber-success/20 transition-colors duration-700 pointer-events-none" />
+                
+                <div className="relative z-10 flex-1">
+                    <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center mb-4 border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+                        <Zap className="w-5 h-5 text-cyber-success" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">AI 프로필 매칭</h3>
+                    <p className="text-gray-400 text-sm max-w-sm">수만 명의 상위 랭커 데이터베이스를 기반으로 최적의 프레임을 뽑아낼 수 있는 프로필을 추천합니다.</p>
+                </div>
+
+                {/* Abstract Bar UI */}
+                <div className="relative z-10 hidden sm:flex flex-col gap-3 w-56 shrink-0">
+                    <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="flex justify-between items-end mb-2">
+                            <span className="text-xs text-gray-400 font-medium">FPS Gain</span>
+                            <span className="text-cyber-success text-sm font-bold">+42%</span>
+                        </div>
+                        <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                            <div className="w-[85%] h-full bg-gradient-to-r from-transparent to-cyber-success shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+
         </div>
       </section>
     </div>
