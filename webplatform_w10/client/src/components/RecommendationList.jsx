@@ -104,7 +104,7 @@ export default function RecommendationList({ recommendations, userSpec }) {
               <div className="p-5 border-b border-gray-800/50 flex justify-between items-start bg-gradient-to-b from-cyber-darker/50 to-transparent">
                 <div>
                   <div className="flex items-center space-x-2 mb-1">
-                    <h3 className="text-lg font-bold text-gray-100">{item.game?.title || '알 수 없는 게임'}</h3>
+                    <h3 className="text-lg font-bold text-gray-100">{item.game?.title || '알 수 없는 게임 (API 로딩 중)'}</h3>
                     {isHigh && <Star className="w-4 h-4 text-cyber-warning fill-cyber-warning" aria-label="최고 추천" />}
                   </div>
                   <p className="text-sm text-a11y-muted flex items-center gap-1.5">
