@@ -51,7 +51,11 @@ export default function RecommendPage() {
       if (!user || !userSpec) return;
       setIsLoading(true);
       try {
-        const data = await api.fetchRecommendations(userSpec);
+        const [data] = await Promise.all([
+          api.fetchRecommendations(userSpec),
+          // 로딩 애니메이션의 3단계(약 2초)를 충분히 감상할 수 있도록 최소 2.5초 딜레이 추가
+          new Promise(resolve => setTimeout(resolve, 2500))
+        ]);
         setRecommendations(data.recommendations || []);
       } catch (err) {
         console.error('추천 데이터 로드 실패', err);
