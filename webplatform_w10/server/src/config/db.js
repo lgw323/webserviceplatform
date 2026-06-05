@@ -115,14 +115,6 @@ export async function initDb() {
       );
     `);
 
-    // MVP Auto-Migration: Add missing columns if table already existed before Phase 2
-    try {
-      await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(50) DEFAULT 'free' NOT NULL;`);
-      await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(255);`);
-    } catch (e) {
-      console.warn('[SYNCRIG DB] 컬럼 자동 추가 중 오류 발생 (무시됨):', e.message);
-    }
-
     await client.query(`
       CREATE TABLE IF NOT EXISTS hardware_profiles (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
