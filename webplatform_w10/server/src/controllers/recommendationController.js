@@ -19,6 +19,11 @@ export const getRecommendations = async (req, res, next) => {
       const profilesResult = await db.query(`
         SELECT op.*, 
                json_build_object(
+                 'id', g.id,
+                 'title', g.title,
+                 'external_app_id', g.external_app_id
+               ) as game,
+               json_build_object(
                  'cpu_model', hp.cpu_model,
                  'gpu_model', hp.gpu_model,
                  'ram_gb', hp.ram_gb,
@@ -27,6 +32,7 @@ export const getRecommendations = async (req, res, next) => {
                ) as hardware
         FROM optimization_profiles op
         LEFT JOIN hardware_profiles hp ON op.hardware_id = hp.id
+        LEFT JOIN games g ON op.game_id = g.id
       `);
       dbProfiles = profilesResult.rows;
     } else {
