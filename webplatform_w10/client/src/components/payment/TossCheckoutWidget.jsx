@@ -8,10 +8,10 @@ const TossCheckoutWidget = ({ amount = 4900, orderName = 'SYNCRIG 프리미엄 1
   const [price] = useState(amount);
   const navigate = useNavigate();
 
-  // Toss 테스트 키. 실제 서비스에서는 환경변수로 관리
-  const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY || 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq';
-  // 고객 키는 고유해야 하므로 난수 생성 또는 유저 ID 사용
-  const customerKey = 'user_' + Math.random().toString(36).substring(2, 10);
+  // Toss 공식 테스트 키 (문서 제공)
+  const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm';
+  // 고객 키는 렌더링 시마다 바뀌지 않도록 초기화
+  const [customerKey] = useState(() => 'user_' + Math.random().toString(36).substring(2, 10));
 
   useEffect(() => {
     (async () => {
