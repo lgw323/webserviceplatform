@@ -84,8 +84,15 @@ export default function MainLayout() {
               {user?.provider_id ? user.provider_id.substring(0, 1) : 'U'}
             </div>
             <div className="ml-3 truncate max-w-[130px]">
-              <p className="text-sm font-medium text-gray-200 truncate">{user?.provider_id || 'User'}</p>
-              <p className="text-[10px] text-a11y-muted capitalize">
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-medium text-gray-200 truncate">{user?.provider_id || 'User'}</p>
+                {user?.subscription_status === 'premium' && (
+                  <span className="bg-gradient-to-r from-amber-400 to-yellow-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center">
+                    👑 PRO
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] text-a11y-muted capitalize mt-0.5">
                 {user?.provider} 계정 {user?.linked_providers?.length > 0 && `(+ 연동)`}
               </p>
             </div>
@@ -137,6 +144,14 @@ export default function MainLayout() {
             )}
           </div>
           <div className="flex items-center space-x-4">
+            {user?.subscription_status !== 'premium' && (
+              <button 
+                onClick={() => navigate('/subscription')}
+                className="hidden md:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-yellow-500 hover:text-yellow-400 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-yellow-500/30"
+              >
+                👑 프리미엄 업그레이드
+              </button>
+            )}
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
