@@ -60,6 +60,31 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// ─── TEMPORARY SYSTEM RESET ENDPOINT ───
+// TODO: Vercel 환경에서 초기화 완료 후 이 라우트를 반드시 삭제하세요.
+app.get('/api/system/reset-db', async (req, res) => {
+  if (!db.isPgActive()) {
+    return res.status(400).json({ error: 'PostgreSQL is not active.' });
+  }
+  
+  try {
+    const client = await db.getClient();
+    await client.query("DROP TABLE IF EXISTS optimization_profiles CASCADE;");
+    await client.query("DROP TABLE IF EXISTS hardware_profiles CASCADE;");
+    await client.query("DROP TABLE IF EXISTS games CASCADE;");
+    await client.query("DROP TABLE IF EXISTS users CASCADE;");
+    client.release();
+    
+    res.json({ 
+      message: '✅ All tables dropped successfully in Vercel DB.',
+      instruction: '새로고침을 하거나 앱에 다시 접근하면 db.js가 깨끗한 테이블을 새로 생성합니다. 초기화가 완료되었으므로 이 코드는 삭제해 주세요.'
+    });
+  } catch (err) {
+    console.error('Reset DB Error:', err);
+    res.status(500).json({ error: 'Failed to reset DB', details: err.message });
+  }
+});
+
 import gameRoutes from './src/routes/gameRoutes.js';
 import paymentRoutes from './src/routes/paymentRoutes.js';
 import statsRoutes from './src/routes/statsRoutes.js';
