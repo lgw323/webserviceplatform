@@ -14,8 +14,25 @@ export const getRecommendations = async (req, res, next) => {
 
     const targetThreshold = parseFloat(threshold) || 0.8;
 
-    const profilesResult = await db.query('SELECT * FROM optimization_profiles');
-    const dbProfiles = profilesResult.rows;
+    let dbProfiles = [];
+    if (db.isPgActive()) {
+      const profilesResult = await db.query(`
+        SELECT op.*, 
+               json_build_object(
+                 'cpu_model', hp.cpu_model,
+                 'gpu_model', hp.gpu_model,
+                 'ram_gb', hp.ram_gb,
+                 'resolution', hp.resolution,
+                 'refresh_rate', hp.refresh_rate
+               ) as hardware
+        FROM optimization_profiles op
+        LEFT JOIN hardware_profiles hp ON op.hardware_id = hp.id
+      `);
+      dbProfiles = profilesResult.rows;
+    } else {
+      const profilesResult = await db.query('SELECT * FROM optimization_profiles');
+      dbProfiles = profilesResult.rows;
+    }
 
     const recommendations = getRecProfiles(userSpec, dbProfiles, targetThreshold);
 
