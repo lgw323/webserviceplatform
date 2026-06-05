@@ -97,6 +97,14 @@ export default function MainLayout() {
               </p>
             </div>
           </div>
+          {user?.subscription_status !== 'premium' && (
+            <button 
+              onClick={() => navigate('/subscription')}
+              className="w-full flex items-center justify-center gap-2 py-2 text-xs font-bold text-yellow-500 hover:text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 rounded-lg transition-colors"
+            >
+              👑 프리미엄 업그레이드
+            </button>
+          )}
           <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-a11y-muted hover:text-white bg-gray-800/40 hover:bg-gray-800 border border-gray-800 rounded-lg transition-colors">
             <LogOut size={13} aria-hidden="true" /> 로그아웃
           </button>
@@ -144,14 +152,7 @@ export default function MainLayout() {
             )}
           </div>
           <div className="flex items-center space-x-4">
-            {user?.subscription_status !== 'premium' && (
-              <button 
-                onClick={() => navigate('/subscription')}
-                className="hidden md:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-yellow-500 hover:text-yellow-400 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-yellow-500/30"
-              >
-                👑 프리미엄 업그레이드
-              </button>
-            )}
+
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
