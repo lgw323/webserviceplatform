@@ -60,7 +60,7 @@ export const register = async (req, res, next) => {
 
     const passwordHash = hashPassword(password);
     const result = await db.query(
-      'INSERT INTO users (provider, provider_id, password_hash) VALUES ($1, $2, $3) RETURNING id, provider, provider_id, subscription_status',
+      'INSERT INTO users (provider, provider_id, password_hash) VALUES ($1, $2, $3) RETURNING *',
       ['local', username, passwordHash]
     );
 
@@ -165,7 +165,7 @@ export const oauthCallback = async (req, res, next) => {
     let user = result.rows[0];
     if (!user) {
       const insertResult = await db.query(
-        'INSERT INTO users (provider, provider_id, linked_providers) VALUES ($1, $2, $3) RETURNING id, provider, provider_id, linked_providers, subscription_status',
+        'INSERT INTO users (provider, provider_id, linked_providers) VALUES ($1, $2, $3) RETURNING *',
         [provider, provider_id, '[]']
       );
       user = insertResult.rows[0];
