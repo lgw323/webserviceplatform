@@ -104,7 +104,7 @@ export default function RecommendationList({ recommendations, userSpec }) {
               <div className="p-5 border-b border-gray-800/50 flex justify-between items-start bg-gradient-to-b from-cyber-darker/50 to-transparent">
                 <div>
                   <div className="flex items-center space-x-2 mb-1">
-                    <h3 className="text-lg font-bold text-gray-100">Cyberpunk 2077</h3>
+                    <h3 className="text-lg font-bold text-gray-100">{item.game?.title || '알 수 없는 게임'}</h3>
                     {isHigh && <Star className="w-4 h-4 text-cyber-warning fill-cyber-warning" aria-label="최고 추천" />}
                   </div>
                   <p className="text-sm text-a11y-muted flex items-center gap-1.5">
@@ -171,7 +171,7 @@ export default function RecommendationList({ recommendations, userSpec }) {
                 <button
                   onClick={() => openModal(item)}
                   className="flex items-center text-sm font-medium text-cyber-accent hover:text-blue-400 transition-colors px-3 py-1.5 rounded-md hover:bg-cyber-accent/10"
-                  aria-label={`Cyberpunk 2077 — 유사도 ${matchScore}% 프로필 상세 보기`}
+                  aria-label={`${item.game?.title || '알 수 없는 게임'} — 유사도 ${matchScore}% 프로필 상세 보기`}
                 >
                   상세 보기
                 </button>
@@ -195,7 +195,7 @@ export default function RecommendationList({ recommendations, userSpec }) {
             {/* Modal Header */}
             <div className="sticky top-0 bg-cyber-card/95 backdrop-blur z-10 border-b border-gray-800 p-5 flex justify-between items-center">
               <div>
-                <h2 id="modal-title" className="text-xl font-bold text-gray-100">Cyberpunk 2077</h2>
+                <h2 id="modal-title" className="text-xl font-bold text-gray-100">{selectedProfile.game?.title || '알 수 없는 게임'}</h2>
                 <p className="text-sm text-a11y-muted">
                   유사도 <span className="text-cyber-accent font-bold">{Math.round(selectedProfile.similarity_score * 100)}%</span> 매칭 프로필
                 </p>
