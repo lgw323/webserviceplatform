@@ -1,73 +1,62 @@
-import Stripe from 'stripe';
+import axios from 'axios';
 import { db } from '../config/db.js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock_key');
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
+export const confirmPayment = async (req, res, next) => {
+  const { paymentKey, orderId, amount } = req.body;
+  const userId = req.user.id;
 
-export const createCheckoutSession = async (req, res, next) => {
+  if (!paymentKey || !orderId || !amount) {
+    return res.status(400).json({ success: false, message: '결제 필수 파라미터가 누락되었습니다.' });
+  }
+
+  const widgetSecretKey = process.env.TOSS_SECRET_KEY || 'test_sk_mock_key';
+
   try {
-    const userId = req.user.id;
-
-    // Create a checkout session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
+    // Basic Auth 용 시크릿 키 인코딩 (뒤에 콜론(:) 추가)
+    const encryptedSecretKey = Buffer.from(`${widgetSecretKey}:`).toString('base64');
+    
+    let isSuccess = false;
+    
+    // 만약 테스트 환경이거나 mock key가 들어간 경우 서버 단의 승인 통신을 모킹함
+    if (widgetSecretKey === 'test_sk_mock_key' || widgetSecretKey.includes('test_sk_your_secret_key')) {
+      console.log(`[Mock Toss Payment] 결제 승인 우회 - PaymentKey: ${paymentKey}`);
+      isSuccess = true;
+    } else {
+      // 실제 토스페이먼츠 승인 API 호출
+      const response = await axios.post(
+        'https://api.tosspayments.com/v1/payments/confirm',
+        { paymentKey, orderId, amount },
         {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: 'SYNCRIG PRO Subscription',
-              description: 'Access to top 1% hardware analytics and premium features',
-            },
-            unit_amount: 499, // $4.99
+          headers: {
+            Authorization: `Basic ${encryptedSecretKey}`,
+            'Content-Type': 'application/json',
           },
-          quantity: 1,
-        },
-      ],
-      mode: 'payment', // use 'subscription' for recurring
-      success_url: `${CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${CLIENT_URL}/payment/cancel`,
-      client_reference_id: userId,
-    });
+        }
+      );
+      if (response.status === 200) {
+        isSuccess = true;
+      }
+    }
 
-    res.json({ url: session.url });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const handleWebhook = async (req, res, next) => {
-  const sig = req.headers['stripe-signature'];
-  let event;
-
-  try {
-    // In production, we must verify the webhook signature
-    // event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-    // For TDD/Mocking purposes, we accept the payload as is if secret is not set
-    event = req.body;
-  } catch (err) {
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  // Handle the checkout.session.completed event
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    const userId = session.client_reference_id;
-
-    try {
+    if (isSuccess) {
+      // DB 상태 업데이트
       if (db.isPgActive()) {
         await db.query(
-          "UPDATE users SET subscription_status = 'premium', stripe_customer_id = $1 WHERE id = $2",
-          [session.customer, userId]
+          "UPDATE users SET subscription_status = 'premium', toss_payment_key = $1 WHERE id = $2",
+          [paymentKey, userId]
         );
       } else {
-        // Mock DB Update
-        await db.query(`update users set subscription_status = 'premium' where id = '${userId}'`, [session.customer, userId]);
+        // Mock DB 사용 중일 때
+        await db.query(`update users set subscription_status = 'premium' where id = '${userId}'`, [paymentKey, userId]);
       }
-    } catch (err) {
-      console.error('Error updating user subscription:', err);
+      return res.status(200).json({ success: true, message: '결제가 성공적으로 승인되었습니다.' });
     }
+  } catch (err) {
+    console.error('Toss Payments 승인 실패:', err.response?.data || err.message);
+    res.status(400).json({ 
+      success: false, 
+      message: '결제 검증에 실패했습니다.', 
+      error: err.response?.data || err.message 
+    });
   }
-
-  res.json({ received: true });
 };

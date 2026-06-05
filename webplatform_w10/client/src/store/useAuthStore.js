@@ -23,18 +23,25 @@ const useAuthStore = create((set, get) => ({
         id: payload.id, 
         provider: payload.provider, 
         provider_id: payload.provider_id,
-        subscription_status: payload.subscription_status || 'free'
+        subscription_status: payload.subscription_status || 'free',
+        linked_providers: payload.linked_providers || []
       };
     } catch(e) {
       const isSteam = token.includes('steam');
       const isRiot = token.includes('riot');
       const provider = isSteam ? 'steam' : isRiot ? 'riot' : 'local';
       const providerId = token.replace('mock_jwt_token_for_', '');
-      sessionUser = { id: 'user-mock-id', provider, provider_id: providerId };
+      sessionUser = { id: 'user-mock-id', provider, provider_id: providerId, linked_providers: [] };
     }
     
-    const linked = JSON.parse(localStorage.getItem('syncrig_linked_providers') || '[]');
-    sessionUser.linked_providers = linked;
+    // JWT 페이로드에 연동 정보가 있으면 localStorage 동기화, 없으면 기존 캐시 사용
+    const cachedLinked = JSON.parse(localStorage.getItem('syncrig_linked_providers') || '[]');
+    const finalLinked = sessionUser.linked_providers && sessionUser.linked_providers.length > 0 
+      ? sessionUser.linked_providers 
+      : cachedLinked;
+      
+    localStorage.setItem('syncrig_linked_providers', JSON.stringify(finalLinked));
+    sessionUser.linked_providers = finalLinked;
     
     set({ user: sessionUser, isLoading: false });
     await get().fetchUserData();

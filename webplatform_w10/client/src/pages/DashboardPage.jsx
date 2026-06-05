@@ -79,7 +79,9 @@ export default function DashboardPage() {
       
       {adData && <UpgradeRecommendationWidget ad={adData} />}
 
-      <PremiumStatsWidget isPremium={user?.subscription_status === 'premium'} />
+      {user?.subscription_status === 'premium' && (
+        <PremiumStatsWidget isPremium={true} />
+      )}
     </section>
   );
 }

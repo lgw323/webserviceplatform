@@ -29,7 +29,8 @@ function generateTokenPair(user) {
       id: user.id, 
       provider: user.provider, 
       provider_id: user.provider_id,
-      subscription_status: user.subscription_status || 'free'
+      subscription_status: user.subscription_status || 'free',
+      linked_providers: user.linked_providers || []
     },
     JWT_SECRET,
     { expiresIn: '15m' }
@@ -60,7 +61,7 @@ export const register = async (req, res, next) => {
 
     const passwordHash = hashPassword(password);
     const result = await db.query(
-      'INSERT INTO users (provider, provider_id, password_hash) VALUES ($1, $2, $3) RETURNING id, provider, provider_id, subscription_status',
+      'INSERT INTO users (provider, provider_id, password_hash) VALUES ($1, $2, $3) RETURNING id, provider, provider_id, subscription_status, linked_providers',
       ['local', username, passwordHash]
     );
 
@@ -99,7 +100,13 @@ export const login = async (req, res, next) => {
       data: {
         access_token: accessToken,
         refresh_token: refreshToken,
-        user: { id: user.id, provider: user.provider, provider_id: user.provider_id }
+        user: { 
+          id: user.id, 
+          provider: user.provider, 
+          provider_id: user.provider_id,
+          subscription_status: user.subscription_status,
+          linked_providers: user.linked_providers
+        }
       }
     });
   } catch (err) {

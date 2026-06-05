@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Crown, Zap } from 'lucide-react';
-import apiClient from '../api/apiClient';
-import toast from 'react-hot-toast';
 import useAuthStore from '../store/useAuthStore';
 import { Navigate } from 'react-router-dom';
+import TossCheckoutWidget from '../components/payment/TossCheckoutWidget';
 
 export default function SubscriptionPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
   const { user } = useAuthStore();
 
   if (!user) {
@@ -17,30 +16,24 @@ export default function SubscriptionPage() {
     return (
       <div className="flex flex-col items-center justify-center h-full pt-20">
         <Crown className="w-20 h-20 text-yellow-500 mb-6" />
-        <h2 className="text-3xl font-bold mb-4">이미 PRO 구독자이십니다!</h2>
+        <h2 className="text-3xl font-bold mb-4 text-white">이미 PRO 구독자이십니다!</h2>
         <p className="text-a11y-muted">대시보드에서 프리미엄 전용 통계를 확인해보세요.</p>
       </div>
     );
   }
 
-  const handleSubscribe = async () => {
-    setIsLoading(true);
-    try {
-      const response = await apiClient.post('/payments/create-checkout-session');
-      if (response.data?.url) {
-        window.location.href = response.data.url;
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('결제 세션 생성 중 오류가 발생했습니다.');
-      setIsLoading(false);
-    }
-  };
+  if (showPayment) {
+    return (
+      <div className="max-w-4xl mx-auto py-12 px-6">
+        <TossCheckoutWidget amount={4900} orderName="SYNCRIG PRO 1개월 구독" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-6">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">당신의 하드웨어를 한계까지.</h1>
+        <h1 className="text-4xl font-bold mb-4 text-white">당신의 하드웨어를 한계까지.</h1>
         <p className="text-xl text-a11y-muted">SYNCRIG PRO로 상위 1%의 비밀을 확인하세요.</p>
       </div>
 
@@ -52,9 +45,9 @@ export default function SubscriptionPage() {
             <h2 className="text-2xl font-bold text-yellow-500 flex items-center gap-2 mb-2">
               <Crown className="w-6 h-6" /> PRO 요금제
             </h2>
-            <div className="text-4xl font-bold mb-6">$4.99 <span className="text-lg text-gray-400 font-normal">/ 월</span></div>
+            <div className="text-4xl font-bold mb-6 text-white">₩ 4,900 <span className="text-lg text-gray-400 font-normal">/ 월</span></div>
             
-            <ul className="space-y-4 mb-8">
+            <ul className="space-y-4 mb-8 text-gray-200">
               <li className="flex items-center gap-3">
                 <CheckCircle2 className="w-5 h-5 text-cyber-success" />
                 <span>글로벌 상위 1% 랭커와의 하드웨어 성능 교차 분석</span>
@@ -74,15 +67,10 @@ export default function SubscriptionPage() {
             </ul>
 
             <button 
-              onClick={handleSubscribe}
-              disabled={isLoading}
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-white font-bold rounded-xl text-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              onClick={() => setShowPayment(true)}
+              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-white font-bold rounded-xl text-lg flex items-center justify-center gap-2 transition-all"
             >
-              {isLoading ? '연결 중...' : (
-                <>
-                  Stripe로 안전하게 결제하기 <Zap className="w-5 h-5" />
-                </>
-              )}
+              토스페이먼츠로 1분 만에 구독하기 <Zap className="w-5 h-5" />
             </button>
           </div>
           

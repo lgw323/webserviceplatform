@@ -79,6 +79,14 @@ export default function MainLayout() {
         </div>
 
         <div className="p-4 border-t border-gray-800 space-y-3">
+          {user?.subscription_status !== 'premium' && (
+            <button 
+              onClick={() => navigate('/subscription')}
+              className="w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-500/10 to-yellow-600/10 hover:from-amber-500/20 hover:to-yellow-600/20 text-yellow-500 hover:text-yellow-400 py-2 rounded-lg text-xs font-bold transition-all border border-yellow-500/20 mb-2"
+            >
+              👑 PRO 업그레이드
+            </button>
+          )}
           <div className="flex items-center px-3 py-2">
             <div className="w-8 h-8 rounded-full bg-cyber-dark flex items-center justify-center border border-gray-700 text-sm font-bold text-cyber-accent uppercase" aria-hidden="true">
               {user?.provider_id ? user.provider_id.substring(0, 1) : 'U'}
@@ -144,14 +152,7 @@ export default function MainLayout() {
             )}
           </div>
           <div className="flex items-center space-x-4">
-            {user?.subscription_status !== 'premium' && (
-              <button 
-                onClick={() => navigate('/subscription')}
-                className="hidden md:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-yellow-500 hover:text-yellow-400 px-3 py-1.5 rounded-full text-xs font-bold transition-all border border-yellow-500/30"
-              >
-                👑 프리미엄 업그레이드
-              </button>
-            )}
+
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
