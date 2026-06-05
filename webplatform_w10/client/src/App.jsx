@@ -13,7 +13,7 @@ import RecommendPage from './pages/RecommendPage';
 import SettingsPage from './pages/SettingsPage';
 import SubscriptionPage from './pages/SubscriptionPage';
 import PaymentSuccess from './pages/PaymentSuccess';
-import PaymentCancel from './pages/PaymentCancel';
+import PaymentFail from './pages/PaymentFail';
 
 // Layout
 import MainLayout from './components/layout/MainLayout';
@@ -40,8 +40,8 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<AuthPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/payment/success" element={<PaymentSuccess />} />
-        <Route path="/payment/cancel" element={<PaymentCancel />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/payment-fail" element={<PaymentFail />} />
         {/* 없는 주소는 모두 랜딩 페이지로 리다이렉트 */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -61,8 +61,8 @@ export default function App() {
         <Route path="recommend" element={<RecommendPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="subscription" element={<SubscriptionPage />} />
-        <Route path="payment/success" element={<PaymentSuccess />} />
-        <Route path="payment/cancel" element={<PaymentCancel />} />
+        <Route path="payment-success" element={<PaymentSuccess />} />
+        <Route path="payment-fail" element={<PaymentFail />} />
         {/* 없는 주소는 모두 대시보드로 리다이렉트 */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>

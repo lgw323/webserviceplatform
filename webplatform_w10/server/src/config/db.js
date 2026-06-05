@@ -109,7 +109,7 @@ export async function initDb() {
         password_hash VARCHAR(255),
         linked_providers JSONB DEFAULT '[]'::jsonb NOT NULL,
         subscription_status VARCHAR(50) DEFAULT 'free' NOT NULL,
-        stripe_customer_id VARCHAR(255),
+        toss_payment_key VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
         UNIQUE(provider, provider_id)
       );
@@ -219,7 +219,7 @@ export const db = {
           password_hash: passwordHash, 
           linked_providers: [], 
           subscription_status: 'free',
-          stripe_customer_id: null,
+          toss_payment_key: null,
           created_at: new Date() 
         };
         MOCK_DB.users.push(newUser);
@@ -250,7 +250,7 @@ export const db = {
         const userIndex = MOCK_DB.users.findIndex(u => u.id === userId);
         if (userIndex !== -1) {
             MOCK_DB.users[userIndex].subscription_status = 'premium';
-            MOCK_DB.users[userIndex].stripe_customer_id = params[0];
+            MOCK_DB.users[userIndex].toss_payment_key = params[0];
             return { rowCount: 1 };
         }
         return { rowCount: 0 };
