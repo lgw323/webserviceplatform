@@ -21,6 +21,7 @@
     "passport-oauth2": "^1.8.0",
     "passport-steam": "^1.0.18",
     "pg": "^8.11.3",
+    "stripe": "^22.2.0",
     "uuid": "^14.0.0",
     "winston": "^3.19.0"
   },
