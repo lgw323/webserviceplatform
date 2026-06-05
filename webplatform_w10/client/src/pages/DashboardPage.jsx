@@ -3,6 +3,8 @@ import { Check } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 import DashboardCharts from '../features/dashboard/DashboardCharts';
 import useSEO from '../hooks/useSEO';
+import UpgradeRecommendationWidget from '../components/ads/UpgradeRecommendationWidget';
+import apiClient from '../api/apiClient';
 
 function LinkedBadge({ linkedProviders }) {
   if (!linkedProviders || linkedProviders.length === 0) {
@@ -32,6 +34,23 @@ function LinkedBadge({ linkedProviders }) {
 export default function DashboardPage() {
   useSEO('dashboard');
   const { user, userSpec, gameLibrary, achievementsCount, syncAccount } = useAuthStore();
+  const [adData, setAdData] = React.useState(null);
+
+  React.useEffect(() => {
+    const fetchAd = async () => {
+      try {
+        const response = await apiClient.get('/profiles/recommendations/ads');
+        if (response.data?.success && response.data?.ad) {
+          setAdData(response.data.ad);
+        }
+      } catch (err) {
+        console.error('Failed to fetch ad:', err);
+      }
+    };
+    if (user) {
+      fetchAd();
+    }
+  }, [user]);
 
   if (!user) return null;
 
@@ -56,6 +75,8 @@ export default function DashboardPage() {
         onSyncAccount={syncAccount}
         linkedProviders={linkedProviders}
       />
+      
+      {adData && <UpgradeRecommendationWidget ad={adData} />}
     </section>
   );
 }

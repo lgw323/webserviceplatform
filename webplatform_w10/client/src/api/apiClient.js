@@ -186,3 +186,5 @@ export async function unlinkAccount(provider) {
   if (data.data.refresh_token) setRefreshToken(data.data.refresh_token);
   return data.data;
 }
+
+export default apiClient;
