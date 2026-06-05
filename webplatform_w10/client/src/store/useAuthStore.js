@@ -19,7 +19,12 @@ const useAuthStore = create((set, get) => ({
     let sessionUser = { id: 'user-mock-id', provider: 'local', provider_id: 'User' };
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      sessionUser = { id: payload.id, provider: payload.provider, provider_id: payload.provider_id };
+      sessionUser = { 
+        id: payload.id, 
+        provider: payload.provider, 
+        provider_id: payload.provider_id,
+        subscription_status: payload.subscription_status || 'free'
+      };
     } catch(e) {
       const isSteam = token.includes('steam');
       const isRiot = token.includes('riot');

@@ -27,3 +27,21 @@ export function authenticateToken(req, res, next) {
     next();
   });
 }
+
+export function requirePremium(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({
+      status: 'error',
+      message: '인증이 필요합니다.'
+    });
+  }
+  
+  if (req.user.subscription_status !== 'premium') {
+    return res.status(403).json({
+      status: 'error',
+      message: '해당 기능은 PRO 구독자 전용입니다.'
+    });
+  }
+  
+  next();
+}

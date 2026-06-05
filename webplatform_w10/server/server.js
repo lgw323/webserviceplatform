@@ -60,11 +60,17 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+import gameRoutes from './src/routes/gameRoutes.js';
+import paymentRoutes from './src/routes/paymentRoutes.js';
+import statsRoutes from './src/routes/statsRoutes.js';
+
 // ─── Routes ───
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users/hardware-profiles', profileRoutes);
 app.use('/api/v1/profiles/recommendations', recommendationRoutes);
 app.use('/api/v1/games', gameRoutes);
+app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/stats', statsRoutes);
 
 // ─── Global Error Handler ───
 app.use(errorHandler);

@@ -25,7 +25,12 @@ function verifyPassword(password, storedHash) {
 
 function generateTokenPair(user) {
   const accessToken = jwt.sign(
-    { id: user.id, provider: user.provider, provider_id: user.provider_id },
+    { 
+      id: user.id, 
+      provider: user.provider, 
+      provider_id: user.provider_id,
+      subscription_status: user.subscription_status || 'free'
+    },
     JWT_SECRET,
     { expiresIn: '15m' }
   );
@@ -55,7 +60,7 @@ export const register = async (req, res, next) => {
 
     const passwordHash = hashPassword(password);
     const result = await db.query(
-      'INSERT INTO users (provider, provider_id, password_hash) VALUES ($1, $2, $3) RETURNING id, provider, provider_id',
+      'INSERT INTO users (provider, provider_id, password_hash) VALUES ($1, $2, $3) RETURNING id, provider, provider_id, subscription_status',
       ['local', username, passwordHash]
     );
 
@@ -160,7 +165,7 @@ export const oauthCallback = async (req, res, next) => {
     let user = result.rows[0];
     if (!user) {
       const insertResult = await db.query(
-        'INSERT INTO users (provider, provider_id, linked_providers) VALUES ($1, $2, $3) RETURNING id, provider, provider_id, linked_providers',
+        'INSERT INTO users (provider, provider_id, linked_providers) VALUES ($1, $2, $3) RETURNING id, provider, provider_id, linked_providers, subscription_status',
         [provider, provider_id, '[]']
       );
       user = insertResult.rows[0];
