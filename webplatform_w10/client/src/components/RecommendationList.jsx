@@ -6,6 +6,9 @@ export default function RecommendationList({ recommendations, userSpec }) {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isCopied, setIsCopied] = useState(false);
   const [feedbackGiven, setFeedbackGiven] = useState(null); // 'helpful' | 'not_working' | null
+  
+  // 피드백(좋아요/싫어요) 로컬 상태 관리 (UI 즉각 반영용)
+  const [localLikes, setLocalLikes] = useState({});
 
   // 포커스 트랩 및 복원을 위한 ref
   const modalRef = useRef(null);
@@ -165,8 +168,8 @@ export default function RecommendationList({ recommendations, userSpec }) {
 
               {/* Card Footer */}
               <div className="p-4 bg-cyber-darker border-t border-gray-800 flex justify-between items-center group-hover:bg-gray-900 transition-colors">
-                <div className="flex items-center text-sm text-a11y-muted" aria-label={`추천 수: ${item.likes || 0}`}>
-                  <ThumbsUp className="w-4 h-4 mr-1.5" aria-hidden="true" /> {item.likes || 0}
+                <div className="flex items-center text-sm text-a11y-muted" aria-label={`추천 수: ${(item.likes || 0) + (localLikes[item.id] || 0)}`}>
+                  <ThumbsUp className="w-4 h-4 mr-1.5" aria-hidden="true" /> {(item.likes || 0) + (localLikes[item.id] || 0)}
                 </div>
                 <button
                   onClick={() => openModal(item)}
@@ -258,6 +261,7 @@ export default function RecommendationList({ recommendations, userSpec }) {
                 <button
                   onClick={() => {
                     setFeedbackGiven('helpful');
+                    setLocalLikes(prev => ({ ...prev, [selectedProfile.id]: (prev[selectedProfile.id] || 0) + 1 }));
                     toast.success('피드백 감사합니다! 👍');
                   }}
                   disabled={feedbackGiven !== null}
@@ -277,6 +281,7 @@ export default function RecommendationList({ recommendations, userSpec }) {
                 <button
                   onClick={() => {
                     setFeedbackGiven('not_working');
+                    setLocalLikes(prev => ({ ...prev, [selectedProfile.id]: (prev[selectedProfile.id] || 0) - 1 }));
                     toast('피드백이 반영되었습니다.', { icon: '📝' });
                   }}
                   disabled={feedbackGiven !== null}
