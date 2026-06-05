@@ -108,6 +108,8 @@ export async function initDb() {
         provider_id VARCHAR(255) NOT NULL,
         password_hash VARCHAR(255),
         linked_providers JSONB DEFAULT '[]'::jsonb NOT NULL,
+        subscription_status VARCHAR(50) DEFAULT 'free' NOT NULL,
+        stripe_customer_id VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
         UNIQUE(provider, provider_id)
       );
@@ -210,14 +212,22 @@ export const db = {
         const provider = params[0];
         const providerId = params[1];
         const passwordHash = params[2];
-        const newUser = { id, provider, provider_id: providerId, password_hash: passwordHash, linked_providers: [], created_at: new Date() };
+        const newUser = { 
+          id, 
+          provider, 
+          provider_id: providerId, 
+          password_hash: passwordHash, 
+          linked_providers: [], 
+          subscription_status: 'free',
+          stripe_customer_id: null,
+          created_at: new Date() 
+        };
         MOCK_DB.users.push(newUser);
         return { rows: [newUser] };
       }
 
       // 2.5. UPDATE users (linked_providers)
       if (normalizedQuery.includes('update users') && normalizedQuery.includes('linked_providers =')) {
-         // Simplified mock update for linked_providers
          const linkedProvidersStr = params[0];
          const userId = params[1];
          const userIndex = MOCK_DB.users.findIndex(u => u.id === userId);
@@ -230,6 +240,20 @@ export const db = {
              return { rows: [MOCK_DB.users[userIndex]] };
          }
          return { rows: [] };
+      }
+
+      // 2.6 UPDATE users (subscription_status)
+      if (normalizedQuery.includes('update users') && normalizedQuery.includes("subscription_status = 'premium'")) {
+        // Extract userId from query string if it was hardcoded for mock
+        const match = text.match(/id = '([^']+)'/);
+        const userId = match ? match[1] : params[1];
+        const userIndex = MOCK_DB.users.findIndex(u => u.id === userId);
+        if (userIndex !== -1) {
+            MOCK_DB.users[userIndex].subscription_status = 'premium';
+            MOCK_DB.users[userIndex].stripe_customer_id = params[0];
+            return { rowCount: 1 };
+        }
+        return { rowCount: 0 };
       }
 
       // 3. SELECT FROM hardware_profiles WHERE user_id = $1
