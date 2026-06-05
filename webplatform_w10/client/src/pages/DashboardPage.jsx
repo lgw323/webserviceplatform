@@ -4,6 +4,7 @@ import useAuthStore from '../store/useAuthStore';
 import DashboardCharts from '../features/dashboard/DashboardCharts';
 import useSEO from '../hooks/useSEO';
 import UpgradeRecommendationWidget from '../components/ads/UpgradeRecommendationWidget';
+import PremiumStatsWidget from '../components/dashboard/PremiumStatsWidget';
 import apiClient from '../api/apiClient';
 
 function LinkedBadge({ linkedProviders }) {
@@ -77,6 +78,8 @@ export default function DashboardPage() {
       />
       
       {adData && <UpgradeRecommendationWidget ad={adData} />}
+
+      <PremiumStatsWidget isPremium={user?.subscription_status === 'premium'} />
     </section>
   );
 }
