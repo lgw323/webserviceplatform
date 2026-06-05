@@ -8,9 +8,9 @@ export default {
     extend: {
       colors: {
         cyber: {
-          dark: '#0f172a',
-          darker: '#0b0f19',
-          card: '#1e293b',
+          dark: 'var(--color-input-bg)',
+          darker: 'var(--color-bg)',
+          card: 'var(--color-card)',
           accent: '#3b82f6',
           purple: '#8b5cf6',
           success: '#10b981',

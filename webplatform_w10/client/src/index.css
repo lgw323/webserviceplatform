@@ -97,6 +97,22 @@ html.light-theme {
   background-color: var(--color-bg);
 }
 
+/* ── 라이트모드 하드코딩 유틸리티 오버라이드 ── */
+html.light-theme .text-white:not(.bg-cyber-accent, .bg-cyber-purple, .bg-cyber-success, .bg-cyber-warning, .bg-cyber-danger),
+html.light-theme .text-gray-100:not(.bg-cyber-accent, .bg-cyber-purple, .bg-cyber-success),
+html.light-theme .text-gray-200:not(.bg-cyber-accent, .bg-cyber-purple, .bg-cyber-success) {
+  color: var(--color-text) !important;
+}
+html.light-theme .text-gray-300:not(.bg-cyber-accent, .bg-cyber-purple),
+html.light-theme .text-gray-400:not(.bg-cyber-accent, .bg-cyber-purple),
+html.light-theme .text-a11y-muted {
+  color: var(--color-text-secondary) !important;
+}
+html.light-theme .border-gray-800,
+html.light-theme .border-gray-700 {
+  border-color: var(--color-border) !important;
+}
+
 /* ── 웹접근성: 고대비 모드 미디어쿼리 대응 ── */
 @media (prefers-contrast: high) {
   *:focus-visible {
