@@ -85,7 +85,6 @@ app.get('/api/system/reset-db', async (req, res) => {
   }
 });
 
-import gameRoutes from './src/routes/gameRoutes.js';
 import paymentRoutes from './src/routes/paymentRoutes.js';
 import statsRoutes from './src/routes/statsRoutes.js';
 
