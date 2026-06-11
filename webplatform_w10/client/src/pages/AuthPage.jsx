@@ -5,8 +5,11 @@ import useAuthStore from '../store/useAuthStore';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [inlineError, setInlineError] = useState('');
   const [inlineSuccess, setInlineSuccess] = useState('');
@@ -17,25 +20,48 @@ export default function AuthPage() {
     setInlineError('');
     setInlineSuccess('');
 
-    if (!username || !password) {
+    if (isVerifying) {
+      if (!verificationCode) {
+         setInlineError('인증 코드를 입력해주세요.');
+         return;
+      }
+      setIsLoading(true);
+      try {
+        await api.verifyEmailCode(email, verificationCode);
+        setInlineSuccess('이메일 인증 완료! 로그인 중입니다...');
+        await new Promise(resolve => setTimeout(resolve, 600));
+        
+        // After verification, login
+        const data = await api.login(email, password);
+        setUser(data.user);
+        await fetchUserData();
+      } catch (err) {
+        setInlineError(err.message || '인증 처리에 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    if (!email || !password || (!isLogin && !nickname)) {
       setInlineError('모든 항목을 입력해주세요.');
       return;
     }
     setIsLoading(true);
 
     try {
-      let data;
       if (isLogin) {
-        data = await api.login(username, password);
+        const data = await api.login(email, password);
         setInlineSuccess('로그인 성공! 잠시 후 이동합니다...');
+        await new Promise(resolve => setTimeout(resolve, 600));
+        setUser(data.user);
+        await fetchUserData();
       } else {
-        data = await api.register(username, password);
-        setInlineSuccess('회원가입 성공! 로그인 중입니다...');
+        await api.register(email, nickname, password);
+        setInlineSuccess('회원가입 성공! 이메일 인증 코드를 전송했습니다.');
+        await api.sendVerificationCode(email);
+        setIsVerifying(true);
       }
-      // Brief delay so user sees the success message
-      await new Promise(resolve => setTimeout(resolve, 600));
-      setUser(data.user);
-      await fetchUserData();
     } catch (err) {
       const message = err.message || '인증 처리에 실패했습니다.';
       setInlineError(message);
@@ -55,6 +81,7 @@ export default function AuthPage() {
   };
 
   const handleTabSwitch = (loginMode) => {
+    if (isVerifying) return; // Prevent switching while verifying
     setIsLogin(loginMode);
     setInlineError('');
     setInlineSuccess('');
@@ -120,37 +147,77 @@ export default function AuthPage() {
 
         {/* Credentials Form */}
         <form onSubmit={handleSubmit} className="space-y-4" id="panel-auth" role="tabpanel" aria-labelledby={isLogin ? 'tab-login' : 'tab-register'}>
-          <div className="space-y-1">
-            <label htmlFor="auth-username" className="text-xs font-semibold text-a11y-muted uppercase tracking-wider flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5" aria-hidden="true" /> 사용자 아이디
-            </label>
-            <input
-              id="auth-username"
-              type="text"
-              placeholder="username"
-              value={username}
-              onChange={(e) => { setUsername(e.target.value); setInlineError(''); }}
-              autoComplete="username"
-              aria-required="true"
-              className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors"
-            />
-          </div>
-          <div className="space-y-1">
-            <label htmlFor="auth-password" className="text-xs font-semibold text-a11y-muted uppercase tracking-wider flex items-center gap-1.5">
-              <Key className="w-3.5 h-3.5" aria-hidden="true" /> 비밀번호
-              {!isLogin && <span className="normal-case tracking-normal text-a11y-muted font-normal">(6자 이상, 숫자 포함)</span>}
-            </label>
-            <input
-              id="auth-password"
-              type="password"
-              placeholder="password"
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); setInlineError(''); }}
-              autoComplete={isLogin ? 'current-password' : 'new-password'}
-              aria-required="true"
-              className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors"
-            />
-          </div>
+          {isVerifying ? (
+            <div className="space-y-1">
+              <label htmlFor="auth-code" className="text-xs font-semibold text-a11y-muted uppercase tracking-wider flex items-center gap-1.5">
+                <Key className="w-3.5 h-3.5" aria-hidden="true" /> 인증 코드
+              </label>
+              <input
+                id="auth-code"
+                type="text"
+                placeholder="6자리 인증 코드"
+                value={verificationCode}
+                onChange={(e) => { setVerificationCode(e.target.value); setInlineError(''); }}
+                aria-required="true"
+                className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors tracking-widest text-center"
+                maxLength={6}
+              />
+              <p className="text-xs text-cyber-accent mt-2 text-center">이메일({email})로 전송된 코드를 입력해주세요.</p>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-1">
+                <label htmlFor="auth-email" className="text-xs font-semibold text-a11y-muted uppercase tracking-wider flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5" aria-hidden="true" /> 이메일 주소
+                </label>
+                <input
+                  id="auth-email"
+                  type="email"
+                  placeholder="user@example.com"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setInlineError(''); }}
+                  autoComplete="email"
+                  aria-required="true"
+                  className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors"
+                />
+              </div>
+
+              {!isLogin && (
+                <div className="space-y-1">
+                  <label htmlFor="auth-nickname" className="text-xs font-semibold text-a11y-muted uppercase tracking-wider flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5" aria-hidden="true" /> 닉네임
+                  </label>
+                  <input
+                    id="auth-nickname"
+                    type="text"
+                    placeholder="2자~20자"
+                    value={nickname}
+                    onChange={(e) => { setNickname(e.target.value); setInlineError(''); }}
+                    autoComplete="nickname"
+                    aria-required="true"
+                    className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label htmlFor="auth-password" className="text-xs font-semibold text-a11y-muted uppercase tracking-wider flex items-center gap-1.5">
+                  <Key className="w-3.5 h-3.5" aria-hidden="true" /> 비밀번호
+                  {!isLogin && <span className="normal-case tracking-normal text-a11y-muted font-normal">(6자 이상, 숫자 포함)</span>}
+                </label>
+                <input
+                  id="auth-password"
+                  type="password"
+                  placeholder="password"
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setInlineError(''); }}
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
+                  aria-required="true"
+                  className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors"
+                />
+              </div>
+            </>
+          )}
 
           <button
             type="submit"
@@ -158,7 +225,7 @@ export default function AuthPage() {
             aria-busy={isLoading}
             className="w-full flex items-center justify-center py-3 bg-cyber-accent hover:bg-blue-600 text-white rounded-lg transition-colors font-medium shadow-[0_0_15px_rgba(59,130,246,0.2)] disabled:opacity-50"
           >
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" aria-label="처리 중" /> : isLogin ? '로그인' : '회원가입 완료'}
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" aria-label="처리 중" /> : isVerifying ? '인증 확인' : isLogin ? '로그인' : '회원가입 완료'}
           </button>
         </form>
 
