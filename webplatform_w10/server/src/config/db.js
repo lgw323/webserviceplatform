@@ -12,78 +12,7 @@ if (isPgAvailable) {
 }
 
 // ─── IN-MEMORY FALLBACK DATABASE ───
-const MOCK_DB = {
-  users: [],
-  hardware_profiles: [
-    {
-      id: 'hw-default-1',
-      user_id: 'user-mock-id',
-      is_default: true,
-      cpu_model: 'AMD Ryzen 5 5600X',
-      gpu_model: 'NVIDIA GeForce RTX 3060',
-      ram_gb: 16,
-      resolution: 'FHD',
-      refresh_rate: 144,
-      created_at: new Date()
-    }
-  ],
-  games: [
-    { id: 'game_cyberpunk', external_app_id: '1091500', title: 'Cyberpunk 2077', created_at: new Date() },
-    { id: 'game_valorant', external_app_id: 'valorant', title: 'Valorant', created_at: new Date() },
-    { id: 'game_elden', external_app_id: '1245620', title: 'Elden Ring', created_at: new Date() },
-    { id: 'game_witcher3', external_app_id: '292030', title: 'The Witcher 3: Wild Hunt', created_at: new Date() }
-  ],
-  optimization_profiles: [
-    {
-      id: 'opt_001',
-      user_id: 'user-mock-id',
-      game_id: 'game_cyberpunk',
-      hardware_id: 'hw-preset-1',
-      hardware: { cpu_model: 'AMD Ryzen 7 7800X3D', gpu_model: 'NVIDIA GeForce RTX 4070 SUPER', ram_gb: 32, resolution: 'QHD' },
-      settings_json: { 'Texture Quality': 'High', 'Ray Tracing': 'Ultra (DLSS Quality)', 'Shadow Quality': 'Medium', 'Crowd Density': 'High' },
-      avg_fps: 88.5,
-      game_version: 'v2.12',
-      likes: 42,
-      created_at: new Date()
-    },
-    {
-      id: 'opt_002',
-      user_id: 'user-mock-id',
-      game_id: 'game_cyberpunk',
-      hardware_id: 'hw-preset-2',
-      hardware: { cpu_model: 'Intel Core i7-13700K', gpu_model: 'NVIDIA GeForce RTX 4070', ram_gb: 16, resolution: 'QHD' },
-      settings_json: { 'Texture Quality': 'High', 'Ray Tracing': 'Medium', 'Shadow Quality': 'Medium', 'Crowd Density': 'Medium' },
-      avg_fps: 74.2,
-      game_version: 'v2.12',
-      likes: 29,
-      created_at: new Date()
-    },
-    {
-      id: 'opt_003',
-      user_id: 'user-mock-id',
-      game_id: 'game_cyberpunk',
-      hardware_id: 'hw-preset-3',
-      hardware: { cpu_model: 'Intel Core i9-14900K', gpu_model: 'NVIDIA GeForce RTX 4090', ram_gb: 64, resolution: '4K' },
-      settings_json: { 'Texture Quality': 'Ultra', 'Ray Tracing': 'Overdrive (Path Tracing)', 'Shadow Quality': 'Ultra', 'Crowd Density': 'High' },
-      avg_fps: 95.0,
-      game_version: 'v2.12',
-      likes: 124,
-      created_at: new Date()
-    },
-    {
-      id: 'opt_004',
-      user_id: 'user-mock-id',
-      game_id: 'game_cyberpunk',
-      hardware_id: 'hw-preset-4',
-      hardware: { cpu_model: 'AMD Ryzen 5 5600X', gpu_model: 'NVIDIA GeForce RTX 3060', ram_gb: 16, resolution: 'FHD' },
-      settings_json: { 'Texture Quality': 'Medium', 'Ray Tracing': 'Off', 'Shadow Quality': 'Low', 'Crowd Density': 'Medium' },
-      avg_fps: 62.1,
-      game_version: 'v2.11',
-      likes: 56,
-      created_at: new Date()
-    }
-  ]
-};
+import { MOCK_DB } from './mockDb.js';
 
 // ─── DATABASE AUTO-MIGRATION (POSTGRESQL) ───
 export async function initDb() {
@@ -104,14 +33,28 @@ export async function initDb() {
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        provider VARCHAR(50) NOT NULL,
+        email VARCHAR(255) UNIQUE,
+        nickname VARCHAR(100),
+        provider VARCHAR(50) NOT NULL DEFAULT 'local',
         provider_id VARCHAR(255) NOT NULL,
         password_hash VARCHAR(255),
+        email_verified BOOLEAN DEFAULT false,
+        role VARCHAR(20) DEFAULT 'user',
         linked_providers JSONB DEFAULT '[]'::jsonb NOT NULL,
         subscription_status VARCHAR(50) DEFAULT 'free' NOT NULL,
         toss_payment_key VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
         UNIQUE(provider, provider_id)
+      );
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS email_verification_codes (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        email VARCHAR(255) NOT NULL,
+        code VARCHAR(6) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        used BOOLEAN DEFAULT false
       );
     `);
 
@@ -149,6 +92,28 @@ export async function initDb() {
         one_percent_low_fps FLOAT,
         game_version VARCHAR(50) NOT NULL,
         likes INT DEFAULT 0 NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      );
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS posts (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        views INT DEFAULT 0,
+        likes INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      );
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS comments (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        content TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
       );
     `);
@@ -198,32 +163,79 @@ export const db = {
       // Mock db basic parser for authentication & hardware profile endpoints
       const normalizedQuery = text.trim().replace(/\s+/g, ' ').toLowerCase();
 
-      // 1. SELECT FROM users WHERE provider = $1 AND provider_id = $2
-      if (normalizedQuery.includes('select') && normalizedQuery.includes('from users')) {
+      // 1. SELECT FROM users WHERE email = $1
+      if (normalizedQuery.includes('select') && normalizedQuery.includes('from users') && normalizedQuery.includes('email =')) {
+        const email = params[0];
+        const found = MOCK_DB.users.find(u => u.email === email);
+        return { rows: found ? [found] : [] };
+      }
+
+      // 1.5 SELECT FROM users WHERE provider = $1 AND provider_id = $2
+      if (normalizedQuery.includes('select') && normalizedQuery.includes('from users') && normalizedQuery.includes('provider =') && normalizedQuery.includes('provider_id =')) {
         const provider = params[0];
         const providerId = params[1];
         const found = MOCK_DB.users.find(u => u.provider === provider && u.provider_id === providerId);
         return { rows: found ? [found] : [] };
       }
 
+      // 1.8 SELECT FROM users WHERE id = $1
+      if (normalizedQuery.includes('select') && normalizedQuery.includes('from users') && normalizedQuery.includes('id =')) {
+        const id = params[0];
+        const found = MOCK_DB.users.find(u => u.id === id);
+        return { rows: found ? [found] : [] };
+      }
+
       // 2. INSERT INTO users
       if (normalizedQuery.includes('insert into users')) {
         const id = crypto.randomUUID();
-        const provider = params[0];
-        const providerId = params[1];
-        const passwordHash = params[2];
-        const newUser = { 
-          id, 
-          provider, 
-          provider_id: providerId, 
-          password_hash: passwordHash, 
-          linked_providers: [], 
-          subscription_status: 'free',
-          toss_payment_key: null,
-          created_at: new Date() 
-        };
-        MOCK_DB.users.push(newUser);
-        return { rows: [newUser] };
+        // Check params length to decide format
+        // For oauth: INSERT INTO users (provider, provider_id, linked_providers) VALUES ($1, $2, $3)
+        // For local: INSERT INTO users (email, nickname, provider, provider_id, password_hash) VALUES ($1, $2, $3, $4, $5)
+        if (params.length === 3) {
+          const [provider, providerId, linkedProviders] = params;
+          const newUser = { 
+            id, 
+            email: null,
+            nickname: 'User_' + providerId.substring(0, 5),
+            provider, 
+            provider_id: providerId, 
+            password_hash: null, 
+            email_verified: false,
+            role: 'user',
+            linked_providers: linkedProviders === '[]' ? [] : JSON.parse(linkedProviders), 
+            subscription_status: 'free',
+            toss_payment_key: null,
+            created_at: new Date() 
+          };
+          MOCK_DB.users.push(newUser);
+          return { rows: [newUser] };
+        } else {
+          const [email, nickname, provider, providerId, passwordHash] = params;
+          const newUser = { 
+            id, 
+            email,
+            nickname,
+            provider, 
+            provider_id: providerId, 
+            password_hash: passwordHash, 
+            email_verified: false,
+            role: email === 'admin@syncrig.com' ? 'admin' : 'user',
+            linked_providers: [], 
+            subscription_status: 'free',
+            toss_payment_key: null,
+            created_at: new Date() 
+          };
+          MOCK_DB.users.push(newUser);
+          return { rows: [newUser] };
+        }
+      }
+
+      // 2.2 UPDATE users (email_verified)
+      if (normalizedQuery.includes('update users') && normalizedQuery.includes('email_verified = true')) {
+        const email = params[0];
+        const user = MOCK_DB.users.find(u => u.email === email);
+        if (user) user.email_verified = true;
+        return { rowCount: user ? 1 : 0 };
       }
 
       // 2.5. UPDATE users (linked_providers)
@@ -263,26 +275,92 @@ export const db = {
         return { rows };
       }
 
+      // 3.5. email_verification_codes
+      if (normalizedQuery.includes('insert into email_verification_codes')) {
+        const [email, code, expires_at] = params;
+        MOCK_DB.email_verification_codes.push({ id: crypto.randomUUID(), email, code, expires_at, used: false });
+        return { rowCount: 1 };
+      }
+      if (normalizedQuery.includes('select') && normalizedQuery.includes('from email_verification_codes')) {
+        const email = params[0];
+        const found = MOCK_DB.email_verification_codes
+          .filter(c => c.email === email && !c.used)
+          .sort((a, b) => new Date(b.expires_at) - new Date(a.expires_at))[0];
+        return { rows: found ? [found] : [] };
+      }
+      if (normalizedQuery.includes('update email_verification_codes') && normalizedQuery.includes('used = true')) {
+        const id = params[0];
+        const code = MOCK_DB.email_verification_codes.find(c => c.id === id);
+        if (code) code.used = true;
+        return { rowCount: code ? 1 : 0 };
+      }
+
       // 4. INSERT INTO hardware_profiles
       if (normalizedQuery.includes('insert into hardware_profiles')) {
         const id = crypto.randomUUID();
-        const user_id = params[0];
-        const is_default = params[1] || false;
-        const cpu_model = params[2];
-        const gpu_model = params[3];
-        const ram_gb = params[4];
-        const resolution = params[5];
-        const refresh_rate = params[6];
-
-        if (is_default) {
-          MOCK_DB.hardware_profiles.forEach(p => {
-            if (p.user_id === user_id) p.is_default = false;
-          });
-        }
-
+        const [user_id, is_default, cpu_model, gpu_model, ram_gb, resolution, refresh_rate] = params;
         const newProfile = { id, user_id, is_default, cpu_model, gpu_model, ram_gb, resolution, refresh_rate, created_at: new Date() };
         MOCK_DB.hardware_profiles.push(newProfile);
         return { rows: [newProfile] };
+      }
+
+      // 5. POSTS
+      if (normalizedQuery.includes('insert into posts')) {
+        const [user_id, title, content] = params;
+        const newPost = { id: crypto.randomUUID(), user_id, title, content, views: 0, likes: 0, created_at: new Date() };
+        if (!MOCK_DB.posts) MOCK_DB.posts = [];
+        MOCK_DB.posts.push(newPost);
+        return { rows: [newPost] };
+      }
+      if (normalizedQuery.includes('select') && normalizedQuery.includes('from posts')) {
+        if (!MOCK_DB.posts) MOCK_DB.posts = [];
+        if (normalizedQuery.includes('where p.id = $1') || (normalizedQuery.includes('where id = $1') && !normalizedQuery.includes('users'))) {
+          const p = MOCK_DB.posts.find(x => x.id === params[0]);
+          if (p) {
+            const user = MOCK_DB.users.find(u => u.id === p.user_id) || {};
+            return { rows: [{ ...p, nickname: user.nickname, email: user.email }] };
+          }
+          return { rows: [] };
+        }
+        // List all
+        const rows = MOCK_DB.posts.map(p => {
+           const user = MOCK_DB.users.find(u => u.id === p.user_id) || {};
+           return { ...p, nickname: user.nickname, email: user.email };
+        }).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        return { rows };
+      }
+      if (normalizedQuery.includes('update posts') && normalizedQuery.includes('views = views + 1')) {
+        if (!MOCK_DB.posts) MOCK_DB.posts = [];
+        const p = MOCK_DB.posts.find(x => x.id === params[0]);
+        if (p) p.views += 1;
+        return { rowCount: p ? 1 : 0 };
+      }
+      if (normalizedQuery.includes('delete from posts')) {
+        const id = params[0];
+        MOCK_DB.posts = MOCK_DB.posts.filter(p => p.id !== id);
+        return { rowCount: 1 };
+      }
+
+      // 6. COMMENTS
+      if (normalizedQuery.includes('insert into comments')) {
+        const [post_id, user_id, content] = params;
+        const newComment = { id: crypto.randomUUID(), post_id, user_id, content, created_at: new Date() };
+        if (!MOCK_DB.comments) MOCK_DB.comments = [];
+        MOCK_DB.comments.push(newComment);
+        return { rows: [newComment] };
+      }
+      if (normalizedQuery.includes('select') && normalizedQuery.includes('from comments') && normalizedQuery.includes('post_id = $1')) {
+        if (!MOCK_DB.comments) MOCK_DB.comments = [];
+        const rows = MOCK_DB.comments.filter(c => c.post_id === params[0]).map(c => {
+           const user = MOCK_DB.users.find(u => u.id === c.user_id) || {};
+           return { ...c, nickname: user.nickname, email: user.email };
+        }).sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+        return { rows };
+      }
+      if (normalizedQuery.includes('delete from comments')) {
+        const id = params[0];
+        MOCK_DB.comments = MOCK_DB.comments.filter(c => c.id !== id);
+        return { rowCount: 1 };
       }
 
       // 5. UPDATE hardware_profiles (set default)

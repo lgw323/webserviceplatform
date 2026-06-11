@@ -1,7 +1,7 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import rateLimit from 'express-rate-limit';
-import { register, login, oauthCallback, refreshAccessToken, unlinkAccount } from '../controllers/authController.js';
+import { register, login, oauthCallback, refreshAccessToken, unlinkAccount, sendVerificationCode, verifyEmailCode } from '../controllers/authController.js';
 import passport from 'passport';
 
 const router = express.Router();
@@ -23,13 +23,14 @@ const validateRequest = (req, res, next) => {
 };
 
 const registerRules = [
-  body('username').trim().isLength({ min: 4, max: 20 }).withMessage('아이디는 4자에서 20자 사이여야 합니다.'),
+  body('email').trim().isEmail().withMessage('유효한 이메일 주소를 입력해주세요.'),
+  body('nickname').trim().isLength({ min: 2, max: 20 }).withMessage('닉네임은 2자에서 20자 사이여야 합니다.'),
   body('password').isLength({ min: 6 }).withMessage('비밀번호는 최소 6자 이상이어야 합니다.')
     .matches(/\d/).withMessage('비밀번호에는 숫자가 포함되어야 합니다.')
 ];
 
 const loginRules = [
-  body('username').trim().notEmpty().withMessage('아이디를 입력해주세요.'),
+  body('email').trim().notEmpty().withMessage('이메일을 입력해주세요.'),
   body('password').notEmpty().withMessage('비밀번호를 입력해주세요.')
 ];
 
@@ -59,6 +60,8 @@ router.post('/register', authLimiter, registerRules, validateRequest, register);
 router.post('/login', authLimiter, loginRules, validateRequest, login);
 router.post('/refresh', refreshAccessToken);
 router.delete('/unlink/:provider', authLimiter, unlinkAccount);
+router.post('/send-code', authLimiter, sendVerificationCode);
+router.post('/verify-code', authLimiter, verifyEmailCode);
 
 // ── 소셜 인증 미들웨어 (Fallback) ──
 const checkSteamAuth = (req, res, next) => {

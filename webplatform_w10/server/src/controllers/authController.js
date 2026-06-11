@@ -27,8 +27,11 @@ function generateTokenPair(user) {
   const accessToken = jwt.sign(
     { 
       id: user.id, 
+      email: user.email,
+      nickname: user.nickname,
       provider: user.provider, 
       provider_id: user.provider_id,
+      role: user.role || 'user',
       subscription_status: user.subscription_status || 'free',
       linked_providers: user.linked_providers || []
     },
@@ -45,24 +48,24 @@ function generateTokenPair(user) {
 
 export const register = async (req, res, next) => {
   try {
-    const { username, password } = req.body;
-    if (!username || !password) {
-      return res.status(400).json({ status: 'error', message: '아이디와 비밀번호를 입력해주세요.' });
+    const { email, nickname, password } = req.body;
+    if (!email || !nickname || !password) {
+      return res.status(400).json({ status: 'error', message: '이메일, 닉네임, 비밀번호를 입력해주세요.' });
     }
 
     const userCheck = await db.query(
-      'SELECT * FROM users WHERE provider = $1 AND provider_id = $2',
-      ['local', username]
+      'SELECT * FROM users WHERE email = $1',
+      [email]
     );
 
     if (userCheck.rows.length > 0) {
-      return res.status(400).json({ status: 'error', message: '이미 가입된 아이디입니다.' });
+      return res.status(400).json({ status: 'error', message: '이미 가입된 이메일입니다.' });
     }
 
     const passwordHash = hashPassword(password);
     const result = await db.query(
-      'INSERT INTO users (provider, provider_id, password_hash) VALUES ($1, $2, $3) RETURNING id, provider, provider_id, subscription_status, linked_providers',
-      ['local', username, passwordHash]
+      'INSERT INTO users (email, nickname, provider, provider_id, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, nickname, role, provider, provider_id, subscription_status, linked_providers',
+      [email, nickname, 'local', email, passwordHash]
     );
 
     const user = result.rows[0];
@@ -79,19 +82,19 @@ export const register = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
   try {
-    const { username, password } = req.body;
-    if (!username || !password) {
-      return res.status(400).json({ status: 'error', message: '아이디와 비밀번호를 입력해주세요.' });
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ status: 'error', message: '이메일과 비밀번호를 입력해주세요.' });
     }
 
     const result = await db.query(
-      'SELECT * FROM users WHERE provider = $1 AND provider_id = $2',
-      ['local', username]
+      'SELECT * FROM users WHERE email = $1',
+      [email]
     );
 
     const user = result.rows[0];
     if (!user || !user.password_hash || !verifyPassword(password, user.password_hash)) {
-      return res.status(401).json({ status: 'error', message: '아이디 또는 비밀번호가 잘못되었습니다.' });
+      return res.status(401).json({ status: 'error', message: '이메일 또는 비밀번호가 잘못되었습니다.' });
     }
 
     const { accessToken, refreshToken } = generateTokenPair(user);
@@ -102,6 +105,9 @@ export const login = async (req, res, next) => {
         refresh_token: refreshToken,
         user: { 
           id: user.id, 
+          email: user.email,
+          nickname: user.nickname,
+          role: user.role || 'user',
           provider: user.provider, 
           provider_id: user.provider_id,
           subscription_status: user.subscription_status,
@@ -109,6 +115,57 @@ export const login = async (req, res, next) => {
         }
       }
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const sendVerificationCode = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ status: 'error', message: '이메일을 입력해주세요.' });
+    
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60000); // 5 mins
+    
+    await db.query(
+      'INSERT INTO email_verification_codes (email, code, expires_at) VALUES ($1, $2, $3)',
+      [email, code, expiresAt]
+    );
+
+    console.log(`[Email Mock] ${email}로 인증 코드가 발송되었습니다: ${code}`);
+
+    res.json({ status: 'success', message: '인증 코드가 발송되었습니다.' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const verifyEmailCode = async (req, res, next) => {
+  try {
+    const { email, code } = req.body;
+    if (!email || !code) return res.status(400).json({ status: 'error', message: '이메일과 인증 코드를 입력해주세요.' });
+
+    const result = await db.query(
+      'SELECT * FROM email_verification_codes WHERE email = $1 AND used = false ORDER BY expires_at DESC LIMIT 1',
+      [email]
+    );
+
+    const record = result.rows[0];
+    if (!record) {
+      return res.status(400).json({ status: 'error', message: '인증 요청을 찾을 수 없습니다.' });
+    }
+    if (new Date() > new Date(record.expires_at)) {
+      return res.status(400).json({ status: 'error', message: '인증 코드가 만료되었습니다.' });
+    }
+    if (record.code !== code) {
+      return res.status(400).json({ status: 'error', message: '인증 코드가 일치하지 않습니다.' });
+    }
+
+    await db.query('UPDATE email_verification_codes SET used = true WHERE id = $1', [record.id]);
+    await db.query('UPDATE users SET email_verified = true WHERE email = $1', [email]);
+
+    res.json({ status: 'success', message: '이메일 인증이 완료되었습니다.' });
   } catch (err) {
     next(err);
   }

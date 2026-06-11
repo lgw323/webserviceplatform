@@ -6,6 +6,8 @@ import authRoutes from './src/routes/authRoutes.js';
 import profileRoutes from './src/routes/profileRoutes.js';
 import recommendationRoutes from './src/routes/recommendationRoutes.js';
 import gameRoutes from './src/routes/gameRoutes.js';
+import postRoutes from './src/routes/postRoutes.js';
+import adminRoutes from './src/routes/adminRoutes.js';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { v4 as uuidv4 } from 'uuid';
@@ -70,6 +72,8 @@ app.use('/api/v1/profiles/recommendations', recommendationRoutes);
 app.use('/api/v1/games', gameRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/stats', statsRoutes);
+app.use('/api/v1/posts', postRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 // ─── Global Error Handler ───
 app.use(errorHandler);
