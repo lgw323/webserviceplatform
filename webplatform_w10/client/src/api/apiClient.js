@@ -139,6 +139,33 @@ export async function oauthCallback(provider, code) {
   return data.data;
 }
 
+// ─── ADMIN ───
+export async function getStats() {
+  const { data } = await apiClient.get('/stats');
+  return data.data;
+}
+
+// ─── COMMUNITY ───
+export async function getPosts() {
+  const { data } = await apiClient.get('/posts');
+  return data.data;
+}
+
+export async function getPostById(id) {
+  const { data } = await apiClient.get(`/posts/${id}`);
+  return data.data;
+}
+
+export async function createPost(title, content) {
+  const { data } = await apiClient.post('/posts', { title, content });
+  return data.data;
+}
+
+export async function createComment(postId, content) {
+  const { data } = await apiClient.post(`/posts/${postId}/comments`, { content });
+  return data.data;
+}
+
 // ─── HARDWARE PROFILES ───
 export async function fetchHardwareProfiles() {
   const { data } = await apiClient.get('/users/hardware-profiles');
