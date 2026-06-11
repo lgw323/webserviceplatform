@@ -60,7 +60,6 @@ apiClient.interceptors.response.use((response) => response, async (error) => {
     const refreshToken = localStorage.getItem('syncrig_refresh_token');
 
     if (!refreshToken) {
-      // Refresh token 없음 → 완전 로그아웃
       setToken(null);
       setRefreshToken(null);
       localStorage.removeItem('syncrig_linked_providers');
@@ -69,7 +68,6 @@ apiClient.interceptors.response.use((response) => response, async (error) => {
     }
 
     if (isRefreshing) {
-      // 이미 갱신 중이면 큐에 추가
       return new Promise((resolve, reject) => {
         failedQueue.push({ resolve, reject });
       }).then(token => {
@@ -100,7 +98,6 @@ apiClient.interceptors.response.use((response) => response, async (error) => {
     }
   }
 
-  // 토큰이 없는 상태(로그인 시도 실패 등) — 에러를 그대로 throw
   if (error.response && error.response.status === 401 && !cachedToken) {
     return Promise.reject(error.response?.data || error);
   }
@@ -139,6 +136,49 @@ export async function oauthCallback(provider, code) {
   return data.data;
 }
 
+// ─── COMMUNITY POSTS ───
+export async function getPosts(category = 'all', page = 1, sort = 'latest') {
+  const params = new URLSearchParams({ page: page.toString(), sort });
+  if (category && category !== 'all') params.append('category', category);
+  const { data } = await apiClient.get(`/posts?${params.toString()}`);
+  return data;
+}
+
+export async function getPostById(id) {
+  const { data } = await apiClient.get(`/posts/${id}`);
+  return data.data;
+}
+
+export async function createPost(title, content, category = 'free') {
+  const { data } = await apiClient.post('/posts', { title, content, category });
+  return data.data;
+}
+
+export async function updatePost(id, title, content, category) {
+  const { data } = await apiClient.put(`/posts/${id}`, { title, content, category });
+  return data.data;
+}
+
+export async function deletePost(id) {
+  const { data } = await apiClient.delete(`/posts/${id}`);
+  return data;
+}
+
+export async function togglePostLike(id) {
+  const { data } = await apiClient.post(`/posts/${id}/like`);
+  return data.data;
+}
+
+export async function createComment(postId, content) {
+  const { data } = await apiClient.post(`/posts/${postId}/comments`, { content });
+  return data.data;
+}
+
+export async function deleteComment(commentId) {
+  const { data } = await apiClient.delete(`/posts/comments/${commentId}`);
+  return data;
+}
+
 // ─── ADMIN ───
 export async function getStats() {
   const { data } = await apiClient.get('/stats');
@@ -150,39 +190,41 @@ export async function getAdminStats() {
   return data.data;
 }
 
-export async function getAdminUsers() {
-  const { data } = await apiClient.get('/admin/users');
+export async function getAdminUsers(search = '', filter = '') {
+  const params = new URLSearchParams();
+  if (search) params.append('search', search);
+  if (filter) params.append('filter', filter);
+  const { data } = await apiClient.get(`/admin/users?${params.toString()}`);
   return data.data;
+}
+
+export async function updateUserRole(userId, role) {
+  const { data } = await apiClient.patch(`/admin/users/${userId}/role`, { role });
+  return data;
+}
+
+export async function toggleUserBan(userId, is_banned) {
+  const { data } = await apiClient.patch(`/admin/users/${userId}/ban`, { is_banned });
+  return data;
+}
+
+export async function togglePostVisibility(postId, is_hidden) {
+  const { data } = await apiClient.patch(`/admin/posts/${postId}/hide`, { is_hidden });
+  return data;
 }
 
 export async function deletePostByAdmin(id) {
   const { data } = await apiClient.delete(`/admin/posts/${id}`);
-  return data.data;
+  return data;
 }
 
 export async function deleteCommentByAdmin(id) {
   const { data } = await apiClient.delete(`/admin/comments/${id}`);
-  return data.data;
+  return data;
 }
 
-// ─── COMMUNITY ───
-export async function getPosts() {
-  const { data } = await apiClient.get('/posts');
-  return data.data;
-}
-
-export async function getPostById(id) {
-  const { data } = await apiClient.get(`/posts/${id}`);
-  return data.data;
-}
-
-export async function createPost(title, content) {
-  const { data } = await apiClient.post('/posts', { title, content });
-  return data.data;
-}
-
-export async function createComment(postId, content) {
-  const { data } = await apiClient.post(`/posts/${postId}/comments`, { content });
+export async function getBusinessMetrics() {
+  const { data } = await apiClient.get('/admin/metrics');
   return data.data;
 }
 
