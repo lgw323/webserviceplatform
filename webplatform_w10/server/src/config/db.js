@@ -14,6 +14,7 @@ if (isPgAvailable) {
 // ─── IN-MEMORY FALLBACK DATABASE ───
 const MOCK_DB = {
   users: [],
+  email_verification_codes: [],
   hardware_profiles: [
     {
       id: 'hw-default-1',
@@ -104,14 +105,28 @@ export async function initDb() {
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        provider VARCHAR(50) NOT NULL,
+        email VARCHAR(255) UNIQUE,
+        nickname VARCHAR(100),
+        provider VARCHAR(50) NOT NULL DEFAULT 'local',
         provider_id VARCHAR(255) NOT NULL,
         password_hash VARCHAR(255),
+        email_verified BOOLEAN DEFAULT false,
+        role VARCHAR(20) DEFAULT 'user',
         linked_providers JSONB DEFAULT '[]'::jsonb NOT NULL,
         subscription_status VARCHAR(50) DEFAULT 'free' NOT NULL,
         toss_payment_key VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
         UNIQUE(provider, provider_id)
+      );
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS email_verification_codes (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        email VARCHAR(255) NOT NULL,
+        code VARCHAR(6) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        used BOOLEAN DEFAULT false
       );
     `);
 
@@ -198,32 +213,79 @@ export const db = {
       // Mock db basic parser for authentication & hardware profile endpoints
       const normalizedQuery = text.trim().replace(/\s+/g, ' ').toLowerCase();
 
-      // 1. SELECT FROM users WHERE provider = $1 AND provider_id = $2
-      if (normalizedQuery.includes('select') && normalizedQuery.includes('from users')) {
+      // 1. SELECT FROM users WHERE email = $1
+      if (normalizedQuery.includes('select') && normalizedQuery.includes('from users') && normalizedQuery.includes('email =')) {
+        const email = params[0];
+        const found = MOCK_DB.users.find(u => u.email === email);
+        return { rows: found ? [found] : [] };
+      }
+
+      // 1.5 SELECT FROM users WHERE provider = $1 AND provider_id = $2
+      if (normalizedQuery.includes('select') && normalizedQuery.includes('from users') && normalizedQuery.includes('provider =') && normalizedQuery.includes('provider_id =')) {
         const provider = params[0];
         const providerId = params[1];
         const found = MOCK_DB.users.find(u => u.provider === provider && u.provider_id === providerId);
         return { rows: found ? [found] : [] };
       }
 
+      // 1.8 SELECT FROM users WHERE id = $1
+      if (normalizedQuery.includes('select') && normalizedQuery.includes('from users') && normalizedQuery.includes('id =')) {
+        const id = params[0];
+        const found = MOCK_DB.users.find(u => u.id === id);
+        return { rows: found ? [found] : [] };
+      }
+
       // 2. INSERT INTO users
       if (normalizedQuery.includes('insert into users')) {
         const id = crypto.randomUUID();
-        const provider = params[0];
-        const providerId = params[1];
-        const passwordHash = params[2];
-        const newUser = { 
-          id, 
-          provider, 
-          provider_id: providerId, 
-          password_hash: passwordHash, 
-          linked_providers: [], 
-          subscription_status: 'free',
-          toss_payment_key: null,
-          created_at: new Date() 
-        };
-        MOCK_DB.users.push(newUser);
-        return { rows: [newUser] };
+        // Check params length to decide format
+        // For oauth: INSERT INTO users (provider, provider_id, linked_providers) VALUES ($1, $2, $3)
+        // For local: INSERT INTO users (email, nickname, provider, provider_id, password_hash) VALUES ($1, $2, $3, $4, $5)
+        if (params.length === 3) {
+          const [provider, providerId, linkedProviders] = params;
+          const newUser = { 
+            id, 
+            email: null,
+            nickname: 'User_' + providerId.substring(0, 5),
+            provider, 
+            provider_id: providerId, 
+            password_hash: null, 
+            email_verified: false,
+            role: 'user',
+            linked_providers: linkedProviders === '[]' ? [] : JSON.parse(linkedProviders), 
+            subscription_status: 'free',
+            toss_payment_key: null,
+            created_at: new Date() 
+          };
+          MOCK_DB.users.push(newUser);
+          return { rows: [newUser] };
+        } else {
+          const [email, nickname, provider, providerId, passwordHash] = params;
+          const newUser = { 
+            id, 
+            email,
+            nickname,
+            provider, 
+            provider_id: providerId, 
+            password_hash: passwordHash, 
+            email_verified: false,
+            role: email === 'admin@syncrig.com' ? 'admin' : 'user',
+            linked_providers: [], 
+            subscription_status: 'free',
+            toss_payment_key: null,
+            created_at: new Date() 
+          };
+          MOCK_DB.users.push(newUser);
+          return { rows: [newUser] };
+        }
+      }
+
+      // 2.2 UPDATE users (email_verified)
+      if (normalizedQuery.includes('update users') && normalizedQuery.includes('email_verified = true')) {
+        const email = params[0];
+        const user = MOCK_DB.users.find(u => u.email === email);
+        if (user) user.email_verified = true;
+        return { rowCount: user ? 1 : 0 };
       }
 
       // 2.5. UPDATE users (linked_providers)
@@ -261,6 +323,26 @@ export const db = {
         const userId = params[0];
         const rows = MOCK_DB.hardware_profiles.filter(hp => hp.user_id === userId);
         return { rows };
+      }
+
+      // 3.5. email_verification_codes
+      if (normalizedQuery.includes('insert into email_verification_codes')) {
+        const [email, code, expires_at] = params;
+        MOCK_DB.email_verification_codes.push({ id: crypto.randomUUID(), email, code, expires_at, used: false });
+        return { rowCount: 1 };
+      }
+      if (normalizedQuery.includes('select') && normalizedQuery.includes('from email_verification_codes')) {
+        const email = params[0];
+        const found = MOCK_DB.email_verification_codes
+          .filter(c => c.email === email && !c.used)
+          .sort((a, b) => new Date(b.expires_at) - new Date(a.expires_at))[0];
+        return { rows: found ? [found] : [] };
+      }
+      if (normalizedQuery.includes('update email_verification_codes') && normalizedQuery.includes('used = true')) {
+        const id = params[0];
+        const code = MOCK_DB.email_verification_codes.find(c => c.id === id);
+        if (code) code.used = true;
+        return { rowCount: code ? 1 : 0 };
       }
 
       // 4. INSERT INTO hardware_profiles
