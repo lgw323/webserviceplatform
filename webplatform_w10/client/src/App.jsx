@@ -11,6 +11,7 @@ import DashboardPage from './pages/DashboardPage';
 import HardwarePage from './pages/HardwarePage';
 import CommunityPage from './pages/CommunityPage';
 import PostDetail from './pages/PostDetail';
+import PostWritePage from './pages/PostWritePage';
 import AdminDashboard from './pages/AdminDashboard';
 import RecommendPage from './pages/RecommendPage';
 import SettingsPage from './pages/SettingsPage';
@@ -63,6 +64,8 @@ export default function App() {
         <Route path="hardware" element={<HardwarePage />} />
         <Route path="community" element={<CommunityPage />} />
         <Route path="community/:id" element={<PostDetail />} />
+        <Route path="community/write" element={<PostWritePage />} />
+        <Route path="community/edit/:id" element={<PostWritePage />} />
         <Route path="admin" element={<AdminDashboard />} />
         <Route path="recommend" element={<RecommendPage />} />
         <Route path="settings" element={<SettingsPage />} />
