@@ -21,6 +21,9 @@ const useAuthStore = create((set, get) => ({
       const payload = JSON.parse(atob(token.split('.')[1]));
       sessionUser = { 
         id: payload.id, 
+        email: payload.email,
+        nickname: payload.nickname,
+        role: payload.role || 'user',
         provider: payload.provider, 
         provider_id: payload.provider_id,
         subscription_status: payload.subscription_status || 'free',
@@ -31,7 +34,7 @@ const useAuthStore = create((set, get) => ({
       const isRiot = token.includes('riot');
       const provider = isSteam ? 'steam' : isRiot ? 'riot' : 'local';
       const providerId = token.replace('mock_jwt_token_for_', '');
-      sessionUser = { id: 'user-mock-id', provider, provider_id: providerId, linked_providers: [] };
+      sessionUser = { id: 'user-mock-id', email: null, nickname: 'MockUser', role: 'user', provider, provider_id: providerId, linked_providers: [] };
     }
     
     // JWT 페이로드에 연동 정보가 있으면 localStorage 동기화, 없으면 기존 캐시 사용
