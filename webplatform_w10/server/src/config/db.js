@@ -335,6 +335,11 @@ export const db = {
         if (p) p.views += 1;
         return { rowCount: p ? 1 : 0 };
       }
+      if (normalizedQuery.includes('delete from posts')) {
+        const id = params[0];
+        MOCK_DB.posts = MOCK_DB.posts.filter(p => p.id !== id);
+        return { rowCount: 1 };
+      }
 
       // 6. COMMENTS
       if (normalizedQuery.includes('insert into comments')) {
@@ -351,6 +356,11 @@ export const db = {
            return { ...c, nickname: user.nickname, email: user.email };
         }).sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
         return { rows };
+      }
+      if (normalizedQuery.includes('delete from comments')) {
+        const id = params[0];
+        MOCK_DB.comments = MOCK_DB.comments.filter(c => c.id !== id);
+        return { rowCount: 1 };
       }
 
       // 5. UPDATE hardware_profiles (set default)
