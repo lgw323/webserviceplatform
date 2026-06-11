@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Gamepad2, LayoutDashboard, Cpu, Settings2, Settings, Bell, Search, LogOut, Users } from 'lucide-react';
+import { Gamepad2, LayoutDashboard, Cpu, Settings2, Settings, Bell, Search, LogOut, Users, ShieldAlert } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 import useNotificationStore from '../../store/useNotificationStore';
 import { useSearch } from '../../hooks/useSearch';
@@ -75,6 +75,19 @@ export default function MainLayout() {
                   </li>
                 );
               })}
+              {user?.role === 'admin' && (
+                <li role="listitem" className="pt-4 mt-4 border-t border-gray-800">
+                  <NavLink
+                    to="/admin"
+                    className={({ isActive }) => `w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-bold transition-colors ${
+                      isActive ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'text-red-400/70 hover:bg-red-500/10 hover:text-red-400'
+                    }`}
+                  >
+                    <ShieldAlert className="w-5 h-5 mr-3 flex-shrink-0" aria-hidden="true" />
+                    Admin Panel
+                  </NavLink>
+                </li>
+              )}
             </ul>
           </nav>
         </div>
