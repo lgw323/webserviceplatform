@@ -7,6 +7,8 @@ export const MOCK_DB = {
   users: [],
   email_verification_codes: [],
   hardware_profiles: [],
+  posts: [],
+  comments: [],
   games: [
     { id: 'game_cyberpunk', external_app_id: '1091500', title: 'Cyberpunk 2077', created_at: pastDate(30) },
     { id: 'game_valorant', external_app_id: 'valorant', title: 'Valorant', created_at: pastDate(30) },
@@ -167,3 +169,18 @@ mockUsers.push({
 MOCK_DB.users = mockUsers;
 MOCK_DB.hardware_profiles = mockHwProfiles;
 MOCK_DB.optimization_profiles = mockOptProfiles;
+
+const mockPosts = [
+  { id: 'post-mock-1', user_id: 'user-admin-1', title: 'SYNCRIG 커뮤니티 오픈!', content: '환영합니다! 이곳에서 최적화 세팅을 공유해보세요.', views: 120, likes: 45, created_at: pastDate(5) },
+  { id: 'post-mock-2', user_id: 'user-mock-1', title: '4090으로 사이버펑크 4K 풀옵션 돌려봤습니다', content: '경이로운 그래픽이네요. 프레임 방어도 아주 잘 됩니다.', views: 80, likes: 20, created_at: pastDate(2) },
+  { id: 'post-mock-3', user_id: 'user-mock-5', title: '발로란트 144Hz 방어용 세팅 질문', content: '3060인데 가끔 프레임 드랍이 생기네요. 어떻게 세팅해야 할까요?', views: 42, likes: 5, created_at: pastDate(1) }
+];
+
+const mockComments = [
+  { id: 'comment-mock-1', post_id: 'post-mock-1', user_id: 'user-mock-2', content: '오픈 축하합니다!!', created_at: pastDate(4) },
+  { id: 'comment-mock-2', post_id: 'post-mock-2', user_id: 'user-mock-10', content: '부럽습니다 ㅠㅠ', created_at: pastDate(1) },
+  { id: 'comment-mock-3', post_id: 'post-mock-3', user_id: 'user-mock-15', content: '그림자 품질을 낮춰보세요.', created_at: pastDate(0) }
+];
+
+MOCK_DB.posts = mockPosts;
+MOCK_DB.comments = mockComments;
