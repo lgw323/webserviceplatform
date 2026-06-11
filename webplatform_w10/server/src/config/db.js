@@ -96,6 +96,28 @@ export async function initDb() {
       );
     `);
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS posts (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        views INT DEFAULT 0,
+        likes INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      );
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS comments (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      );
+    `);
+
     await client.query('CREATE INDEX IF NOT EXISTS idx_hardware_gpu ON hardware_profiles(gpu_model);');
     await client.query('CREATE INDEX IF NOT EXISTS idx_optimization_game ON optimization_profiles(game_id);');
 
@@ -276,23 +298,59 @@ export const db = {
       // 4. INSERT INTO hardware_profiles
       if (normalizedQuery.includes('insert into hardware_profiles')) {
         const id = crypto.randomUUID();
-        const user_id = params[0];
-        const is_default = params[1] || false;
-        const cpu_model = params[2];
-        const gpu_model = params[3];
-        const ram_gb = params[4];
-        const resolution = params[5];
-        const refresh_rate = params[6];
-
-        if (is_default) {
-          MOCK_DB.hardware_profiles.forEach(p => {
-            if (p.user_id === user_id) p.is_default = false;
-          });
-        }
-
+        const [user_id, is_default, cpu_model, gpu_model, ram_gb, resolution, refresh_rate] = params;
         const newProfile = { id, user_id, is_default, cpu_model, gpu_model, ram_gb, resolution, refresh_rate, created_at: new Date() };
         MOCK_DB.hardware_profiles.push(newProfile);
         return { rows: [newProfile] };
+      }
+
+      // 5. POSTS
+      if (normalizedQuery.includes('insert into posts')) {
+        const [user_id, title, content] = params;
+        const newPost = { id: crypto.randomUUID(), user_id, title, content, views: 0, likes: 0, created_at: new Date() };
+        if (!MOCK_DB.posts) MOCK_DB.posts = [];
+        MOCK_DB.posts.push(newPost);
+        return { rows: [newPost] };
+      }
+      if (normalizedQuery.includes('select') && normalizedQuery.includes('from posts')) {
+        if (!MOCK_DB.posts) MOCK_DB.posts = [];
+        if (normalizedQuery.includes('where p.id = $1') || (normalizedQuery.includes('where id = $1') && !normalizedQuery.includes('users'))) {
+          const p = MOCK_DB.posts.find(x => x.id === params[0]);
+          if (p) {
+            const user = MOCK_DB.users.find(u => u.id === p.user_id) || {};
+            return { rows: [{ ...p, nickname: user.nickname, email: user.email }] };
+          }
+          return { rows: [] };
+        }
+        // List all
+        const rows = MOCK_DB.posts.map(p => {
+           const user = MOCK_DB.users.find(u => u.id === p.user_id) || {};
+           return { ...p, nickname: user.nickname, email: user.email };
+        }).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        return { rows };
+      }
+      if (normalizedQuery.includes('update posts') && normalizedQuery.includes('views = views + 1')) {
+        if (!MOCK_DB.posts) MOCK_DB.posts = [];
+        const p = MOCK_DB.posts.find(x => x.id === params[0]);
+        if (p) p.views += 1;
+        return { rowCount: p ? 1 : 0 };
+      }
+
+      // 6. COMMENTS
+      if (normalizedQuery.includes('insert into comments')) {
+        const [post_id, user_id, content] = params;
+        const newComment = { id: crypto.randomUUID(), post_id, user_id, content, created_at: new Date() };
+        if (!MOCK_DB.comments) MOCK_DB.comments = [];
+        MOCK_DB.comments.push(newComment);
+        return { rows: [newComment] };
+      }
+      if (normalizedQuery.includes('select') && normalizedQuery.includes('from comments') && normalizedQuery.includes('post_id = $1')) {
+        if (!MOCK_DB.comments) MOCK_DB.comments = [];
+        const rows = MOCK_DB.comments.filter(c => c.post_id === params[0]).map(c => {
+           const user = MOCK_DB.users.find(u => u.id === c.user_id) || {};
+           return { ...c, nickname: user.nickname, email: user.email };
+        }).sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+        return { rows };
       }
 
       // 5. UPDATE hardware_profiles (set default)
