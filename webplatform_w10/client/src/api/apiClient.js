@@ -145,6 +145,26 @@ export async function getStats() {
   return data.data;
 }
 
+export async function getAdminStats() {
+  const { data } = await apiClient.get('/admin/stats');
+  return data.data;
+}
+
+export async function getAdminUsers() {
+  const { data } = await apiClient.get('/admin/users');
+  return data.data;
+}
+
+export async function deletePostByAdmin(id) {
+  const { data } = await apiClient.delete(`/admin/posts/${id}`);
+  return data.data;
+}
+
+export async function deleteCommentByAdmin(id) {
+  const { data } = await apiClient.delete(`/admin/comments/${id}`);
+  return data.data;
+}
+
 // ─── COMMUNITY ───
 export async function getPosts() {
   const { data } = await apiClient.get('/posts');
