@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Gamepad2, LayoutDashboard, Cpu, Settings2, Settings, Bell, Search, LogOut } from 'lucide-react';
+import { Gamepad2, LayoutDashboard, Cpu, Settings2, Settings, Bell, Search, LogOut, Users } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 import useNotificationStore from '../../store/useNotificationStore';
 import { useSearch } from '../../hooks/useSearch';
@@ -11,6 +11,7 @@ const NAV = [
   { path: '/dashboard', label: '대시보드', icon: LayoutDashboard },
   { path: '/hardware', label: '하드웨어 프로필', icon: Cpu },
   { path: '/recommend', label: '최적화 허브', icon: Settings2 },
+  { path: '/community', label: '커뮤니티', icon: Users },
   { path: '/settings', label: '환경 설정', icon: Settings },
 ];
 

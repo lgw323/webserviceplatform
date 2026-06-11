@@ -9,6 +9,9 @@ import AuthPage from './pages/AuthPage';
 import AuthCallback from './pages/AuthCallback';
 import DashboardPage from './pages/DashboardPage';
 import HardwarePage from './pages/HardwarePage';
+import RecommendationPage from './pages/RecommendationPage';
+import CommunityPage from './pages/CommunityPage';
+import PostDetail from './pages/PostDetail';
 import RecommendPage from './pages/RecommendPage';
 import SettingsPage from './pages/SettingsPage';
 import SubscriptionPage from './pages/SubscriptionPage';
@@ -58,6 +61,9 @@ export default function App() {
         <Route path="login" element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="hardware" element={<HardwarePage />} />
+        <Route path="recommendations" element={<RecommendationPage />} />
+        <Route path="community" element={<CommunityPage />} />
+        <Route path="community/:id" element={<PostDetail />} />
         <Route path="recommend" element={<RecommendPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="subscription" element={<SubscriptionPage />} />
