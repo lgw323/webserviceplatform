@@ -109,18 +109,28 @@ apiClient.interceptors.response.use((response) => response, async (error) => {
 });
 
 // ─── AUTHENTICATION ───
-export async function login(username, password) {
-  const { data } = await apiClient.post('/auth/login', { username, password });
+export async function login(email, password) {
+  const { data } = await apiClient.post('/auth/login', { email, password });
   setToken(data.data.access_token);
   if (data.data.refresh_token) setRefreshToken(data.data.refresh_token);
   return data.data;
 }
 
-export async function register(username, password) {
-  const { data } = await apiClient.post('/auth/register', { username, password });
+export async function register(email, nickname, password) {
+  const { data } = await apiClient.post('/auth/register', { email, nickname, password });
   setToken(data.data.access_token);
   if (data.data.refresh_token) setRefreshToken(data.data.refresh_token);
   return data.data;
+}
+
+export async function sendVerificationCode(email) {
+  const { data } = await apiClient.post('/auth/send-code', { email });
+  return data;
+}
+
+export async function verifyEmailCode(email, code) {
+  const { data } = await apiClient.post('/auth/verify-code', { email, code });
+  return data;
 }
 
 export async function oauthCallback(provider, code) {
