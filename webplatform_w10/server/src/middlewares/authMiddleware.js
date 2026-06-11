@@ -45,3 +45,13 @@ export function requirePremium(req, res, next) {
   
   next();
 }
+
+export function isAdmin(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ status: 'error', message: '인증이 필요합니다.' });
+  }
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ status: 'error', message: '관리자 권한이 필요합니다.' });
+  }
+  next();
+}
