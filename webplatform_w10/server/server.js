@@ -81,6 +81,37 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// ─── Danger: Force DB Reset ───
+app.get('/api/admin/force-reset-db', async (req, res) => {
+  try {
+    if (!db.isPgActive()) {
+      return res.status(400).json({ error: 'PostgreSQL is not active' });
+    }
+    const client = await db.getClient();
+    if (!client) throw new Error('Could not get DB client');
+    
+    await client.query(`DROP TABLE IF EXISTS post_likes CASCADE;`);
+    await client.query(`DROP TABLE IF EXISTS comments CASCADE;`);
+    await client.query(`DROP TABLE IF EXISTS posts CASCADE;`);
+    await client.query(`DROP TABLE IF EXISTS optimization_profiles CASCADE;`);
+    await client.query(`DROP TABLE IF EXISTS games CASCADE;`);
+    await client.query(`DROP TABLE IF EXISTS hardware_profiles CASCADE;`);
+    await client.query(`DROP TABLE IF EXISTS email_verification_codes CASCADE;`);
+    await client.query(`DROP TABLE IF EXISTS users CASCADE;`);
+    
+    client.release();
+    
+    // 테이블을 방금 드랍했으므로, 다음 요청이 오면 테이블을 다시 만들도록 프로미스 초기화
+    dbInitPromise = null;
+    await ensureDbInit();
+    
+    res.json({ status: 'success', message: '모든 테이블이 삭제되고 성공적으로 재생성(초기화) 되었습니다.' });
+  } catch (err) {
+    console.error('Force DB Reset Error:', err);
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
 import paymentRoutes from './src/routes/paymentRoutes.js';
 import statsRoutes from './src/routes/statsRoutes.js';
 
