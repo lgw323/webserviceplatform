@@ -58,8 +58,8 @@ export default function AuthPage() {
         await fetchUserData();
       } else {
         await api.register(email, nickname, password);
-        setInlineSuccess('회원가입 성공! 이메일 인증 코드를 전송했습니다.');
-        await api.sendVerificationCode(email);
+        const res = await api.sendVerificationCode(email);
+        setInlineSuccess(res?.message || '회원가입 성공! 이메일 인증 코드를 전송했습니다.');
         setIsVerifying(true);
       }
     } catch (err) {

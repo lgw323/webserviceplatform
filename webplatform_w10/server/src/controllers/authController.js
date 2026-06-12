@@ -135,7 +135,7 @@ export const sendVerificationCode = async (req, res, next) => {
 
     console.log(`[Email Mock] ${email}로 인증 코드가 발송되었습니다: ${code}`);
 
-    res.json({ status: 'success', message: '인증 코드가 발송되었습니다.' });
+    res.json({ status: 'success', message: `인증 코드가 발송되었습니다. (테스트용 코드: ${code})` });
   } catch (err) {
     next(err);
   }
