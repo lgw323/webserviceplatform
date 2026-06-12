@@ -14,6 +14,85 @@ if (isPgAvailable) {
 // ─── IN-MEMORY FALLBACK DATABASE ───
 import { MOCK_DB } from './mockDb.js';
 
+// ─── SEED DATABASE FUNCTION ───
+async function seedPostgresDb(client) {
+  try {
+    await client.query('BEGIN');
+
+    // 1. Insert users
+    for (const u of MOCK_DB.users) {
+      await client.query(
+        `INSERT INTO users (id, email, nickname, provider, provider_id, password_hash, email_verified, role, is_banned, linked_providers, subscription_status, toss_payment_key, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12, $13)
+         ON CONFLICT (provider, provider_id) DO NOTHING`,
+        [u.id, u.email, u.nickname, u.provider, u.provider_id, u.password_hash, u.email_verified, u.role, u.is_banned, JSON.stringify(u.linked_providers || []), u.subscription_status, u.toss_payment_key, u.created_at]
+      );
+    }
+    console.log(`[SYNCRIG DB Seeder] ${MOCK_DB.users.length}명의 유저 삽입 완료.`);
+
+    // 2. Insert hardware profiles
+    for (const hp of MOCK_DB.hardware_profiles) {
+      await client.query(
+        `INSERT INTO hardware_profiles (id, user_id, is_default, cpu_model, gpu_model, ram_gb, resolution, refresh_rate, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (id) DO NOTHING`,
+        [hp.id, hp.user_id, hp.is_default, hp.cpu_model, hp.gpu_model, hp.ram_gb, hp.resolution, hp.refresh_rate, hp.created_at]
+      );
+    }
+    console.log(`[SYNCRIG DB Seeder] ${MOCK_DB.hardware_profiles.length}개의 하드웨어 프로필 삽입 완료.`);
+
+    // 3. Insert optimization profiles
+    for (const op of MOCK_DB.optimization_profiles) {
+      await client.query(
+        `INSERT INTO optimization_profiles (id, user_id, game_id, hardware_id, settings_json, avg_fps, one_percent_low_fps, game_version, likes, created_at)
+         VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10)
+         ON CONFLICT (id) DO NOTHING`,
+        [op.id, op.user_id, op.game_id, op.hardware_id, JSON.stringify(op.settings_json), op.avg_fps, op.one_percent_low_fps || null, op.game_version, op.likes, op.created_at]
+      );
+    }
+    console.log(`[SYNCRIG DB Seeder] ${MOCK_DB.optimization_profiles.length}개의 최적화 프로필 삽입 완료.`);
+
+    // 4. Insert posts
+    for (const p of MOCK_DB.posts) {
+      await client.query(
+        `INSERT INTO posts (id, user_id, category, title, content, views, likes, is_pinned, is_hidden, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         ON CONFLICT (id) DO NOTHING`,
+        [p.id, p.user_id, p.category, p.title, p.content, p.views, p.likes, p.is_pinned, p.is_hidden, p.created_at, p.updated_at]
+      );
+    }
+    console.log(`[SYNCRIG DB Seeder] ${MOCK_DB.posts.length}개의 커뮤니티 게시글 삽입 완료.`);
+
+    // 5. Insert comments
+    for (const c of MOCK_DB.comments) {
+      await client.query(
+        `INSERT INTO comments (id, post_id, user_id, content, is_hidden, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (id) DO NOTHING`,
+        [c.id, c.post_id, c.user_id, c.content, c.is_hidden, c.created_at]
+      );
+    }
+    console.log(`[SYNCRIG DB Seeder] ${MOCK_DB.comments.length}개의 댓글 삽입 완료.`);
+
+    // 6. Insert post likes
+    for (const l of MOCK_DB.post_likes) {
+      await client.query(
+        `INSERT INTO post_likes (id, post_id, user_id, created_at)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (id) DO NOTHING`,
+        [l.id, l.post_id, l.user_id, l.created_at]
+      );
+    }
+    console.log(`[SYNCRIG DB Seeder] ${MOCK_DB.post_likes.length}개의 게시글 좋아요 삽입 완료.`);
+
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('[SYNCRIG DB Seeder] 트랜잭션 롤백됨. 오류:', err.message);
+    throw err;
+  }
+}
+
 // ─── DATABASE AUTO-MIGRATION (POSTGRESQL) ───
 export async function initDb() {
   if (!isPgAvailable) {
@@ -154,6 +233,14 @@ export async function initDb() {
         ('game_marvel', '2767030', 'Marvel Rivals')
       `);
       console.log('[SYNCRIG DB] 기본 게임 목록 시딩 완료.');
+    }
+
+    // Seed Users & Mock Data if empty
+    const userCheck = await client.query('SELECT COUNT(*) FROM users');
+    if (parseInt(userCheck.rows[0].count) === 0) {
+      console.log('[SYNCRIG DB] PostgreSQL users 테이블이 비어있습니다. 초기 시딩을 시작합니다...');
+      await seedPostgresDb(client);
+      console.log('[SYNCRIG DB] PostgreSQL 초기 시딩 완료.');
     }
 
     client.release();
