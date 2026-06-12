@@ -1,12 +1,13 @@
 import pg from 'pg';
 import crypto from 'crypto';
 
-let isPgAvailable = !!process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+let isPgAvailable = !!connectionString;
 let pool = null;
 
 if (isPgAvailable) {
   pool = new pg.Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: connectionString,
     ssl: { rejectUnauthorized: false } // Required for hosting providers like Neon/Supabase
   });
 }
