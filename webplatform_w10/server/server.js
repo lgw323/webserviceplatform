@@ -49,8 +49,27 @@ app.use(morgan(morganFormat, {
   stream: { write: (message) => logger.info(message.trim()) }
 }));
 
-// Initialize DB schema asynchronously
-initDb();
+// Initialize DB schema — ensure tables exist before handling any request
+let dbInitPromise = null;
+function ensureDbInit() {
+  if (!dbInitPromise) {
+    dbInitPromise = initDb().catch(err => {
+      console.error('[SYNCRIG DB] initDb failed, will retry on next request:', err.message);
+      dbInitPromise = null; // Allow retry on next request
+    });
+  }
+  return dbInitPromise;
+}
+
+// Middleware: block requests until DB is ready
+app.use(async (req, res, next) => {
+  try {
+    await ensureDbInit();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 // ─── Health Check ───
 app.get('/api/health', (req, res) => {
