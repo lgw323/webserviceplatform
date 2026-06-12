@@ -1,7 +1,7 @@
 import pg from 'pg';
 import crypto from 'crypto';
 
-const isPgAvailable = !!process.env.DATABASE_URL;
+let isPgAvailable = !!process.env.DATABASE_URL;
 let pool = null;
 
 if (isPgAvailable) {
@@ -161,6 +161,7 @@ export async function initDb() {
   } catch (err) {
     console.error('[SYNCRIG DB] PostgreSQL 테이블 초기화 중 예외 발생:', err.message);
     console.log('[SYNCRIG DB] 인메모리 폴백 데이터베이스로 대체 기동합니다.');
+    isPgAvailable = false;  // ← 실제로 인메모리 모드로 전환
   }
 }
 
