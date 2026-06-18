@@ -52,3 +52,46 @@
 
 ### 3.2. 프론트엔드 (Client Application)
 - [MODIFY] [`useAuthStore.js`](file:///c:/Users/dlrjs/Desktop/webserviceplatform/webplatform_w10/client/src/store/useAuthStore.js): 다중 계정 로그인/회원가입 시 연동 정보 캐시 오염을 막기 위해 초기화 흐름 전면 수정.
+
+---
+
+## 4. Phase 7 추가 업데이트: 대시보드 차트 동적화, 최적화 허브 매칭 정상화 및 UI 결함 해소
+
+> **목적:** 대시보드의 플레이 시간 통계 차트가 고정 요일이 아닌 현재 날짜 기준으로 유동적으로 표시되도록 개선하고, 최적화 허브에서 게임별 추천 프로필이 조회되지 않던 근본 원인(DB 쿼리 오류 + 시드 데이터 부재)을 해결하며, 프로필 상세 보기 모달의 무한 좋아요 결함을 수정합니다.
+
+### 4.1. 대시보드 플레이 시간 통계 차트 동적화 및 한글 레이블 적용
+- **문제 배경**: 기존 차트는 `Mon`~`Sun`까지 고정된 영어 요일 레이블을 사용하여, 오늘이 무슨 요일인지에 관계없이 항상 동일한 순서(월~일)로만 표시되었습니다. 웹 애플리케이션의 UI 언어가 한국어임에도 차트 레이블만 영어로 표기되는 불일치도 존재했습니다.
+- **해결 방안 (동적 7일 윈도우 + 한글화)**:
+  - [`DashboardCharts.jsx`](file:///c:/Users/dlrjs/Desktop/webserviceplatform/webplatform_w10/client/src/features/dashboard/DashboardCharts.jsx)의 `generateWeeklyFromGames()` 함수를 전면 리팩토링하여, 사용자의 클라이언트 시계(`new Date()`)를 기준으로 최근 7일을 동적으로 역산합니다.
+  - 가장 오른쪽 차트 막대가 항상 **오늘**에 해당하는 요일이 되며, 왼쪽으로 갈수록 과거 날짜의 요일이 표시됩니다.
+  - 모든 요일 레이블을 한글(**월, 화, 수, 목, 금, 토, 일**)로 통일하여 웹 설정의 언어 톤과 일치시켰습니다.
+  - 주말(토/일)에 더 높은 플레이 시간 가중치가 부여되는 시뮬레이션 로직이 실제 요일 인덱스(`Date.prototype.getDay()`)에 정확히 매핑되도록 가중치 배열을 재정렬했습니다.
+
+### 4.2. 최적화 허브 추천 프로필 매칭 정상화 (PostgreSQL 캐스팅 에러 + 시드 데이터 보강)
+- **문제 배경**: 최적화 허브 페이지에서 게임을 선택해도 "하드웨어와 일치하는 프로필이 없습니다"라는 빈 결과만 표시되던 문제가 있었습니다. 원인은 두 가지였습니다.
+  1. **PostgreSQL UUID 캐스팅 에러**: 게임 라이브러리에 포함된 Riot 게임(`'valorant'`, `'lol'`) 또는 Steam의 숫자형 App ID(`'1091500'` 등)는 UUID 형식이 아닌데, 백엔드 추천 컨트롤러에서 이 값을 UUID 타입인 `optimization_profiles.game_id` 컬럼과 직접 비교하여 `invalid input syntax for type uuid` 예외가 발생했습니다. 이로 인해 API가 500 에러를 반환하고 프론트엔드가 빈 결과를 표시했습니다.
+  2. **시드 데이터 부재**: 기존 Mock DB 시딩 로직에서 최적화 프로필을 랜덤 게임에만 1~3개씩 할당했기 때문에, 특정 게임·하드웨어 조합에 매칭될 프로필 자체가 아예 존재하지 않는 경우가 빈번했습니다.
+- **해결 방안**:
+  - [`recommendationController.js`](file:///c:/Users/dlrjs/Desktop/webserviceplatform/webplatform_w10/server/src/controllers/recommendationController.js)에서 `game_id` 파라미터가 UUID 형식인지 정규식으로 사전 검증합니다. UUID가 아닌 경우 `games.external_app_id`(VARCHAR 컬럼)만으로 필터링하여 PostgreSQL 타입 변환 에러를 원천 방지했습니다.
+  - [`mockDb.js`](file:///c:/Users/dlrjs/Desktop/webserviceplatform/webplatform_w10/server/src/config/mockDb.js)에 **모든 게임(9종) × 모든 하드웨어 등급(5티어) = 45개의 기준 최적화 프로필**을 추가 시딩하여, 어떤 게임·사양 조합을 선택하더라도 매칭 엔진이 반드시 유사도 높은 추천 결과를 반환하도록 보장했습니다.
+
+### 4.3. 최적화 허브 프로필 상세 보기 무한 좋아요 버그 해결
+- **문제 배경**: 추천 프로필의 상세 보기 모달에서 "도움됨" 또는 "작동 안함" 피드백 버튼을 클릭한 후 모달을 닫고 다시 열면, 피드백 상태가 초기화되어 같은 프로필에 무한히 좋아요/싫어요를 반복할 수 있는 결함이 있었습니다.
+- **원인 분석**: 모달을 닫는 `closeModal()` 콜백에서 `setFeedbackGiven(null)`로 피드백 상태를 강제 초기화하고 있었기 때문입니다. 피드백 상태가 단일 문자열(`feedbackGiven`)이었기 때문에 모달을 닫으면 모든 프로필에 대한 피드백 이력이 소멸되었습니다.
+- **해결 방안**:
+  - [`RecommendationList.jsx`](file:///c:/Users/dlrjs/Desktop/webserviceplatform/webplatform_w10/client/src/components/RecommendationList.jsx)에서 단일 `feedbackGiven` 상태를 **프로필 ID 기반 맵 객체(`feedbacks: { [profileId]: 'helpful' | 'not_working' }`)**로 리팩토링하여, 각 프로필별로 피드백 이력을 독립적으로 관리합니다.
+  - 모달을 닫을 때 피드백 상태를 초기화하지 않도록 `closeModal()`에서 `setFeedbackGiven(null)` 호출을 제거했습니다.
+  - 한 번 피드백을 남긴 프로필 카드는 모달을 열고 닫더라도 "도움됨"/"작동 안함" 버튼이 비활성화 상태로 유지되어 **중복 투표가 완벽하게 차단**됩니다.
+
+---
+
+## 5. Phase 7 추가 업데이트 관련 소스코드 파일 변경 목록
+
+### 5.1. 백엔드 (Server API)
+- [MODIFY] [`recommendationController.js`](file:///c:/Users/dlrjs/Desktop/webserviceplatform/webplatform_w10/server/src/controllers/recommendationController.js): 비-UUID 게임 ID 조회 시 PostgreSQL 캐스팅 에러를 방지하기 위한 UUID 포맷 사전 검증 분기 추가.
+- [MODIFY] [`mockDb.js`](file:///c:/Users/dlrjs/Desktop/webserviceplatform/webplatform_w10/server/src/config/mockDb.js): 전 게임·전 하드웨어 등급별 기준 최적화 프로필 45건 추가 시딩.
+
+### 5.2. 프론트엔드 (Client Application)
+- [MODIFY] [`DashboardCharts.jsx`](file:///c:/Users/dlrjs/Desktop/webserviceplatform/webplatform_w10/client/src/features/dashboard/DashboardCharts.jsx): 플레이 시간 통계 차트의 요일 계산을 현재 날짜 기준 최근 7일로 동적 전환, 요일 레이블 한글화.
+- [MODIFY] [`RecommendationList.jsx`](file:///c:/Users/dlrjs/Desktop/webserviceplatform/webplatform_w10/client/src/components/RecommendationList.jsx): 프로필 ID 기반 피드백 상태 관리로 리팩토링하여 무한 좋아요 버그 해결.
+
