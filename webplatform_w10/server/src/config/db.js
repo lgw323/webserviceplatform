@@ -117,6 +117,8 @@ export async function initDb() {
         nickname VARCHAR(100),
         provider VARCHAR(50) NOT NULL DEFAULT 'local',
         provider_id VARCHAR(255) NOT NULL,
+        steam_id VARCHAR(255),
+        riot_id VARCHAR(255),
         password_hash VARCHAR(255),
         email_verified BOOLEAN DEFAULT false,
         role VARCHAR(20) DEFAULT 'user',
@@ -127,6 +129,12 @@ export async function initDb() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
         UNIQUE(provider, provider_id)
       );
+    `);
+
+    // Schema migrations for existing database in Vercel/Neon
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS steam_id VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS riot_id VARCHAR(255);
     `);
 
     await client.query(`
@@ -338,6 +346,8 @@ export const db = {
             nickname: 'User_' + providerId.substring(0, 5),
             provider, 
             provider_id: providerId, 
+            steam_id: provider === 'steam' ? providerId : null,
+            riot_id: provider === 'riot' ? providerId : null,
             password_hash: null, 
             email_verified: false,
             role: 'user',
@@ -357,6 +367,8 @@ export const db = {
             nickname,
             provider, 
             provider_id: providerId, 
+            steam_id: provider === 'steam' ? providerId : null,
+            riot_id: provider === 'riot' ? providerId : null,
             password_hash: passwordHash, 
             email_verified: false,
             role: email === 'admin@syncrig.com' ? 'admin' : 'user',
@@ -408,14 +420,19 @@ export const db = {
 
       // UPDATE users (linked_providers)
       if (normalizedQuery.includes('update users') && normalizedQuery.includes('linked_providers =')) {
-         const linkedProvidersStr = params[0];
-         const userId = params[1];
-         const userIndex = MOCK_DB.users.findIndex(u => u.id === userId);
+         const userIndex = MOCK_DB.users.findIndex(u => u.id === params[params.length - 1]);
          if (userIndex !== -1) {
+             const linkedProvidersStr = params[0];
              try {
                  MOCK_DB.users[userIndex].linked_providers = JSON.parse(linkedProvidersStr);
              } catch (e) {
                  MOCK_DB.users[userIndex].linked_providers = linkedProvidersStr;
+             }
+             
+             if (normalizedQuery.includes('steam_id =')) {
+                 MOCK_DB.users[userIndex].steam_id = params[1];
+             } else if (normalizedQuery.includes('riot_id =')) {
+                 MOCK_DB.users[userIndex].riot_id = params[1];
              }
              return { rows: [MOCK_DB.users[userIndex]] };
          }
