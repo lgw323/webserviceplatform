@@ -123,8 +123,8 @@ export default function RecommendationList({ recommendations, userSpec }) {
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyber-success to-green-300" aria-label={`평균 FPS: ${item.avg_fps}`}>
-                    {item.avg_fps}
+                  <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyber-success to-green-300" aria-label={`평균 FPS: ${Math.round(item.avg_fps)}`}>
+                    {Math.round(item.avg_fps)}
                   </div>
                   <div className="text-[10px] uppercase tracking-wider text-a11y-muted font-bold" aria-hidden="true">평균 FPS</div>
                 </div>
@@ -219,7 +219,7 @@ export default function RecommendationList({ recommendations, userSpec }) {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4" role="group" aria-label="성능 통계">
                 <div className="bg-cyber-darker p-4 rounded-lg border border-gray-800 text-center">
                   <div className="text-xs text-a11y-muted uppercase font-bold mb-1">평균 FPS</div>
-                  <div className="text-xl font-black text-cyber-success">{selectedProfile.avg_fps}</div>
+                  <div className="text-xl font-black text-cyber-success">{Math.round(selectedProfile.avg_fps)}</div>
                 </div>
                 <div className="bg-cyber-darker p-4 rounded-lg border border-gray-800 text-center">
                   <div className="text-xs text-a11y-muted uppercase font-bold mb-1">유사도</div>
