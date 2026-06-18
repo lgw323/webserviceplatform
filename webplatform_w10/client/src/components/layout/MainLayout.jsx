@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Gamepad2, LayoutDashboard, Cpu, Settings2, Settings, Bell, Search, LogOut, Users, ShieldAlert } from 'lucide-react';
+import { Gamepad2, LayoutDashboard, Cpu, Settings2, Settings, Bell, Search, LogOut, Users, ShieldAlert, User } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 import useNotificationStore from '../../store/useNotificationStore';
 import { useSearch } from '../../hooks/useSearch';
@@ -12,6 +12,7 @@ const NAV = [
   { path: '/hardware', label: '하드웨어 프로필', icon: Cpu },
   { path: '/recommend', label: '최적화 허브', icon: Settings2 },
   { path: '/community', label: '커뮤니티', icon: Users },
+  { path: '/mypage', label: '마이페이지', icon: User },
   { path: '/settings', label: '환경 설정', icon: Settings },
 ];
 
@@ -101,24 +102,28 @@ export default function MainLayout() {
               👑 PRO 업그레이드
             </button>
           )}
-          <div className="flex items-center px-3 py-2">
-            <div className="w-8 h-8 rounded-full bg-cyber-dark flex items-center justify-center border border-gray-700 text-sm font-bold text-cyber-accent uppercase" aria-hidden="true">
+          <NavLink 
+            to="/mypage" 
+            className="w-full flex items-center px-3 py-2.5 rounded-lg hover:bg-cyber-dark hover:text-cyber-accent text-a11y-muted transition-colors cursor-pointer group"
+            aria-label="마이페이지로 이동"
+          >
+            <div className="w-8 h-8 rounded-full bg-cyber-dark flex items-center justify-center border border-gray-700 text-sm font-bold text-cyber-accent uppercase group-hover:border-cyber-accent transition-colors" aria-hidden="true">
               {(user?.nickname || user?.provider_id || 'U').substring(0, 1)}
             </div>
-            <div className="ml-3 truncate max-w-[130px]">
+            <div className="ml-3 truncate max-w-[130px] text-left">
               <div className="flex items-center gap-1.5">
-                <p className="text-sm font-medium text-gray-200 truncate">{user?.nickname || user?.provider_id || 'User'}</p>
+                <p className="text-sm font-medium text-gray-200 group-hover:text-cyber-accent truncate transition-colors">{user?.nickname || user?.provider_id || 'User'}</p>
                 {user?.subscription_status === 'premium' && (
                   <span className="bg-gradient-to-r from-amber-400 to-yellow-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center">
                     👑 PRO
                   </span>
                 )}
               </div>
-              <p className="text-[10px] text-a11y-muted capitalize mt-0.5">
+              <p className="text-[10px] text-a11y-muted group-hover:text-gray-400 capitalize mt-0.5 transition-colors">
                 {user?.provider} 계정 {user?.linked_providers?.length > 0 && `(+ 연동)`}
               </p>
             </div>
-          </div>
+          </NavLink>
           <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-a11y-muted hover:text-white bg-gray-800/40 hover:bg-gray-800 border border-gray-800 rounded-lg transition-colors">
             <LogOut size={13} aria-hidden="true" /> 로그아웃
           </button>
