@@ -136,6 +136,11 @@ export async function oauthCallback(provider, code) {
   return data.data;
 }
 
+export async function updateNickname(nickname) {
+  const { data } = await apiClient.patch('/users/me/nickname', { nickname });
+  return data.data;
+}
+
 // ─── COMMUNITY POSTS ───
 export async function getPosts(category = 'all', page = 1, sort = 'latest') {
   const params = new URLSearchParams({ page: page.toString(), sort });
@@ -257,8 +262,13 @@ export async function deleteHardwareProfile(id) {
   return data;
 }
 
+export async function searchCatalog(type, q) {
+  const { data } = await apiClient.get(`/catalog/search?type=${type}&q=${q}`);
+  return data.data;
+}
+
 // ─── OPTIMIZATION RECOMMENDATIONS ───
-export async function fetchRecommendations(userSpec, gameId = 'game_cyberpunk', threshold = 0.8) {
+export async function fetchRecommendations(userSpec, gameId = '550e8400-e29b-41d4-a716-446655440001', threshold = 0.8) {
   const params = new URLSearchParams({
     cpu_model: userSpec.cpu_model || userSpec.cpu,
     gpu_model: userSpec.gpu_model || userSpec.gpu,
