@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 export default function RecommendationList({ recommendations, userSpec }) {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isCopied, setIsCopied] = useState(false);
-  const [feedbackGiven, setFeedbackGiven] = useState(null); // 'helpful' | 'not_working' | null
+  const [feedbacks, setFeedbacks] = useState({}); // { [profileId]: 'helpful' | 'not_working' }
   
   // 피드백(좋아요/싫어요) 로컬 상태 관리 (UI 즉각 반영용)
   const [localLikes, setLocalLikes] = useState({});
@@ -32,7 +32,6 @@ export default function RecommendationList({ recommendations, userSpec }) {
   // 모달 닫기: 포커스 복원 + 피드백 초기화
   const closeModal = useCallback(() => {
     setSelectedProfile(null);
-    setFeedbackGiven(null);
     // 다음 렌더 사이클 후 이전 포커스 복원
     setTimeout(() => {
       previousFocusRef.current?.focus();
@@ -260,43 +259,43 @@ export default function RecommendationList({ recommendations, userSpec }) {
               <div className="flex gap-2 w-full sm:w-auto" role="group" aria-label="프로필 피드백">
                 <button
                   onClick={() => {
-                    setFeedbackGiven('helpful');
+                    setFeedbacks(prev => ({ ...prev, [selectedProfile.id]: 'helpful' }));
                     setLocalLikes(prev => ({ ...prev, [selectedProfile.id]: (prev[selectedProfile.id] || 0) + 1 }));
                     toast.success('피드백 감사합니다! 👍');
                   }}
-                  disabled={feedbackGiven !== null}
+                  disabled={feedbacks[selectedProfile.id] !== undefined}
                   aria-label="이 설정이 도움되었습니다"
-                  aria-pressed={feedbackGiven === 'helpful'}
+                  aria-pressed={feedbacks[selectedProfile.id] === 'helpful'}
                   className={`flex-1 sm:flex-none flex items-center justify-center px-4 py-2 rounded-lg transition-colors border ${
-                    feedbackGiven === 'helpful'
+                    feedbacks[selectedProfile.id] === 'helpful'
                       ? 'bg-cyber-success/20 text-cyber-success border-cyber-success/30'
-                      : feedbackGiven !== null
+                      : feedbacks[selectedProfile.id] !== undefined
                         ? 'bg-gray-800 text-a11y-muted border-gray-700 opacity-50 cursor-not-allowed'
                         : 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700'
                   }`}
                 >
                   <ThumbsUp className="w-4 h-4 mr-2" aria-hidden="true" />
-                  {feedbackGiven === 'helpful' ? '감사합니다!' : '도움됨'}
+                  {feedbacks[selectedProfile.id] === 'helpful' ? '감사합니다!' : '도움됨'}
                 </button>
                 <button
                   onClick={() => {
-                    setFeedbackGiven('not_working');
+                    setFeedbacks(prev => ({ ...prev, [selectedProfile.id]: 'not_working' }));
                     setLocalLikes(prev => ({ ...prev, [selectedProfile.id]: (prev[selectedProfile.id] || 0) - 1 }));
                     toast('피드백이 반영되었습니다.', { icon: '📝' });
                   }}
-                  disabled={feedbackGiven !== null}
+                  disabled={feedbacks[selectedProfile.id] !== undefined}
                   aria-label="이 설정이 작동하지 않았습니다"
-                  aria-pressed={feedbackGiven === 'not_working'}
+                  aria-pressed={feedbacks[selectedProfile.id] === 'not_working'}
                   className={`flex-1 sm:flex-none flex items-center justify-center px-4 py-2 rounded-lg transition-colors border ${
-                    feedbackGiven === 'not_working'
+                    feedbacks[selectedProfile.id] === 'not_working'
                       ? 'bg-red-500/20 text-red-400 border-red-500/30'
-                      : feedbackGiven !== null
+                      : feedbacks[selectedProfile.id] !== undefined
                         ? 'bg-gray-800 text-a11y-muted border-gray-700 opacity-50 cursor-not-allowed'
                         : 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700'
                   }`}
                 >
                   <ThumbsDown className="w-4 h-4 mr-2" aria-hidden="true" />
-                  {feedbackGiven === 'not_working' ? '반영됨' : '작동 안함'}
+                  {feedbacks[selectedProfile.id] === 'not_working' ? '반영됨' : '작동 안함'}
                 </button>
               </div>
               <div aria-live="polite">
