@@ -18,7 +18,14 @@ const useAuthStore = create((set, get) => ({
 
     let sessionUser = { id: 'user-mock-id', provider: 'local', provider_id: 'User' };
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      // Decode JWT token payload safely with UTF-8 support
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      
+      const payload = JSON.parse(jsonPayload);
       sessionUser = { 
         id: payload.id, 
         email: payload.email,
@@ -26,15 +33,18 @@ const useAuthStore = create((set, get) => ({
         role: payload.role || 'user',
         provider: payload.provider, 
         provider_id: payload.provider_id,
+        steam_id: payload.steam_id || null,
+        riot_id: payload.riot_id || null,
         subscription_status: payload.subscription_status || 'free',
         linked_providers: payload.linked_providers || []
       };
     } catch(e) {
+      console.error('Failed to parse token payload, falling back to mock user:', e);
       const isSteam = token.includes('steam');
       const isRiot = token.includes('riot');
       const provider = isSteam ? 'steam' : isRiot ? 'riot' : 'local';
       const providerId = token.replace('mock_jwt_token_for_', '');
-      sessionUser = { id: 'user-mock-id', email: null, nickname: 'MockUser', role: 'user', provider, provider_id: providerId, linked_providers: [] };
+      sessionUser = { id: 'user-mock-id', email: null, nickname: 'MockUser', role: 'user', provider, provider_id: providerId, steam_id: null, riot_id: null, linked_providers: [] };
     }
     
     // JWT 페이로드에 연동 정보가 있으면 사용하고, localStorage와 동기화합니다.
