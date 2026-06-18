@@ -84,18 +84,31 @@ const useAuthStore = create((set, get) => ({
       providersList.push(user.provider);
     }
 
+    const manualGames = JSON.parse(localStorage.getItem('syncrig_manual_games') || '[]');
+
     if (providersList.length > 0) {
       try {
         const games = await api.syncGameLibrary(providersList);
-        // Calculate achievements based on actual game data
-        const totalPlaytime = games.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
-        const estimatedAchievements = Math.round(totalPlaytime * 0.88); // rough estimate based on playtime
-        set({ gameLibrary: games, achievementsCount: estimatedAchievements });
+        const mergedGames = [...games];
+        manualGames.forEach(mg => {
+          if (!mergedGames.some(g => String(g.id) === String(mg.id) || g.title === mg.title)) {
+            mergedGames.push(mg);
+          }
+        });
+        
+        const totalPlaytime = mergedGames.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
+        const estimatedAchievements = Math.round(totalPlaytime * 0.88);
+        set({ gameLibrary: mergedGames, achievementsCount: estimatedAchievements });
       } catch (e) {
         console.error('Failed to sync games', e);
+        const totalPlaytime = manualGames.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
+        const estimatedAchievements = Math.round(totalPlaytime * 0.88);
+        set({ gameLibrary: manualGames, achievementsCount: estimatedAchievements });
       }
     } else {
-      set({ gameLibrary: [], achievementsCount: 0 });
+      const totalPlaytime = manualGames.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
+      const estimatedAchievements = Math.round(totalPlaytime * 0.88);
+      set({ gameLibrary: manualGames, achievementsCount: estimatedAchievements });
     }
   },
 
@@ -106,6 +119,7 @@ const useAuthStore = create((set, get) => ({
   logout: () => {
     api.setToken(null);
     localStorage.removeItem('syncrig_linked_providers');
+    localStorage.removeItem('syncrig_manual_games');
     set({ user: null, userSpec: null, gameLibrary: [], achievementsCount: 0 });
   },
 
@@ -124,9 +138,16 @@ const useAuthStore = create((set, get) => ({
     // Re-fetch games with updated provider list
     try {
       const games = await api.syncGameLibrary(newLinked);
-      const totalPlaytime = games.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
+      const manualGames = JSON.parse(localStorage.getItem('syncrig_manual_games') || '[]');
+      const mergedGames = [...games];
+      manualGames.forEach(mg => {
+        if (!mergedGames.some(g => String(g.id) === String(mg.id) || g.title === mg.title)) {
+          mergedGames.push(mg);
+        }
+      });
+      const totalPlaytime = mergedGames.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
       const estimatedAchievements = Math.round(totalPlaytime * 0.88);
-      set({ gameLibrary: games, achievementsCount: estimatedAchievements });
+      set({ gameLibrary: mergedGames, achievementsCount: estimatedAchievements });
     } catch (err) {
       console.error('Sync failed', err);
       throw err;
@@ -141,18 +162,43 @@ const useAuthStore = create((set, get) => ({
       const newLinked = data.user.linked_providers || [];
       localStorage.setItem('syncrig_linked_providers', JSON.stringify(newLinked));
 
+      const manualGames = JSON.parse(localStorage.getItem('syncrig_manual_games') || '[]');
       if (newLinked.length > 0 || data.user.provider === 'steam' || data.user.provider === 'riot') {
         const games = await api.syncGameLibrary(newLinked);
-        const totalPlaytime = games.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
+        const mergedGames = [...games];
+        manualGames.forEach(mg => {
+          if (!mergedGames.some(g => String(g.id) === String(mg.id) || g.title === mg.title)) {
+            mergedGames.push(mg);
+          }
+        });
+        const totalPlaytime = mergedGames.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
         const estimatedAchievements = Math.round(totalPlaytime * 0.88);
-        set({ gameLibrary: games, achievementsCount: estimatedAchievements });
+        set({ gameLibrary: mergedGames, achievementsCount: estimatedAchievements });
       } else {
-        set({ gameLibrary: [], achievementsCount: 0 });
+        const totalPlaytime = manualGames.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
+        const estimatedAchievements = Math.round(totalPlaytime * 0.88);
+        set({ gameLibrary: manualGames, achievementsCount: estimatedAchievements });
       }
     } catch (err) {
       console.error('Unlink failed', err);
       throw err;
     }
+  },
+
+  addManualGame: async (game) => {
+    const manualGames = JSON.parse(localStorage.getItem('syncrig_manual_games') || '[]');
+    if (!manualGames.some(mg => String(mg.id) === String(game.id))) {
+      manualGames.push(game);
+      localStorage.setItem('syncrig_manual_games', JSON.stringify(manualGames));
+    }
+    await get().fetchUserData();
+  },
+
+  removeManualGame: async (gameId) => {
+    const manualGames = JSON.parse(localStorage.getItem('syncrig_manual_games') || '[]');
+    const filtered = manualGames.filter(mg => String(mg.id) !== String(gameId));
+    localStorage.setItem('syncrig_manual_games', JSON.stringify(filtered));
+    await get().fetchUserData();
   }
 }));
 
