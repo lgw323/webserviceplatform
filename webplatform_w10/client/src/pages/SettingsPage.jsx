@@ -2,13 +2,24 @@ import React from 'react';
 import SettingsView from '../features/settings/SettingsView';
 import useAuthStore from '../store/useAuthStore';
 import useSEO from '../hooks/useSEO';
+import * as api from '../api/apiClient';
 
 export default function SettingsPage() {
   useSEO('settings');
   const { user, setUser } = useAuthStore();
 
-  const handleUpdateNickname = (name) => {
-    setUser({ ...user, provider_id: name });
+  const handleUpdateNickname = async (name) => {
+    try {
+      const data = await api.updateNickname(name);
+      api.setToken(data.access_token);
+      if (data.refresh_token) {
+        api.setRefreshToken(data.refresh_token);
+      }
+      setUser(data.user);
+    } catch (err) {
+      console.error('Failed to update nickname:', err);
+      throw err;
+    }
   };
 
   return (
