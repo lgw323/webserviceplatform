@@ -301,4 +301,15 @@ export async function unlinkAccount(provider) {
   return data.data;
 }
 
+export async function getUserPosts() {
+  const { data } = await apiClient.get('/users/me/posts');
+  return data.data;
+}
+
+export async function getUserComments() {
+  const { data } = await apiClient.get('/users/me/comments');
+  return data.data;
+}
+
 export default apiClient;
+
