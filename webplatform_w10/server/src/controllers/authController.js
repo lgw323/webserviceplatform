@@ -18,9 +18,6 @@ function hashPassword(password) {
 }
 
 function verifyPassword(password, storedHash) {
-  if (storedHash === 'mock_hash') {
-    return password === 'user123';
-  }
   const [salt, originalHash] = storedHash.split(':');
   const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
   return hash === originalHash;
