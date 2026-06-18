@@ -29,11 +29,9 @@ const AuthCallback = () => {
           api.setRefreshToken(refreshToken);
         }
 
-        // 3. 유저 정보 갱신 (API 통신)
+        // 3. Zustand 스토어 초기화 및 정보 갱신
         try {
-          // authStore.initialize() 가 초기 렌더링 시 처리하겠지만,
-          // 현재 페이지에서 강제 갱신을 위해 fetchUserData 등을 호출할 수 있습니다.
-          // 여기서 강제로 initialize를 다시 부르거나, 간단히 홈으로 이동합니다.
+          await useAuthStore.getState().initialize();
           navigate('/');
         } catch (err) {
           console.error('유저 정보 갱신 실패', err);
@@ -45,7 +43,7 @@ const AuthCallback = () => {
     };
 
     processCallback();
-  }, [location, navigate, fetchUserData]);
+  }, [location, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-cyber-darker">

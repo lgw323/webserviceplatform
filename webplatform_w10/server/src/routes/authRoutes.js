@@ -79,12 +79,15 @@ const checkSteamAuth = (req, res, next) => {
   const steamStrategy = passport._strategies && passport._strategies.steam;
 
   // Stateless 대응: 세션 유실에 대비해 JWT 토큰을 returnURL의 쿼리 스트링으로 실어 보냄
-  const linkToken = req.query.token || req.query.linkToken || (req.session && req.session.linkToken);
+  let linkToken = req.query.token || req.query.linkToken || (req.session && req.session.linkToken);
+  if (linkToken && typeof linkToken === 'string') {
+    linkToken = linkToken.replace(/ /g, '+');
+  }
 
   if (isProdOrPreview) {
     const callbackBase = `${protocol}://${host}/api/v1/auth/steam/callback`;
     const dynamicReturnURL = linkToken
-      ? `${callbackBase}?linkToken=${linkToken}`
+      ? `${callbackBase}?linkToken=${encodeURIComponent(linkToken)}`
       : callbackBase;
     const dynamicRealm = `${protocol}://${host}/`;
 
@@ -98,7 +101,7 @@ const checkSteamAuth = (req, res, next) => {
       const SERVER_URL = process.env.SERVER_URL || 'http://localhost:5000';
       const callbackBase = `${SERVER_URL}/api/v1/auth/steam/callback`;
       const dynamicReturnURL = linkToken
-        ? `${callbackBase}?linkToken=${linkToken}`
+        ? `${callbackBase}?linkToken=${encodeURIComponent(linkToken)}`
         : callbackBase;
 
       steamStrategy._relyingParty.returnUrl = dynamicReturnURL;
@@ -126,7 +129,10 @@ const checkRiotAuth = (req, res, next) => {
     : undefined;
 
   // Stateless 대응: Riot OAuth2.0의 state 파라미터로 JWT 토큰 전달
-  const linkToken = req.query.token || req.query.state || (req.session && req.session.linkToken);
+  let linkToken = req.query.token || req.query.state || (req.session && req.session.linkToken);
+  if (linkToken && typeof linkToken === 'string') {
+    linkToken = linkToken.replace(/ /g, '+');
+  }
 
   passport.authenticate('riot', { 
     callbackURL: dynamicCallbackURL,

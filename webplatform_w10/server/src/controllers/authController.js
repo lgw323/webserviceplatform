@@ -204,7 +204,10 @@ export const oauthCallback = async (req, res, next) => {
     const { provider, provider_id } = req.user;
 
     // 1. 연동(Link) 모드 체크 (Vercel Serverless의 세션 유실 방지를 위해 query/state 파라미터 우선 확인)
-    const linkToken = req.query.linkToken || req.query.state || (req.session && req.session.linkToken);
+    let linkToken = req.query.linkToken || req.query.state || (req.session && req.session.linkToken);
+    if (linkToken && typeof linkToken === 'string') {
+      linkToken = linkToken.replace(/ /g, '+');
+    }
     if (linkToken) {
       try {
         const decoded = jwt.verify(linkToken, JWT_SECRET);
