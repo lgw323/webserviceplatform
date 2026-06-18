@@ -572,7 +572,7 @@ export const db = {
         let filtered = [...MOCK_DB.posts];
         
         // Hide hidden posts for non-admin queries
-        if (!normalizedQuery.includes('is_hidden')) {
+        if (!normalizedQuery.includes('is_hidden') && !normalizedQuery.includes('admin')) {
           filtered = filtered.filter(p => !p.is_hidden);
         }
 
