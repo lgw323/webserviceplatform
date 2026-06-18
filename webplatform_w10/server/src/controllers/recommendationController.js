@@ -16,7 +16,7 @@ export const getRecommendations = async (req, res, next) => {
 
     let dbProfiles = [];
     if (db.isPgActive()) {
-      const profilesResult = await db.query(`
+      let queryText = `
         SELECT op.*, 
                json_build_object(
                  'id', g.id,
@@ -33,11 +33,33 @@ export const getRecommendations = async (req, res, next) => {
         FROM optimization_profiles op
         LEFT JOIN hardware_profiles hp ON op.hardware_id = hp.id
         LEFT JOIN games g ON op.game_id = g.id
-      `);
+      `;
+      let queryParams = [];
+      if (game_id) {
+        queryText += ' WHERE op.game_id = $1 OR g.external_app_id = $1';
+        queryParams.push(game_id);
+      }
+      const profilesResult = await db.query(queryText, queryParams);
       dbProfiles = profilesResult.rows;
     } else {
-      const profilesResult = await db.query('SELECT * FROM optimization_profiles');
-      dbProfiles = profilesResult.rows;
+      let filtered = [...MOCK_DB.optimization_profiles];
+      if (game_id) {
+        const game = MOCK_DB.games.find(g => g.id === game_id || g.external_app_id === game_id.toString());
+        if (game) {
+          filtered = filtered.filter(op => op.game_id === game.id);
+        } else {
+          filtered = filtered.filter(op => op.game_id === game_id);
+        }
+      }
+      dbProfiles = filtered.map(op => {
+        const game = MOCK_DB.games.find(g => g.id === op.game_id);
+        const hp = MOCK_DB.hardware_profiles.find(h => h.id === op.hardware_id);
+        return {
+          ...op,
+          game: game ? { id: game.id, title: game.title, external_app_id: game.external_app_id } : null,
+          hardware: hp ? { cpu_model: hp.cpu_model, gpu_model: hp.gpu_model, ram_gb: hp.ram_gb, resolution: hp.resolution, refresh_rate: hp.refresh_rate } : op.hardware
+        };
+      });
     }
 
     const recommendations = getRecProfiles(userSpec, dbProfiles, targetThreshold);
