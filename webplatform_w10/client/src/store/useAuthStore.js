@@ -37,11 +37,8 @@ const useAuthStore = create((set, get) => ({
       sessionUser = { id: 'user-mock-id', email: null, nickname: 'MockUser', role: 'user', provider, provider_id: providerId, linked_providers: [] };
     }
     
-    // JWT 페이로드에 연동 정보가 있으면 localStorage 동기화, 없으면 기존 캐시 사용
-    const cachedLinked = JSON.parse(localStorage.getItem('syncrig_linked_providers') || '[]');
-    const finalLinked = sessionUser.linked_providers && sessionUser.linked_providers.length > 0 
-      ? sessionUser.linked_providers 
-      : cachedLinked;
+    // JWT 페이로드에 연동 정보가 있으면 사용하고, localStorage와 동기화합니다.
+    const finalLinked = sessionUser.linked_providers || [];
       
     localStorage.setItem('syncrig_linked_providers', JSON.stringify(finalLinked));
     sessionUser.linked_providers = finalLinked;
