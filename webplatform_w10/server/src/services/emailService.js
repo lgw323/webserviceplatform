@@ -25,28 +25,30 @@ export const sendVerificationEmail = async (email, code) => {
         to: [email],
         subject: '[SYNCRIG] 이메일 인증 코드를 입력해주세요.',
         html: `
-          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 30px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #ffffff; color: #1f2937;">
-            <div style="text-align: center; margin-bottom: 24px;">
-              <h2 style="color: #2563eb; font-weight: 800; font-size: 24px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">SYNCRIG PLATFORM</h2>
-              <p style="color: #6b7280; font-size: 14px; margin: 4px 0 0 0;">통합 하드웨어 최적화 플랫폼</p>
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 30px; border-radius: 16px; background-color: #0b0f19; color: #e5e7eb; border: 1px solid #1e293b; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h2 style="color: #3b82f6; font-weight: 900; font-size: 26px; margin: 0; text-transform: uppercase; letter-spacing: 2px;">SYNCRIG</h2>
+              <p style="color: #9ca3af; font-size: 13px; margin: 6px 0 0 0; letter-spacing: 1px;">Hardware Profile Optimization Platform</p>
             </div>
             
-            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+            <div style="height: 1px; background-color: #1e293b; margin: 24px 0;"></div>
             
-            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px;">안녕하세요.</p>
-            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 24px;">SYNCRIG 서비스 회원가입을 완료하기 위한 6자리 이메일 인증 코드를 다음과 같이 발송해 드립니다.</p>
-            
-            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #1e3a8a; margin: 24px 0; border: 1px solid #d1d5db;">
-              ${code}
+            <div style="padding: 10px 0;">
+              <p style="font-size: 16px; line-height: 1.6; margin: 0 0 16px 0; color: #ffffff;">안녕하세요, SYNCRIG입니다.</p>
+              <p style="font-size: 15px; line-height: 1.6; margin: 0 0 28px 0; color: #d1d5db;">회원가입을 진행하고 계정을 보호하기 위해 아래의 6자리 인증 코드를 인증 창에 입력해 주세요.</p>
+              
+              <div style="background-color: #111827; border: 1px solid #3b82f6; border-radius: 12px; padding: 24px; text-align: center; font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #3b82f6; margin: 28px 0;">
+                ${code}
+              </div>
+              
+              <p style="font-size: 13px; line-height: 1.6; color: #9ca3af; margin: 28px 0 0 0; text-align: center;">본 인증 코드는 발송 후 <strong style="color: #ef4444;">5분 동안 유효</strong>합니다.</p>
             </div>
             
-            <p style="font-size: 14px; line-height: 1.6; color: #4b5563; margin-bottom: 24px;">본 인증 코드는 발송된 시점부터 <strong>5분간 유효</strong>합니다. 5분이 지난 경우 새로운 코드를 재요청하셔야 합니다.</p>
+            <div style="height: 1px; background-color: #1e293b; margin: 28px 0;"></div>
             
-            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-            
-            <p style="font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center; margin: 0;">
-              본 메일은 발신 전용 메일이므로 회신이 불가합니다.<br />
-              본인이 요청하지 않은 경우, 이 메일을 무시하고 삭제해 주세요.
+            <p style="font-size: 11px; line-height: 1.6; color: #4b5563; text-align: center; margin: 0;">
+              본 메일은 발신 전용 메일로 회신되지 않습니다.<br />
+              본인이 요청하지 않은 가입 시도라면 이 메일을 즉시 무시하거나 삭제해 주시기 바랍니다.
             </p>
           </div>
         `
