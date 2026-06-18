@@ -39,28 +39,60 @@ function MatchingLoader() {
   );
 }
 
+const isSameSpec = (specA, specB) => {
+  if (!specA || !specB) return false;
+  return specA.cpu_model === specB.cpu_model &&
+         specA.gpu_model === specB.gpu_model &&
+         specA.ram_gb === specB.ram_gb &&
+         specA.resolution === specB.resolution &&
+         specA.refresh_rate === specB.refresh_rate;
+};
+
 export default function RecommendPage() {
   useSEO('recommend');
   const { user, userSpec } = useAuthStore();
   const [recommendations, setRecommendations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isComputing, setIsComputing] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const loadRecommendations = async () => {
       if (!user || !userSpec) return;
-      setIsLoading(true);
+      
+      let cachedSpec = null;
       try {
-        const [data] = await Promise.all([
-          api.fetchRecommendations(userSpec),
-          // 로딩 애니메이션의 3단계(약 2초)를 충분히 감상할 수 있도록 최소 2.5초 딜레이 추가
-          new Promise(resolve => setTimeout(resolve, 2500))
-        ]);
-        setRecommendations(data.recommendations || []);
+        const cachedStr = sessionStorage.getItem('syncrig_last_computed_spec');
+        if (cachedStr) cachedSpec = JSON.parse(cachedStr);
+      } catch (e) {
+        console.error(e);
+      }
+
+      const same = isSameSpec(userSpec, cachedSpec);
+      
+      setIsLoading(true);
+      if (!same) {
+        setIsComputing(true);
+      }
+
+      try {
+        if (!same) {
+          const [data] = await Promise.all([
+            api.fetchRecommendations(userSpec),
+            // 로딩 애니메이션의 3단계(약 2초)를 충분히 감상할 수 있도록 최소 2.5초 딜레이 추가
+            new Promise(resolve => setTimeout(resolve, 2500))
+          ]);
+          setRecommendations(data.recommendations || []);
+          sessionStorage.setItem('syncrig_last_computed_spec', JSON.stringify(userSpec));
+        } else {
+          const data = await api.fetchRecommendations(userSpec);
+          setRecommendations(data.recommendations || []);
+        }
       } catch (err) {
         console.error('추천 데이터 로드 실패', err);
       } finally {
         setIsLoading(false);
+        setIsComputing(false);
       }
     };
     loadRecommendations();
@@ -85,7 +117,13 @@ export default function RecommendPage() {
           </div>
 
           {isLoading ? (
-            <MatchingLoader />
+            isComputing ? (
+              <MatchingLoader />
+            ) : (
+              <div className="flex justify-center py-20" role="status" aria-label="추천 최적화 프로필 로드 중">
+                <Loader2 className="w-8 h-8 animate-spin text-cyber-accent" />
+              </div>
+            )
           ) : (
             <RecommendationList recommendations={recommendations} userSpec={userSpec} />
           )}
