@@ -3,6 +3,31 @@ import crypto from 'crypto';
 const baseDate = new Date();
 const pastDate = (daysAgo) => new Date(baseDate.getTime() - daysAgo * 24 * 60 * 60 * 1000);
 
+// Helper to convert arbitrary mock IDs to valid UUIDs deterministically
+function toUuid(prefix, idStr) {
+  if (!idStr) return crypto.randomUUID();
+  const hash = crypto.createHash('sha256').update(idStr).digest('hex');
+  return `${prefix}${hash.substring(1, 8)}-${hash.substring(8, 12)}-4${hash.substring(13, 16)}-${hash.substring(16, 20)}-${hash.substring(20, 32)}`;
+}
+
+const GAME_UUIDS = {
+  'game_cyberpunk': '550e8400-e29b-41d4-a716-446655440001',
+  'game_valorant': '550e8400-e29b-41d4-a716-446655440002',
+  'game_elden': '550e8400-e29b-41d4-a716-446655440003',
+  'game_witcher3': '550e8400-e29b-41d4-a716-446655440004',
+  'game_bg3': '550e8400-e29b-41d4-a716-446655440005',
+  'game_palworld': '550e8400-e29b-41d4-a716-446655440006',
+  'game_wukong': '550e8400-e29b-41d4-a716-446655440007',
+  'game_marvel': '550e8400-e29b-41d4-a716-446655440008'
+};
+
+const userUuid = (id) => toUuid('a', id);
+const hwUuid = (id) => toUuid('b', id);
+const optUuid = (id) => toUuid('c', id);
+const postUuid = (id) => toUuid('e', id);
+const commentUuid = (id) => toUuid('f', id);
+const gameUuid = (id) => GAME_UUIDS[id] || toUuid('5', id);
+
 export const MOCK_DB = {
   users: [],
   email_verification_codes: [],
@@ -82,7 +107,7 @@ for (const tier of tiers) {
     const email = `mockuser${userIndex}@example.com`;
     
     mockUsers.push({
-      id: userId,
+      id: userUuid(userId),
       email,
       nickname: `Gamer${userIndex}_${tier.tierName}`,
       provider: 'local',
@@ -103,8 +128,8 @@ for (const tier of tiers) {
     const hwRam = tier.ram[Math.floor(Math.random() * tier.ram.length)];
     
     mockHwProfiles.push({
-      id: hwId,
-      user_id: userId,
+      id: hwUuid(hwId),
+      user_id: userUuid(userId),
       is_default: true,
       cpu_model: hwCpu,
       gpu_model: hwGpu,
@@ -140,10 +165,10 @@ for (const tier of tiers) {
       }
 
       mockOptProfiles.push({
-        id: `opt-mock-${userIndex}-${j}`,
-        user_id: userId,
-        game_id: game.id,
-        hardware_id: hwId,
+        id: optUuid(`opt-mock-${userIndex}-${j}`),
+        user_id: userUuid(userId),
+        game_id: gameUuid(game.id),
+        hardware_id: hwUuid(hwId),
         hardware: { cpu_model: hwCpu, gpu_model: hwGpu, ram_gb: hwRam, resolution: tier.res },
         settings_json: settings,
         avg_fps: fpsBase + Math.random() * 5,
@@ -159,7 +184,7 @@ for (const tier of tiers) {
 
 // Add an explicit admin user
 mockUsers.push({
-  id: 'user-admin-1',
+  id: userUuid('user-admin-1'),
   email: 'admin@syncrig.com',
   nickname: 'AdminUser',
   provider: 'local',
@@ -173,6 +198,11 @@ mockUsers.push({
   toss_payment_key: null,
   created_at: pastDate(60)
 });
+
+MOCK_DB.games = MOCK_DB.games.map(g => ({
+  ...g,
+  id: gameUuid(g.id)
+}));
 
 MOCK_DB.users = mockUsers;
 MOCK_DB.hardware_profiles = mockHwProfiles;
@@ -215,14 +245,27 @@ const mockComments = [
   { id: 'comment-mock-12', post_id: 'post-mock-15', user_id: 'user-mock-6', content: '발로란트에서 600fps 넘는 게 놀랍네요 ㅋㅋ 모니터가 못 따라가겠다', is_hidden: false, created_at: pastDate(0) }
 ];
 
+MOCK_DB.posts = mockPosts.map(p => ({
+  ...p,
+  id: postUuid(p.id),
+  user_id: userUuid(p.user_id)
+}));
+
+MOCK_DB.comments = mockComments.map(c => ({
+  ...c,
+  id: commentUuid(c.id),
+  post_id: postUuid(c.post_id),
+  user_id: userUuid(c.user_id)
+}));
+
 // Generate some mock likes
 const mockLikes = [];
-for (const post of mockPosts) {
+for (const post of MOCK_DB.posts) {
   const likeCount = post.likes;
   const shuffledUsers = [...mockUsers].sort(() => Math.random() - 0.5);
   for (let i = 0; i < Math.min(likeCount, shuffledUsers.length); i++) {
     mockLikes.push({
-      id: `like-${post.id}-${shuffledUsers[i].id}`,
+      id: toUuid('1', `like-${post.id}-${shuffledUsers[i].id}`),
       post_id: post.id,
       user_id: shuffledUsers[i].id,
       created_at: pastDate(Math.floor(Math.random() * 14))
@@ -230,6 +273,4 @@ for (const post of mockPosts) {
   }
 }
 
-MOCK_DB.posts = mockPosts;
-MOCK_DB.comments = mockComments;
 MOCK_DB.post_likes = mockLikes;
