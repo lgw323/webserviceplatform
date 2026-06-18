@@ -61,7 +61,7 @@ export default function DashboardPage() {
     <section className="space-y-6 animation-fade-in" aria-labelledby="heading-dashboard">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 id="heading-dashboard" className="text-2xl font-bold text-gray-100 mb-2">환영합니다, {user.provider_id}님</h1>
+          <h1 id="heading-dashboard" className="text-2xl font-bold text-gray-100 mb-2">환영합니다, {user.nickname || user.provider_id}님</h1>
           <p className="text-a11y-muted">오늘의 게임 및 하드웨어 요약입니다.</p>
         </div>
         <div className="flex items-center gap-2">
