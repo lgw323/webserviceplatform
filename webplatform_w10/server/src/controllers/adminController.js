@@ -67,23 +67,93 @@ export const getStats = async (req, res, next) => {
 // ─── 유저 목록 ───
 export const getUsers = async (req, res, next) => {
   try {
-    const result = await db.query('SELECT id, email, nickname, provider, role, subscription_status, is_banned, email_verified, created_at FROM users ORDER BY created_at DESC');
-    let users = result.rows || [];
+    const { search, filter, page = 1, limit = 20, sort = 'latest' } = req.query;
+    const parsedLimit = parseInt(limit, 10);
+    const parsedPage = parseInt(page, 10);
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    // 검색/필터
-    const { search, filter } = req.query;
-    if (search) {
-      const q = search.toLowerCase();
-      users = users.filter(u => 
-        (u.email && u.email.toLowerCase().includes(q)) || 
-        (u.nickname && u.nickname.toLowerCase().includes(q))
-      );
+    let totalCount = 0;
+    let users = [];
+
+    if (db.isPgActive()) {
+      let queryText = 'SELECT id, email, nickname, provider, role, subscription_status, is_banned, email_verified, created_at FROM users WHERE 1=1';
+      let countQueryText = 'SELECT COUNT(*) FROM users WHERE 1=1';
+      const queryParams = [];
+      const countQueryParams = [];
+      let paramIndex = 1;
+
+      if (search) {
+        const searchPattern = `%${search}%`;
+        const filterStr = ` AND (LOWER(email) LIKE LOWER($${paramIndex}) OR LOWER(nickname) LIKE LOWER($${paramIndex}))`;
+        queryText += filterStr;
+        countQueryText += filterStr;
+        queryParams.push(searchPattern);
+        countQueryParams.push(searchPattern);
+        paramIndex++;
+      }
+
+      if (filter === 'admin') {
+        queryText += ` AND role = 'admin'`;
+        countQueryText += ` AND role = 'admin'`;
+      } else if (filter === 'premium') {
+        queryText += ` AND subscription_status = 'premium'`;
+        countQueryText += ` AND subscription_status = 'premium'`;
+      } else if (filter === 'banned') {
+        queryText += ` AND is_banned = true`;
+        countQueryText += ` AND is_banned = true`;
+      }
+
+      let orderBy = 'ORDER BY created_at DESC';
+      if (sort === 'oldest') {
+        orderBy = 'ORDER BY created_at ASC';
+      } else if (sort === 'alphabetical') {
+        orderBy = 'ORDER BY nickname ASC, created_at DESC';
+      }
+
+      queryText += ` ${orderBy} LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+      queryParams.push(parsedLimit, offset);
+
+      const countRes = await db.query(countQueryText, countQueryParams);
+      totalCount = parseInt(countRes.rows[0].count, 10);
+
+      const usersRes = await db.query(queryText, queryParams);
+      users = usersRes.rows || [];
+    } else {
+      const result = await db.query('SELECT id, email, nickname, provider, role, subscription_status, is_banned, email_verified, created_at FROM users ORDER BY created_at DESC');
+      let allUsers = result.rows || [];
+
+      if (search) {
+        const q = search.toLowerCase();
+        allUsers = allUsers.filter(u => 
+          (u.email && u.email.toLowerCase().includes(q)) || 
+          (u.nickname && u.nickname.toLowerCase().includes(q))
+        );
+      }
+      if (filter === 'admin') allUsers = allUsers.filter(u => u.role === 'admin');
+      if (filter === 'premium') allUsers = allUsers.filter(u => u.subscription_status === 'premium');
+      if (filter === 'banned') allUsers = allUsers.filter(u => u.is_banned);
+
+      if (sort === 'oldest') {
+        allUsers.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      } else if (sort === 'alphabetical') {
+        allUsers.sort((a, b) => (a.nickname || '').localeCompare(b.nickname || ''));
+      } else {
+        allUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+
+      totalCount = allUsers.length;
+      users = allUsers.slice(offset, offset + parsedLimit);
     }
-    if (filter === 'admin') users = users.filter(u => u.role === 'admin');
-    if (filter === 'premium') users = users.filter(u => u.subscription_status === 'premium');
-    if (filter === 'banned') users = users.filter(u => u.is_banned);
 
-    res.json({ status: 'success', data: users });
+    res.json({ 
+      status: 'success', 
+      data: users,
+      pagination: {
+        page: parsedPage,
+        limit: parsedLimit,
+        total: totalCount
+      }
+    });
   } catch (err) {
     next(err);
   }
@@ -204,10 +274,101 @@ export const getBusinessMetrics = async (req, res, next) => {
 // ─── 어드민 전용 게시글 전체 조회 (숨김 포함) ───
 export const getAdminPosts = async (req, res, next) => {
   try {
-    const result = await db.query(
-      'SELECT p.*, u.nickname FROM posts p JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC /* admin */'
-    );
-    res.json({ status: 'success', data: result.rows || [] });
+    const { search, filter, page = 1, limit = 20, sort = 'latest' } = req.query;
+    const parsedLimit = parseInt(limit, 10);
+    const parsedPage = parseInt(page, 10);
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    let totalCount = 0;
+    let posts = [];
+
+    if (db.isPgActive()) {
+      let queryText = 'SELECT p.*, u.nickname FROM posts p JOIN users u ON p.user_id = u.id WHERE 1=1';
+      let countQueryText = 'SELECT COUNT(*) FROM posts p JOIN users u ON p.user_id = u.id WHERE 1=1';
+      const queryParams = [];
+      const countQueryParams = [];
+      let paramIndex = 1;
+
+      if (search) {
+        const searchPattern = `%${search}%`;
+        const filterStr = ` AND (LOWER(p.title) LIKE LOWER($${paramIndex}) OR LOWER(p.content) LIKE LOWER($${paramIndex}) OR LOWER(u.nickname) LIKE LOWER($${paramIndex}))`;
+        queryText += filterStr;
+        countQueryText += filterStr;
+        queryParams.push(searchPattern);
+        countQueryParams.push(searchPattern);
+        paramIndex++;
+      }
+
+      if (filter === 'hidden') {
+        queryText += ` AND p.is_hidden = true`;
+        countQueryText += ` AND p.is_hidden = true`;
+      } else if (filter === 'active') {
+        queryText += ` AND p.is_hidden = false`;
+        countQueryText += ` AND p.is_hidden = false`;
+      }
+
+      let orderBy = 'ORDER BY p.is_pinned DESC, p.created_at DESC';
+      if (sort === 'oldest') {
+        orderBy = 'ORDER BY p.is_pinned DESC, p.created_at ASC';
+      } else if (sort === 'popular') {
+        orderBy = 'ORDER BY p.is_pinned DESC, p.likes DESC, p.created_at DESC';
+      } else if (sort === 'views') {
+        orderBy = 'ORDER BY p.is_pinned DESC, p.views DESC, p.created_at DESC';
+      } else if (sort === 'alphabetical') {
+        orderBy = 'ORDER BY p.is_pinned DESC, p.title ASC, p.created_at DESC';
+      }
+
+      queryText += ` ${orderBy} LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+      queryParams.push(parsedLimit, offset);
+
+      const countRes = await db.query(countQueryText, countQueryParams);
+      totalCount = parseInt(countRes.rows[0].count, 10);
+
+      const postsRes = await db.query(queryText, queryParams);
+      posts = postsRes.rows || [];
+    } else {
+      const result = await db.query(
+        'SELECT p.*, u.nickname FROM posts p JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC /* admin */'
+      );
+      let allPosts = result.rows || [];
+
+      if (search) {
+        const q = search.toLowerCase();
+        allPosts = allPosts.filter(p => 
+          (p.title && p.title.toLowerCase().includes(q)) ||
+          (p.content && p.content.toLowerCase().includes(q)) ||
+          (p.nickname && p.nickname.toLowerCase().includes(q))
+        );
+      }
+      if (filter === 'hidden') allPosts = allPosts.filter(p => p.is_hidden);
+      if (filter === 'active') allPosts = allPosts.filter(p => !p.is_hidden);
+
+      if (sort === 'oldest') {
+        allPosts.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      } else if (sort === 'popular') {
+        allPosts.sort((a, b) => b.likes - a.likes);
+      } else if (sort === 'views') {
+        allPosts.sort((a, b) => b.views - a.views);
+      } else if (sort === 'alphabetical') {
+        allPosts.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+      } else {
+        allPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+      allPosts.sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0));
+
+      totalCount = allPosts.length;
+      posts = allPosts.slice(offset, offset + parsedLimit);
+    }
+
+    res.json({ 
+      status: 'success', 
+      data: posts,
+      pagination: {
+        page: parsedPage,
+        limit: parsedLimit,
+        total: totalCount
+      }
+    });
   } catch (err) {
     next(err);
   }

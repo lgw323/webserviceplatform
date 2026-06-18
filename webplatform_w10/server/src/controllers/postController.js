@@ -3,35 +3,75 @@ import { db } from '../config/db.js';
 // ─── 게시글 목록 (카테고리, 페이지네이션, 정렬) ───
 export const getPosts = async (req, res, next) => {
   try {
-    const { category, page = 1, limit = 10, sort = 'latest' } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const { category, page = 1, limit = 20, sort = 'latest' } = req.query;
+    const parsedLimit = parseInt(limit, 10);
+    const parsedPage = parseInt(page, 10);
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    // Get order by clause for Postgres
+    let orderBy = 'p.is_pinned DESC, p.created_at DESC';
+    if (sort === 'popular') {
+      orderBy = 'p.is_pinned DESC, p.likes DESC, p.created_at DESC';
+    } else if (sort === 'views') {
+      orderBy = 'p.is_pinned DESC, p.views DESC, p.created_at DESC';
+    } else if (sort === 'alphabetical') {
+      orderBy = 'p.is_pinned DESC, p.title ASC, p.created_at DESC';
+    }
 
     let result;
+    let totalCount = 0;
+
     if (category && category !== 'all') {
+      // 1. Get total posts count
+      const countRes = await db.query(
+        'SELECT COUNT(*) FROM posts WHERE is_hidden = false AND category = $1',
+        [category]
+      );
+      totalCount = parseInt(countRes.rows[0].count, 10);
+
+      // 2. Get posts with pagination
       result = await db.query(
-        'SELECT p.*, u.nickname FROM posts p JOIN users u ON p.user_id = u.id WHERE p.is_hidden = false AND p.category = $1 ORDER BY p.is_pinned DESC, p.created_at DESC LIMIT $2 OFFSET $3',
-        [category, parseInt(limit), offset]
+        `SELECT p.*, u.nickname FROM posts p JOIN users u ON p.user_id = u.id WHERE p.is_hidden = false AND p.category = $1 ORDER BY ${orderBy} LIMIT $2 OFFSET $3`,
+        [category, parsedLimit, offset]
       );
     } else {
+      // 1. Get total posts count
+      const countRes = await db.query(
+        'SELECT COUNT(*) FROM posts WHERE is_hidden = false'
+      );
+      totalCount = parseInt(countRes.rows[0].count, 10);
+
+      // 2. Get posts with pagination
       result = await db.query(
-        'SELECT p.*, u.nickname FROM posts p JOIN users u ON p.user_id = u.id WHERE p.is_hidden = false ORDER BY p.is_pinned DESC, p.created_at DESC LIMIT $1 OFFSET $2',
-        [parseInt(limit), offset]
+        `SELECT p.*, u.nickname FROM posts p JOIN users u ON p.user_id = u.id WHERE p.is_hidden = false ORDER BY ${orderBy} LIMIT $1 OFFSET $2`,
+        [parsedLimit, offset]
       );
     }
 
-    // Sort by popularity if requested
     let rows = result.rows || [];
-    if (sort === 'popular') {
-      rows = rows.sort((a, b) => b.likes - a.likes);
+
+    // Fallback for Mock DB (which doesn't do complex sorting or count inside db.query)
+    if (!db.isPgActive()) {
+      totalCount = result.totalCount || totalCount;
+      if (sort === 'popular') {
+        rows.sort((a, b) => b.likes - a.likes);
+      } else if (sort === 'views') {
+        rows.sort((a, b) => b.views - a.views);
+      } else if (sort === 'alphabetical') {
+        rows.sort((a, b) => a.title.localeCompare(b.title));
+      } else {
+        rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+      rows.sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0));
     }
 
     res.json({ 
       status: 'success', 
       data: rows,
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: result.totalCount || rows.length
+        page: parsedPage,
+        limit: parsedLimit,
+        total: totalCount
       }
     });
   } catch (err) {
@@ -200,6 +240,38 @@ export const deleteComment = async (req, res, next) => {
 
     await db.query('DELETE FROM comments WHERE id = $1', [commentId]);
     res.json({ status: 'success', message: '댓글이 삭제되었습니다.' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── 게시글 고정 토글 (admin) ───
+export const togglePinPost = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    
+    const existing = await db.query('SELECT * FROM posts WHERE id = $1', [id]);
+    const post = existing.rows[0];
+    if (!post) {
+      return res.status(404).json({ status: 'error', message: '게시글을 찾을 수 없습니다.' });
+    }
+    
+    const newPinnedStatus = !post.is_pinned;
+    await db.query('UPDATE posts SET is_pinned = $1 WHERE id = $2', [newPinnedStatus, id]);
+    
+    if (!db.isPgActive()) {
+      const { MOCK_DB } = await import('../config/mockDb.js');
+      const mockPost = MOCK_DB.posts.find(p => p.id === id);
+      if (mockPost) {
+        mockPost.is_pinned = newPinnedStatus;
+      }
+    }
+    
+    res.json({ 
+      status: 'success', 
+      message: newPinnedStatus ? '게시글이 상단 고정되었습니다.' : '게시글 고정이 해제되었습니다.',
+      data: { is_pinned: newPinnedStatus }
+    });
   } catch (err) {
     next(err);
   }

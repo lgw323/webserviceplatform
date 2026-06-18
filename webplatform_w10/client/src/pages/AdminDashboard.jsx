@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, Users, Trash2, Database, TrendingUp, Cpu, Loader2, Search, Ban, Shield, Eye, EyeOff, BarChart3 } from 'lucide-react';
+import { ShieldAlert, Users, Trash2, Database, TrendingUp, Cpu, Loader2, Search, Ban, Shield, Eye, EyeOff, BarChart3, Pin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import * as api from '../api/apiClient';
 import useAuthStore from '../store/useAuthStore';
@@ -15,16 +15,31 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // User management states
   const [searchQuery, setSearchQuery] = useState(() => {
     return sessionStorage.getItem('syncrig_admin_user_search') || '';
   });
   const [userFilter, setUserFilter] = useState('');
-  const [activeTab, setActiveTab] = useState(() => {
-    return sessionStorage.getItem('syncrig_admin_active_tab') || 'overview';
-  });
+  const [userPage, setUserPage] = useState(1);
+  const [userLimit, setUserLimit] = useState(20);
+  const [userSort, setUserSort] = useState('latest');
+  const [userTotalCount, setUserTotalCount] = useState(0);
+
+  // Post management states
   const [postSearchQuery, setPostSearchQuery] = useState(() => {
     return sessionStorage.getItem('syncrig_admin_post_search') || '';
   });
+  const [postFilter, setPostFilter] = useState(''); // '' | 'active' | 'hidden'
+  const [postPage, setPostPage] = useState(1);
+  const [postLimit, setPostLimit] = useState(20);
+  const [postSort, setPostSort] = useState('latest');
+  const [postTotalCount, setPostTotalCount] = useState(0);
+
+  const [activeTab, setActiveTab] = useState(() => {
+    return sessionStorage.getItem('syncrig_admin_active_tab') || 'overview';
+  });
+
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: '',
@@ -44,44 +59,63 @@ export default function AdminDashboard() {
     sessionStorage.setItem('syncrig_admin_post_search', postSearchQuery);
   }, [postSearchQuery]);
 
+  const fetchStats = async () => {
+    try {
+      const statsData = await api.getAdminStats();
+      setStats(statsData);
+    } catch (err) {
+      console.error(err);
+      toast.error('통계 데이터를 불러오지 못했습니다.');
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const result = await api.getAdminUsers(searchQuery, userFilter, userPage, userLimit, userSort);
+      setUsers(result.data || []);
+      setUserTotalCount(result.pagination?.total || 0);
+    } catch (err) {
+      console.error(err);
+      toast.error('유저 데이터를 불러오지 못했습니다.');
+    }
+  };
+
+  const fetchPosts = async () => {
+    try {
+      const result = await api.getAdminPosts(postSearchQuery, postFilter, postPage, postLimit, postSort);
+      setPosts(result.data || []);
+      setPostTotalCount(result.pagination?.total || 0);
+    } catch (err) {
+      console.error(err);
+      toast.error('게시물 데이터를 불러오지 못했습니다.');
+    }
+  };
+
+  // Initial load
   useEffect(() => {
     if (user?.role !== 'admin') {
       navigate('/dashboard');
       return;
     }
-    fetchData();
+    setIsLoading(true);
+    Promise.all([fetchStats(), fetchUsers(), fetchPosts()]).finally(() => {
+      setIsLoading(false);
+    });
   }, [user, navigate]);
 
-  const fetchData = async () => {
-    try {
-      const [statsData, usersData, postsData] = await Promise.all([
-        api.getAdminStats(),
-        api.getAdminUsers(searchQuery, userFilter),
-        api.getAdminPosts()
-      ]);
-      setStats(statsData);
-      setUsers(usersData);
-      setPosts(postsData.data || postsData);
-    } catch (err) {
-      console.error(err);
-      toast.error('통계 데이터를 불러오지 못했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSearch = async () => {
-    try {
-      const usersData = await api.getAdminUsers(searchQuery, userFilter);
-      setUsers(usersData);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
+  // Reactive updates for user tab
   useEffect(() => {
-    if (!isLoading) handleSearch();
-  }, [searchQuery, userFilter]);
+    if (!isLoading && user?.role === 'admin') {
+      fetchUsers();
+    }
+  }, [searchQuery, userFilter, userPage, userLimit, userSort]);
+
+  // Reactive updates for post tab
+  useEffect(() => {
+    if (!isLoading && user?.role === 'admin') {
+      fetchPosts();
+    }
+  }, [postSearchQuery, postFilter, postPage, postLimit, postSort]);
 
   const handleRoleChange = (userId, currentRole) => {
     const newRole = currentRole === 'admin' ? 'user' : 'admin';
@@ -93,7 +127,8 @@ export default function AdminDashboard() {
         try {
           await api.updateUserRole(userId, newRole);
           toast.success(`유저 권한이 ${newRole.toUpperCase()}로 변경되었습니다.`);
-          fetchData();
+          fetchUsers();
+          fetchStats();
         } catch (err) {
           toast.error(err.message || '역할 변경 실패');
         }
@@ -111,7 +146,8 @@ export default function AdminDashboard() {
         try {
           await api.toggleUserBan(userId, !isBanned);
           toast.success(`유저가 성공적으로 ${action}되었습니다.`);
-          fetchData();
+          fetchUsers();
+          fetchStats();
         } catch (err) {
           toast.error(err.message || `${action} 실패`);
         }
@@ -123,7 +159,7 @@ export default function AdminDashboard() {
     try {
       await api.togglePostVisibility(postId, !isHidden);
       toast.success(isHidden ? '게시글 숨김이 해제되었습니다.' : '게시글이 숨김 처리되었습니다.');
-      fetchData();
+      fetchPosts();
     } catch (err) {
       toast.error(err.message || '처리 실패');
     }
@@ -138,7 +174,8 @@ export default function AdminDashboard() {
         try {
           await api.deletePostByAdmin(id);
           toast.success('게시글이 삭제되었습니다.');
-          fetchData();
+          fetchPosts();
+          fetchStats();
         } catch (err) {
           toast.error(err.message || '삭제 실패');
         }
@@ -146,9 +183,22 @@ export default function AdminDashboard() {
     });
   };
 
+  const handleTogglePin = async (id) => {
+    try {
+      const result = await api.togglePostPin(id);
+      toast.success(result.message);
+      fetchPosts();
+    } catch (err) {
+      toast.error(err.message || '상단 고정 처리 실패');
+    }
+  };
+
   if (isLoading) {
     return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-cyber-accent" /></div>;
   }
+
+  const userTotalPages = Math.max(1, Math.ceil(userTotalCount / userLimit));
+  const postTotalPages = Math.max(1, Math.ceil(postTotalCount / postLimit));
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6 animation-fade-in">
@@ -284,32 +334,57 @@ export default function AdminDashboard() {
       {/* ═══ USERS TAB ═══ */}
       {activeTab === 'users' && (
         <div className="space-y-4">
-          {/* Search & Filter */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 flex items-center bg-cyber-darker rounded-lg px-4 py-2 border border-gray-800">
+          {/* Search & Filter & Sort */}
+          <div className="flex flex-col md:flex-row gap-3 items-center">
+            <div className="flex-1 flex items-center bg-cyber-darker rounded-lg px-4 py-2 border border-gray-800 w-full">
               <Search className="w-4 h-4 text-gray-500 mr-2" />
               <input
                 type="text"
                 placeholder="이메일 또는 닉네임 검색..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); setUserPage(1); }}
                 className="bg-transparent border-none outline-none text-sm w-full text-gray-200"
               />
             </div>
-            <div className="flex gap-1">
-              {['', 'admin', 'premium', 'banned'].map(f => (
-                <button
-                  key={f}
-                  onClick={() => setUserFilter(f)}
-                  className={`px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
-                    userFilter === f
-                      ? 'bg-red-500/15 text-red-400 border border-red-500/30'
-                      : 'bg-cyber-card text-gray-400 border border-gray-800 hover:text-gray-200'
-                  }`}
-                >
-                  {f === '' ? '전체' : f === 'admin' ? '관리자' : f === 'premium' ? 'PRO' : '차단'}
-                </button>
-              ))}
+            
+            <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
+              <div className="flex gap-1">
+                {['', 'admin', 'premium', 'banned'].map(f => (
+                  <button
+                    key={f}
+                    onClick={() => { setUserFilter(f); setUserPage(1); }}
+                    className={`px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
+                      userFilter === f
+                        ? 'bg-red-500/15 text-red-400 border border-red-500/30'
+                        : 'bg-cyber-card text-gray-400 border border-gray-800 hover:text-gray-200'
+                    }`}
+                  >
+                    {f === '' ? '전체' : f === 'admin' ? '관리자' : f === 'premium' ? 'PRO' : '차단'}
+                  </button>
+                ))}
+              </div>
+
+              <select
+                value={userSort}
+                onChange={(e) => { setUserSort(e.target.value); setUserPage(1); }}
+                className="bg-cyber-card border border-gray-800 rounded-lg px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-red-500 transition-colors"
+              >
+                <option value="latest">가입일 최신순</option>
+                <option value="oldest">가입순</option>
+                <option value="alphabetical">이름순</option>
+              </select>
+
+              <select
+                value={userLimit}
+                onChange={(e) => { setUserLimit(parseInt(e.target.value, 10)); setUserPage(1); }}
+                className="bg-cyber-card border border-gray-800 rounded-lg px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-red-500 transition-colors"
+              >
+                <option value={10}>10개씩 보기</option>
+                <option value={20}>20개씩 보기</option>
+                <option value={30}>30개씩 보기</option>
+                <option value={40}>40개씩 보기</option>
+                <option value={50}>50개씩 보기</option>
+              </select>
             </div>
           </div>
 
@@ -378,8 +453,27 @@ export default function AdminDashboard() {
                 </tbody>
               </table>
             </div>
-            <div className="px-4 py-3 bg-cyber-darker text-xs text-gray-500 border-t border-gray-800">
-              총 {users.length}명
+            <div className="px-4 py-3 bg-cyber-darker text-xs text-gray-500 border-t border-gray-800 flex justify-between items-center">
+              <span>총 {userTotalCount}명</span>
+              {userTotalPages > 1 && (
+                <div className="flex items-center gap-1">
+                  <button 
+                    onClick={() => setUserPage(p => Math.max(1, p - 1))} 
+                    disabled={userPage === 1}
+                    className="p-1 rounded bg-cyber-dark border border-gray-850 text-gray-400 hover:text-white disabled:opacity-30 transition-colors"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="text-xs text-gray-400 px-2">{userPage} / {userTotalPages}</span>
+                  <button 
+                    onClick={() => setUserPage(p => Math.min(userTotalPages, p + 1))} 
+                    disabled={userPage === userTotalPages}
+                    className="p-1 rounded bg-cyber-dark border border-gray-850 text-gray-400 hover:text-white disabled:opacity-30 transition-colors"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -388,17 +482,59 @@ export default function AdminDashboard() {
       {/* ═══ POSTS TAB ═══ */}
       {activeTab === 'posts' && (
         <div className="space-y-4">
-          {/* Post Search Bar */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 flex items-center bg-cyber-darker rounded-lg px-4 py-2 border border-gray-800">
+          {/* Post Search & Filter & Sort */}
+          <div className="flex flex-col md:flex-row gap-3 items-center">
+            <div className="flex-1 flex items-center bg-cyber-darker rounded-lg px-4 py-2 border border-gray-800 w-full">
               <Search className="w-4 h-4 text-gray-500 mr-2" />
               <input
                 type="text"
                 placeholder="제목, 내용 또는 작성자 검색..."
                 value={postSearchQuery}
-                onChange={(e) => setPostSearchQuery(e.target.value)}
+                onChange={(e) => { setPostSearchQuery(e.target.value); setPostPage(1); }}
                 className="bg-transparent border-none outline-none text-sm w-full text-gray-200"
               />
+            </div>
+
+            <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
+              <div className="flex gap-1">
+                {['', 'active', 'hidden'].map(f => (
+                  <button
+                    key={f}
+                    onClick={() => { setPostFilter(f); setPostPage(1); }}
+                    className={`px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
+                      postFilter === f
+                        ? 'bg-red-500/15 text-red-400 border border-red-500/30'
+                        : 'bg-cyber-card text-gray-400 border border-gray-800 hover:text-gray-200'
+                    }`}
+                  >
+                    {f === '' ? '전체' : f === 'active' ? '노출됨' : '숨김'}
+                  </button>
+                ))}
+              </div>
+
+              <select
+                value={postSort}
+                onChange={(e) => { setPostSort(e.target.value); setPostPage(1); }}
+                className="bg-cyber-card border border-gray-800 rounded-lg px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-red-500 transition-colors"
+              >
+                <option value="latest">최신순</option>
+                <option value="oldest">오래된순</option>
+                <option value="popular">인기순</option>
+                <option value="views">조회수순</option>
+                <option value="alphabetical">제목순</option>
+              </select>
+
+              <select
+                value={postLimit}
+                onChange={(e) => { setPostLimit(parseInt(e.target.value, 10)); setPostPage(1); }}
+                className="bg-cyber-card border border-gray-800 rounded-lg px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-red-500 transition-colors"
+              >
+                <option value={10}>10개씩 보기</option>
+                <option value={20}>20개씩 보기</option>
+                <option value={30}>30개씩 보기</option>
+                <option value={40}>40개씩 보기</option>
+                <option value={50}>50개씩 보기</option>
+              </select>
             </div>
           </div>
 
@@ -417,16 +553,13 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
-                  {((Array.isArray(posts) ? posts : []).filter(p => {
-                    if (!postSearchQuery) return true;
-                    const q = postSearchQuery.toLowerCase();
-                    return (p.title && p.title.toLowerCase().includes(q)) ||
-                           (p.nickname && p.nickname.toLowerCase().includes(q)) ||
-                           (p.content && p.content.toLowerCase().includes(q));
-                  })).map(p => (
+                  {posts.map(p => (
                     <tr key={p.id} className={`text-gray-300 ${p.is_hidden ? 'opacity-50' : ''}`}>
                       <td className="px-4 py-3 truncate max-w-[200px] cursor-pointer hover:text-cyber-accent font-medium" onClick={() => navigate(`/community/${p.id}`)}>
-                        {p.title}
+                        <div className="flex items-center gap-1.5">
+                          {p.is_pinned && <Pin className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />}
+                          <span className="truncate">{p.title}</span>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-xs">{p.nickname || '익명'}</td>
                       <td className="px-4 py-3">
@@ -439,6 +572,17 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => handleTogglePin(p.id)}
+                            className={`p-1.5 rounded transition-colors ${
+                              p.is_pinned 
+                                ? 'bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500' 
+                                : 'bg-gray-850 hover:bg-gray-700 text-gray-400'
+                            }`}
+                            title={p.is_pinned ? '고정 해제' : '상단 고정'}
+                          >
+                            <Pin className={`w-3.5 h-3.5 ${p.is_pinned ? 'fill-current' : ''}`} />
+                          </button>
                           <button
                             onClick={() => handleToggleHide(p.id, p.is_hidden)}
                             className={`p-1.5 rounded transition-colors ${
@@ -464,14 +608,27 @@ export default function AdminDashboard() {
                 </tbody>
               </table>
             </div>
-            <div className="px-4 py-3 bg-cyber-darker text-xs text-gray-500 border-t border-gray-800">
-              총 {((Array.isArray(posts) ? posts : []).filter(p => {
-                if (!postSearchQuery) return true;
-                const q = postSearchQuery.toLowerCase();
-                return (p.title && p.title.toLowerCase().includes(q)) ||
-                       (p.nickname && p.nickname.toLowerCase().includes(q)) ||
-                       (p.content && p.content.toLowerCase().includes(q));
-              })).length}개 게시물
+            <div className="px-4 py-3 bg-cyber-darker text-xs text-gray-500 border-t border-gray-800 flex justify-between items-center">
+              <span>총 {postTotalCount}개 게시물</span>
+              {postTotalPages > 1 && (
+                <div className="flex items-center gap-1">
+                  <button 
+                    onClick={() => setPostPage(p => Math.max(1, p - 1))} 
+                    disabled={postPage === 1}
+                    className="p-1 rounded bg-cyber-dark border border-gray-850 text-gray-400 hover:text-white disabled:opacity-30 transition-colors"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="text-xs text-gray-400 px-2">{postPage} / {postTotalPages}</span>
+                  <button 
+                    onClick={() => setPostPage(p => Math.min(postTotalPages, p + 1))} 
+                    disabled={postPage === postTotalPages}
+                    className="p-1 rounded bg-cyber-dark border border-gray-850 text-gray-400 hover:text-white disabled:opacity-30 transition-colors"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

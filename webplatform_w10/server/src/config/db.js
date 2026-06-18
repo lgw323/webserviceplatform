@@ -274,6 +274,27 @@ export const db = {
       // USERS
       // ═══════════════════════════════════════
 
+      // SELECT COUNT(*) FROM users
+      if (normalizedQuery.includes('select count') && normalizedQuery.includes('from users')) {
+        let filtered = [...MOCK_DB.users];
+        if (normalizedQuery.includes("role = 'admin'")) {
+          filtered = filtered.filter(u => u.role === 'admin');
+        } else if (normalizedQuery.includes("subscription_status = 'premium'")) {
+          filtered = filtered.filter(u => u.subscription_status === 'premium');
+        } else if (normalizedQuery.includes("is_banned = true")) {
+          filtered = filtered.filter(u => u.is_banned);
+        }
+        const searchVal = params.find(p => typeof p === 'string' && p.startsWith('%') && p.endsWith('%'));
+        if (searchVal) {
+          const q = searchVal.replace(/%/g, '').toLowerCase();
+          filtered = filtered.filter(u => 
+            (u.email && u.email.toLowerCase().includes(q)) || 
+            (u.nickname && u.nickname.toLowerCase().includes(q))
+          );
+        }
+        return { rows: [{ count: filtered.length.toString() }] };
+      }
+
       // SELECT FROM users WHERE email = $1
       if (normalizedQuery.includes('select') && normalizedQuery.includes('from users') && normalizedQuery.includes('email =') && !normalizedQuery.includes('provider =')) {
         const email = params[0];
@@ -556,6 +577,25 @@ export const db = {
         return { rowCount: 1 };
       }
 
+      // SELECT COUNT(*) FROM posts
+      if (normalizedQuery.includes('select count') && normalizedQuery.includes('from posts')) {
+        let filtered = [...MOCK_DB.posts];
+        if (!normalizedQuery.includes('is_hidden') && !normalizedQuery.includes('admin')) {
+          filtered = filtered.filter(p => !p.is_hidden);
+        }
+        if (normalizedQuery.includes('category = $1') || normalizedQuery.includes('category =')) {
+          const cat = params[0];
+          if (cat && cat !== 'all') {
+            filtered = filtered.filter(p => p.category === cat);
+          }
+        }
+        if (normalizedQuery.includes('user_id = $1') || normalizedQuery.includes('p.user_id = $1')) {
+          const userId = params[0];
+          filtered = filtered.filter(p => p.user_id === userId);
+        }
+        return { rows: [{ count: filtered.length.toString() }] };
+      }
+
       // SELECT FROM posts (single by id)
       if (normalizedQuery.includes('select') && normalizedQuery.includes('from posts') && 
           (normalizedQuery.includes('where p.id = $1') || (normalizedQuery.includes('where id = $1') && !normalizedQuery.includes('users')))) {
@@ -584,7 +624,7 @@ export const db = {
 
         // Category filter
         if (normalizedQuery.includes('category = $1') || normalizedQuery.includes("category =")) {
-          const catIdx = normalizedQuery.includes('user_id') ? 1 : 0;
+          const catIdx = normalizedQuery.includes('user_id = $') ? 1 : 0;
           const cat = params[catIdx];
           if (cat && cat !== 'all') {
             filtered = filtered.filter(p => p.category === cat);
@@ -595,7 +635,27 @@ export const db = {
           const user = MOCK_DB.users.find(u => u.id === p.user_id) || {};
           const commentCount = MOCK_DB.comments.filter(c => c.post_id === p.id).length;
           return { ...p, nickname: user.nickname, email: user.email, comment_count: commentCount };
-        }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        });
+
+        // Mimic PostgreSQL sorting before pagination
+        rows.sort((a, b) => {
+          // Pinned posts always sorted first if is_pinned is in query
+          if (normalizedQuery.includes('is_pinned')) {
+            const pinA = a.is_pinned ? 1 : 0;
+            const pinB = b.is_pinned ? 1 : 0;
+            if (pinA !== pinB) return pinB - pinA;
+          }
+
+          if (normalizedQuery.includes('likes desc')) {
+            return (b.likes || 0) - (a.likes || 0);
+          } else if (normalizedQuery.includes('views desc')) {
+            return (b.views || 0) - (a.views || 0);
+          } else if (normalizedQuery.includes('title asc')) {
+            return (a.title || '').localeCompare(b.title || '');
+          } else {
+            return new Date(b.created_at) - new Date(a.created_at);
+          }
+        });
 
         // Pagination (basic)
         if (normalizedQuery.includes('limit') && normalizedQuery.includes('offset')) {
@@ -651,6 +711,20 @@ export const db = {
         const newComment = { id: crypto.randomUUID(), post_id, user_id, content, is_hidden: false, created_at: new Date() };
         MOCK_DB.comments.push(newComment);
         return { rows: [newComment] };
+      }
+
+      // SELECT COUNT(*) FROM comments
+      if (normalizedQuery.includes('select count') && normalizedQuery.includes('from comments')) {
+        let filtered = [...MOCK_DB.comments];
+        if (normalizedQuery.includes('user_id = $1') || normalizedQuery.includes('c.user_id = $1')) {
+          const userId = params[0];
+          filtered = filtered.filter(c => c.user_id === userId);
+        }
+        if (normalizedQuery.includes('post_id = $1')) {
+          const postId = params[0];
+          filtered = filtered.filter(c => c.post_id === postId);
+        }
+        return { rows: [{ count: filtered.length.toString() }] };
       }
 
       // SELECT comments by user_id
