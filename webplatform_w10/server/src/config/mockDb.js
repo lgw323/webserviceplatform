@@ -184,6 +184,50 @@ for (const tier of tiers) {
   }
 }
 
+// Ensure every game has at least one profile for each hardware tier to guarantee successful matching
+let refOptIndex = 1;
+for (const tier of tiers) {
+  for (const game of MOCK_DB.games) {
+    const hwCpu = tier.cpu[0];
+    const hwGpu = tier.gpu[0];
+    const hwRam = tier.ram[0];
+    
+    let fpsBase = 60;
+    let settings = { 'Texture Quality': 'Medium', 'Shadows': 'Medium' };
+    
+    if (tier.tierName === '하이엔드') {
+      fpsBase = 120;
+      settings = { 'Texture Quality': 'Ultra', 'Ray Tracing': 'Ultra', 'Shadows': 'High', 'DLSS': 'Quality' };
+    } else if (tier.tierName === '상위') {
+      fpsBase = 90;
+      settings = { 'Texture Quality': 'High', 'Ray Tracing': 'Medium', 'Shadows': 'High', 'DLSS': 'Balanced' };
+    } else if (tier.tierName === '미드레인지') {
+      fpsBase = 70;
+      settings = { 'Texture Quality': 'High', 'Ray Tracing': 'Off', 'Shadows': 'Medium', 'DLSS': 'Performance' };
+    } else if (tier.tierName === '보급형') {
+      fpsBase = 55;
+      settings = { 'Texture Quality': 'Medium', 'Ray Tracing': 'Off', 'Shadows': 'Low', 'FSR': 'Performance' };
+    } else {
+      fpsBase = 35;
+      settings = { 'Texture Quality': 'Low', 'Ray Tracing': 'Off', 'Shadows': 'Low', 'Resolution Scale': '70%' };
+    }
+
+    mockOptProfiles.push({
+      id: optUuid(`opt-ref-${refOptIndex++}`),
+      user_id: userUuid('user-admin-1'), // Admin acts as the compiler of these reference settings
+      game_id: gameUuid(game.id),
+      hardware_id: hwUuid(`hw-mock-1`), // Reference connection to base mock hardware profile
+      hardware: { cpu_model: hwCpu, gpu_model: hwGpu, ram_gb: hwRam, resolution: tier.res },
+      settings_json: settings,
+      avg_fps: fpsBase,
+      game_version: '1.0',
+      likes: 50 + Math.floor(Math.random() * 50),
+      created_at: pastDate(10)
+    });
+  }
+}
+
+
 // Add an explicit admin user
 mockUsers.push({
   id: userUuid('user-admin-1'),
