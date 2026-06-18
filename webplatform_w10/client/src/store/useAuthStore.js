@@ -103,19 +103,16 @@ const useAuthStore = create((set, get) => ({
           }
         });
         
-        const totalPlaytime = mergedGames.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
-        const estimatedAchievements = Math.round(totalPlaytime * 0.88);
-        set({ gameLibrary: mergedGames, achievementsCount: estimatedAchievements });
+        const totalAchievements = mergedGames.reduce((sum, g) => sum + (g.achievementsCount !== undefined ? g.achievementsCount : Math.round((g.playtime || g.hours || 0) * 0.88)), 0);
+        set({ gameLibrary: mergedGames, achievementsCount: totalAchievements });
       } catch (e) {
         console.error('Failed to sync games', e);
-        const totalPlaytime = manualGames.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
-        const estimatedAchievements = Math.round(totalPlaytime * 0.88);
-        set({ gameLibrary: manualGames, achievementsCount: estimatedAchievements });
+        const totalAchievements = manualGames.reduce((sum, g) => sum + (g.achievementsCount !== undefined ? g.achievementsCount : Math.round((g.playtime || g.hours || 0) * 0.88)), 0);
+        set({ gameLibrary: manualGames, achievementsCount: totalAchievements });
       }
     } else {
-      const totalPlaytime = manualGames.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
-      const estimatedAchievements = Math.round(totalPlaytime * 0.88);
-      set({ gameLibrary: manualGames, achievementsCount: estimatedAchievements });
+      const totalAchievements = manualGames.reduce((sum, g) => sum + (g.achievementsCount !== undefined ? g.achievementsCount : Math.round((g.playtime || g.hours || 0) * 0.88)), 0);
+      set({ gameLibrary: manualGames, achievementsCount: totalAchievements });
     }
   },
 
@@ -152,9 +149,8 @@ const useAuthStore = create((set, get) => ({
           mergedGames.push(mg);
         }
       });
-      const totalPlaytime = mergedGames.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
-      const estimatedAchievements = Math.round(totalPlaytime * 0.88);
-      set({ gameLibrary: mergedGames, achievementsCount: estimatedAchievements });
+      const totalAchievements = mergedGames.reduce((sum, g) => sum + (g.achievementsCount !== undefined ? g.achievementsCount : Math.round((g.playtime || g.hours || 0) * 0.88)), 0);
+      set({ gameLibrary: mergedGames, achievementsCount: totalAchievements });
     } catch (err) {
       console.error('Sync failed', err);
       throw err;
@@ -178,13 +174,11 @@ const useAuthStore = create((set, get) => ({
             mergedGames.push(mg);
           }
         });
-        const totalPlaytime = mergedGames.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
-        const estimatedAchievements = Math.round(totalPlaytime * 0.88);
-        set({ gameLibrary: mergedGames, achievementsCount: estimatedAchievements });
+        const totalAchievements = mergedGames.reduce((sum, g) => sum + (g.achievementsCount !== undefined ? g.achievementsCount : Math.round((g.playtime || g.hours || 0) * 0.88)), 0);
+        set({ gameLibrary: mergedGames, achievementsCount: totalAchievements });
       } else {
-        const totalPlaytime = manualGames.reduce((sum, g) => sum + (g.playtime || g.hours || 0), 0);
-        const estimatedAchievements = Math.round(totalPlaytime * 0.88);
-        set({ gameLibrary: manualGames, achievementsCount: estimatedAchievements });
+        const totalAchievements = manualGames.reduce((sum, g) => sum + (g.achievementsCount !== undefined ? g.achievementsCount : Math.round((g.playtime || g.hours || 0) * 0.88)), 0);
+        set({ gameLibrary: manualGames, achievementsCount: totalAchievements });
       }
     } catch (err) {
       console.error('Unlink failed', err);
