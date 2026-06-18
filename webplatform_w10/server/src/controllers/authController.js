@@ -203,10 +203,11 @@ export const oauthCallback = async (req, res, next) => {
 
     const { provider, provider_id } = req.user;
 
-    // 1. 연동(Link) 모드 체크
-    if (req.session && req.session.linkToken) {
+    // 1. 연동(Link) 모드 체크 (Vercel Serverless의 세션 유실 방지를 위해 query/state 파라미터 우선 확인)
+    const linkToken = req.query.linkToken || req.query.state || (req.session && req.session.linkToken);
+    if (linkToken) {
       try {
-        const decoded = jwt.verify(req.session.linkToken, JWT_SECRET);
+        const decoded = jwt.verify(linkToken, JWT_SECRET);
         const userId = decoded.id;
 
         // 기존 유저 조회
@@ -222,8 +223,10 @@ export const oauthCallback = async (req, res, next) => {
             await db.query('UPDATE users SET linked_providers = $1 WHERE id = $2', [JSON.stringify(linked), userId]);
           }
           
-          // 사용 완료된 토큰 삭제
-          delete req.session.linkToken;
+          // 사용 완료된 세션 토큰 삭제 (존재하는 경우)
+          if (req.session && req.session.linkToken) {
+            delete req.session.linkToken;
+          }
           
           // 기존 유저로 토큰 발급 후 대시보드로 복귀
           targetUser.linked_providers = linked;

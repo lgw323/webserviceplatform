@@ -78,8 +78,14 @@ const checkSteamAuth = (req, res, next) => {
   const isProdOrPreview = host && !host.includes('localhost:5000');
   const steamStrategy = passport._strategies && passport._strategies.steam;
 
+  // Stateless 대응: 세션 유실에 대비해 JWT 토큰을 returnURL의 쿼리 스트링으로 실어 보냄
+  const linkToken = req.query.token || req.query.linkToken || (req.session && req.session.linkToken);
+
   if (isProdOrPreview) {
-    const dynamicReturnURL = `${protocol}://${host}/api/v1/auth/steam/callback`;
+    const callbackBase = `${protocol}://${host}/api/v1/auth/steam/callback`;
+    const dynamicReturnURL = linkToken
+      ? `${callbackBase}?linkToken=${linkToken}`
+      : callbackBase;
     const dynamicRealm = `${protocol}://${host}/`;
 
     if (steamStrategy && steamStrategy._relyingParty) {
@@ -88,10 +94,14 @@ const checkSteamAuth = (req, res, next) => {
     }
   } else {
     // 로컬 개발 환경인 경우 기본값으로 원복
-    const steamStrategy = passport._strategies && passport._strategies.steam;
     if (steamStrategy && steamStrategy._relyingParty) {
       const SERVER_URL = process.env.SERVER_URL || 'http://localhost:5000';
-      steamStrategy._relyingParty.returnUrl = `${SERVER_URL}/api/v1/auth/steam/callback`;
+      const callbackBase = `${SERVER_URL}/api/v1/auth/steam/callback`;
+      const dynamicReturnURL = linkToken
+        ? `${callbackBase}?linkToken=${linkToken}`
+        : callbackBase;
+
+      steamStrategy._relyingParty.returnUrl = dynamicReturnURL;
       steamStrategy._relyingParty.realm = SERVER_URL;
     }
   }
@@ -115,8 +125,12 @@ const checkRiotAuth = (req, res, next) => {
     ? `${protocol}://${host}/api/v1/auth/riot/callback`
     : undefined;
 
+  // Stateless 대응: Riot OAuth2.0의 state 파라미터로 JWT 토큰 전달
+  const linkToken = req.query.token || req.query.state || (req.session && req.session.linkToken);
+
   passport.authenticate('riot', { 
     callbackURL: dynamicCallbackURL,
+    state: linkToken, // OAuth2 state 파라미터에 토큰 지정
     failureRedirect: '/' 
   })(req, res, next);
 };
