@@ -1,7 +1,19 @@
 import React, { useMemo, useState } from 'react';
-import { Clock, Trophy, Gamepad2, Monitor, RefreshCw, Check } from 'lucide-react';
+import { Clock, Trophy, Gamepad2, Monitor, RefreshCw, Check, AlertCircle, Plus, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import useAuthStore from '../../store/useAuthStore';
+
+const GAME_CATALOG = [
+  { id: 1091500, title: 'Cyberpunk 2077', platform: 'steam' },
+  { id: 1245620, title: 'Elden Ring', platform: 'steam' },
+  { id: 292030, title: 'The Witcher 3: Wild Hunt', platform: 'steam' },
+  { id: 1086940, title: 'Baldur\'s Gate 3', platform: 'steam' },
+  { id: 1623730, title: 'Palworld', platform: 'steam' },
+  { id: 2358720, title: 'Black Myth: Wukong', platform: 'steam' },
+  { id: 2767030, title: 'Marvel Rivals', platform: 'steam' },
+  { id: 'valorant', title: 'Valorant', platform: 'riot' },
+  { id: 'lol', title: 'League of Legends', platform: 'riot' }
+];
 
 const COLOR_CLASSES = ['bg-cyber-accent', 'bg-cyber-purple', 'bg-cyber-warning', 'bg-cyber-success'];
 
@@ -32,6 +44,12 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
     message: '',
     onConfirm: null
   });
+
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isAddGameOpen, setIsAddGameOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [playtimeHours, setPlaytimeHours] = useState(10);
+  const [selectedGameId, setSelectedGameId] = useState(GAME_CATALOG[0].id.toString());
 
   const handleUnlink = (provider) => {
     const providerName = provider === 'steam' ? 'Steam' : 'Riot Games';
@@ -157,50 +175,120 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
 
         {/* Game Library */}
         <div className="bg-cyber-card rounded-xl border border-gray-800 shadow-lg flex flex-col overflow-hidden min-h-[300px]">
-          <div className="p-5 border-b border-gray-800">
-            <h2 className="text-lg font-bold text-gray-100 mb-1">게임 라이브러리</h2>
-            <p className="text-xs text-a11y-muted">
-              {isSynced ? `${gameLibrary.length}개 게임 · 총 ${totalHours}시간` : '0개 게임'}
-            </p>
+          <div className="p-5 border-b border-gray-800 flex justify-between items-center">
+            <div>
+              <h2 className="text-lg font-bold text-gray-100 mb-1">게임 라이브러리</h2>
+              <p className="text-xs text-a11y-muted">
+                {isSynced ? `${gameLibrary.length}개 게임 · 총 ${totalHours}시간` : '0개 게임'}
+              </p>
+            </div>
+            <button 
+              onClick={() => setIsAddGameOpen(true)}
+              className="flex items-center gap-1 px-2.5 py-1.5 bg-cyber-accent/10 hover:bg-cyber-accent/20 border border-cyber-accent/30 text-cyber-accent text-xs font-bold rounded-lg transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              직접 추가
+            </button>
           </div>
 
-          <div className="p-4 flex-1 overflow-y-auto space-y-3 flex flex-col justify-center">
+          <div className="p-4 flex-1 overflow-y-auto space-y-3 flex flex-col justify-start">
+            {/* Show private warning if Steam is linked but no real steam games found */}
+            {hasSteam && gameLibrary.filter(g => g.platform === 'steam' && !g.isManual).length === 0 && (
+              <div className="p-3 bg-cyber-warning/10 border border-cyber-warning/20 rounded-lg text-xs space-y-2 mb-2">
+                <div className="flex items-center gap-1.5 text-cyber-warning font-semibold">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>Steam 게임을 가져오지 못했습니다 🔒</span>
+                </div>
+                <p className="text-gray-300 leading-relaxed">
+                  스팀 프로필이 <strong>비공개</strong> 상태이거나 보유 게임이 없는 경우 발생합니다.
+                </p>
+                <div>
+                  <button 
+                    onClick={() => setIsGuideOpen(true)}
+                    className="px-2 py-1 bg-cyber-warning/20 hover:bg-cyber-warning/30 text-cyber-warning rounded font-bold transition-all"
+                  >
+                    공개 설정 가이드 보기
+                  </button>
+                </div>
+              </div>
+            )}
+
             {isSynced ? (
-              <ul role="list" aria-label="보유 게임 목록">
+              <ul role="list" aria-label="보유 게임 목록" className="w-full">
                 {gameLibrary.map((game, i) => {
                   const hours = game.playtime || game.hours || 0;
                   const pct = Math.round((hours / maxPlaytime) * 100);
+                  const isSteamApp = game.platform === 'steam' && !isNaN(Number(game.id)) && Number(game.id) > 100;
                   return (
-                    <li key={game.title} className="bg-cyber-darker p-3 rounded-lg border border-gray-800 hover:border-gray-700 transition-colors group cursor-pointer mb-3 last:mb-0">
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <h3 className="text-sm font-semibold text-gray-200 group-hover:text-cyber-accent transition-colors truncate">{game.title}</h3>
-                          <span className="text-[10px] font-medium text-a11y-muted bg-gray-800 px-1.5 py-0.5 rounded uppercase flex-shrink-0">{game.platform}</span>
+                    <li key={game.id || game.title} className="bg-cyber-darker p-3 rounded-lg border border-gray-800 hover:border-gray-700 transition-colors group mb-3 last:mb-0">
+                      <div className="flex items-center gap-3">
+                        {/* Game Thumbnail */}
+                        <div className="w-16 h-10 rounded overflow-hidden flex-shrink-0 bg-gray-900 border border-gray-800 relative">
+                          {isSteamApp ? (
+                            <img 
+                              src={`https://cdn.akamai.steamstatic.com/steam/apps/${game.id}/header.jpg`} 
+                              alt="" 
+                              className="w-full h-full object-cover relative z-10"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                          ) : null}
+                          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-cyber-accent/15 to-cyber-purple/15 text-[10px] font-black text-cyber-accent uppercase">
+                            {game.title.split(' ').map(w => w[0]).join('').substring(0, 3)}
+                          </div>
                         </div>
-                        <span className="text-xs font-medium bg-gray-800 text-gray-300 px-2 py-1 rounded shrink-0">{hours} 시간</span>
-                      </div>
-                      <div
-                        className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden"
-                        role="progressbar"
-                        aria-valuenow={pct}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-label={`${game.title} 플레이 비중 ${pct}%`}
-                      >
-                        <div className={`h-full rounded-full ${COLOR_CLASSES[i % COLOR_CLASSES.length]} transition-all duration-700`} style={{ width: `${pct}%` }} />
+
+                        {/* Game Meta & Playtime */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-center mb-1">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <h3 className="text-sm font-semibold text-gray-200 group-hover:text-cyber-accent transition-colors truncate">{game.title}</h3>
+                              <span className="text-[9px] font-medium text-a11y-muted bg-gray-800 px-1 py-0.2 rounded uppercase flex-shrink-0">{game.platform}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold bg-gray-800 text-gray-300 px-2 py-0.5 rounded shrink-0">{hours} 시간</span>
+                              {game.isManual && (
+                                <button 
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                      await useAuthStore.getState().removeManualGame(game.id);
+                                      toast.success(`${game.title}이(가) 제거되었습니다.`);
+                                    } catch (err) {
+                                      toast.error('제거 실패');
+                                    }
+                                  }}
+                                  className="text-gray-500 hover:text-red-400 p-0.5 transition-colors"
+                                  title="제거"
+                                >
+                                  ✕
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <div
+                            className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden"
+                            role="progressbar"
+                            aria-valuenow={pct}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-label={`${game.title} 플레이 비중 ${pct}%`}
+                          >
+                            <div className={`h-full rounded-full ${COLOR_CLASSES[i % COLOR_CLASSES.length]} transition-all duration-700`} style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
                       </div>
                     </li>
                   );
                 })}
               </ul>
             ) : (
-              <div className="text-center space-y-4 py-6">
+              <div className="text-center space-y-4 py-6 my-auto">
                 <div className="inline-flex p-3 bg-cyber-purple/10 rounded-full text-cyber-purple border border-cyber-purple/20" aria-hidden="true">
                   <RefreshCw className="w-6 h-6 animate-pulse" />
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-gray-300">연동된 라이브러리 없음</p>
-                  <p className="text-xs text-a11y-muted max-w-[200px] mx-auto">Steam 또는 Riot 계정을 동기화하여 플레이 통계를 불러오세요.</p>
+                  <p className="text-xs text-a11y-muted max-w-[220px] mx-auto">Steam 또는 Riot 계정을 동기화하거나, 게임을 직접 추가해 통계를 시뮬레이션하세요.</p>
                 </div>
                 <div className="flex flex-col gap-2 pt-2 px-4" role="group" aria-label="계정 연동하기">
                   <button
@@ -255,6 +343,142 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
           </div>
         </div>
       </div>
+
+      {/* ─── Steam Privacy Guide Modal ─── */}
+      {isGuideOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animation-fade-in" role="dialog" aria-modal="true">
+          <div className="bg-cyber-card border border-gray-700 p-6 rounded-2xl max-w-md w-full space-y-4 shadow-[0_0_40px_rgba(59,130,246,0.25)]">
+            <div className="flex justify-between items-start">
+              <h3 className="text-lg font-black text-white flex items-center gap-2">
+                <Monitor className="w-5 h-5 text-cyber-accent" />
+                스팀 프로필 공개 설정 가이드
+              </h3>
+              <button 
+                onClick={() => setIsGuideOpen(false)}
+                className="text-gray-400 hover:text-white font-bold"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="text-sm text-gray-300 space-y-3.5 leading-relaxed">
+              <p>스팀은 개인정보 정책에 의해 프로필 및 라이브러리 목록이 기본적으로 비공개(Private)되어 있습니다. 아래 단계를 따라 설정을 <strong>공개</strong>로 변경해 주세요:</p>
+              <ol className="list-decimal pl-5 space-y-2 text-xs text-gray-400">
+                <li>스팀 앱 또는 웹사이트에 로그인 후 우측 상단의 <strong>닉네임</strong>을 클릭하고 <strong>[프로필 보기]</strong>를 선택합니다.</li>
+                <li>우측 상단의 <strong>[프로필 수정]</strong> 버튼을 클릭합니다.</li>
+                <li>사이드 메뉴에서 <strong>[공개 설정]</strong> 탭을 클릭합니다.</li>
+                <li><strong>나의 프로필</strong> 및 <strong>게임 세부 정보</strong>를 모두 <span className="text-cyber-accent font-bold">공개 (Public)</span>로 변경합니다.</li>
+                <li>변경 사항이 저장되면 대시보드로 돌아와 스팀 계정 동기화를 다시 실행합니다.</li>
+              </ol>
+            </div>
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => setIsGuideOpen(false)}
+                className="px-4 py-2 bg-cyber-accent hover:bg-blue-600 text-white rounded-lg text-sm font-semibold transition-colors"
+              >
+                확인했습니다
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Manual Add Game Modal ─── */}
+      {isAddGameOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animation-fade-in" role="dialog" aria-modal="true">
+          <div className="bg-cyber-card border border-gray-700 p-6 rounded-2xl max-w-md w-full space-y-4 shadow-[0_0_40px_rgba(139,92,246,0.25)]">
+            <div className="flex justify-between items-start">
+              <h3 className="text-lg font-black text-white flex items-center gap-2">
+                <Gamepad2 className="w-5 h-5 text-cyber-purple" />
+                직접 게임 라이브러리 추가
+              </h3>
+              <button 
+                onClick={() => { setIsAddGameOpen(false); setSearchQuery(''); }}
+                className="text-gray-400 hover:text-white font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3.5">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-a11y-muted uppercase tracking-wider">대상 게임 선택</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="게임 필터링 (예: cyberpunk)"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-cyber-purple"
+                  />
+                </div>
+                <select
+                  value={selectedGameId}
+                  onChange={(e) => setSelectedGameId(e.target.value)}
+                  className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-cyber-purple mt-2"
+                >
+                  {GAME_CATALOG.filter(g => g.title.toLowerCase().includes(searchQuery.toLowerCase())).map(game => (
+                    <option key={game.id} value={game.id.toString()}>
+                      [{game.platform.toUpperCase()}] {game.title}
+                    </option>
+                  ))}
+                  {GAME_CATALOG.filter(g => g.title.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                    <option disabled>일치하는 게임이 없습니다</option>
+                  )}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-a11y-muted uppercase tracking-wider">플레이 시간 (시간)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10000"
+                  value={playtimeHours}
+                  onChange={(e) => setPlaytimeHours(Math.max(1, parseInt(e.target.value) || 0))}
+                  className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-cyber-purple"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => { setIsAddGameOpen(false); setSearchQuery(''); }}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={async () => {
+                  const targetGame = GAME_CATALOG.find(g => g.id.toString() === selectedGameId);
+                  if (!targetGame) {
+                    toast.error('선택된 게임이 올바르지 않습니다.');
+                    return;
+                  }
+                  try {
+                    await useAuthStore.getState().addManualGame({
+                      id: targetGame.id,
+                      title: targetGame.title,
+                      playtime: playtimeHours,
+                      lastPlayed: '수동 등록됨',
+                      platform: targetGame.platform,
+                      isManual: true
+                    });
+                    toast.success(`${targetGame.title}이(가) 라이브러리에 추가되었습니다.`);
+                    setIsAddGameOpen(false);
+                    setSearchQuery('');
+                  } catch (err) {
+                    toast.error('게임 추가 실패');
+                  }
+                }}
+                disabled={GAME_CATALOG.filter(g => g.title.toLowerCase().includes(searchQuery.toLowerCase())).length === 0}
+                className="px-4 py-2 bg-cyber-purple hover:bg-purple-600 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+              >
+                추가하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── Custom Confirm Modal ─── */}
       {confirmModal.isOpen && (
