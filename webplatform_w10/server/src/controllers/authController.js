@@ -358,3 +358,36 @@ export const updateNickname = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getUserPosts = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const result = await db.query(
+      'SELECT p.*, u.nickname as author_nickname, u.email as author_email FROM posts p LEFT JOIN users u ON p.user_id = u.id WHERE p.user_id = $1 ORDER BY p.created_at DESC',
+      [userId]
+    );
+    res.json({
+      status: 'success',
+      data: result.rows
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getUserComments = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const result = await db.query(
+      'SELECT c.*, p.title as post_title FROM comments c LEFT JOIN posts p ON c.post_id = p.id WHERE c.user_id = $1 ORDER BY c.created_at DESC',
+      [userId]
+    );
+    res.json({
+      status: 'success',
+      data: result.rows
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
