@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun, Globe, User, Save, Check } from 'lucide-react';
+import { Moon, Sun, Globe } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-export default function SettingsView({ user, onUpdateNickname }) {
+export default function SettingsView() {
   const [isLightMode, setIsLightMode] = useState(false);
   const [language, setLanguage] = useState('ko');
-  const [nickname, setNickname] = useState(user?.nickname || user?.provider_id || '');
-  const [isSaved, setIsSaved] = useState(false);
 
   // Load theme from localStorage on mount
   useEffect(() => {
@@ -44,27 +42,11 @@ export default function SettingsView({ user, onUpdateNickname }) {
     localStorage.setItem('language', lang);
   };
 
-  const handleSaveProfile = async (e) => {
-    e.preventDefault();
-    if (nickname.trim()) {
-      try {
-        await onUpdateNickname(nickname.trim());
-        setIsSaved(true);
-        toast.success('닉네임이 성공적으로 저장되었습니다.');
-        setTimeout(() => setIsSaved(false), 2000);
-      } catch (err) {
-        toast.error(err.message || '닉네임 저장에 실패했습니다.');
-      }
-    } else {
-      toast.error('닉네임을 입력해주세요.');
-    }
-  };
-
   return (
     <div className="space-y-6 animation-fade-in max-w-2xl mx-auto">
       <div>
         <h2 className="text-2xl font-bold text-gray-100 mb-2">환경 설정</h2>
-        <p className="text-a11y-muted">앱 테마, 언어, 그리고 계정 프로필을 관리하세요.</p>
+        <p className="text-a11y-muted">앱 테마와 언어를 설정하고 관리하세요.</p>
       </div>
 
       <div className="bg-cyber-card rounded-xl border border-gray-800 shadow-lg overflow-hidden">
@@ -92,7 +74,7 @@ export default function SettingsView({ user, onUpdateNickname }) {
         </div>
 
         {/* 언어 설정 */}
-        <div className="p-6 border-b border-gray-800 flex items-center justify-between hover:bg-cyber-dark transition-colors">
+        <div className="p-6 flex items-center justify-between hover:bg-cyber-dark transition-colors">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-cyber-darker rounded-lg border border-gray-700 text-cyber-purple" aria-hidden="true">
               <Globe size={20} />
@@ -121,47 +103,10 @@ export default function SettingsView({ user, onUpdateNickname }) {
             </button>
           </div>
         </div>
-
-        {/* 프로필 설정 */}
-        <div className="p-6 hover:bg-cyber-dark transition-colors">
-          <div className="flex items-start gap-4 mb-4">
-            <div className="p-3 bg-cyber-darker rounded-lg border border-gray-700 text-cyber-warning" aria-hidden="true">
-              <User size={20} />
-            </div>
-            <div>
-              <h3 className="text-gray-200 font-semibold" id="profile-label">계정 프로필</h3>
-              <p className="text-sm text-a11y-muted">대시보드에 표시될 표시 이름(닉네임)을 변경합니다.</p>
-            </div>
-          </div>
-          
-          <form onSubmit={handleSaveProfile} className="pl-[3.25rem]" aria-labelledby="profile-label">
-            <div className="flex gap-3">
-              <label htmlFor="settings-nickname" className="sr-only">닉네임</label>
-              <input
-                id="settings-nickname"
-                type="text"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                placeholder="새로운 닉네임 입력"
-                aria-required="true"
-                className="flex-1 bg-cyber-darker border border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-cyber-warning transition-colors"
-              />
-              <button
-                type="submit"
-                aria-label={isSaved ? '닉네임이 저장되었습니다' : '닉네임 저장'}
-                className="flex items-center gap-2 px-4 py-2 bg-cyber-warning/20 hover:bg-cyber-warning/30 text-cyber-warning border border-cyber-warning/50 rounded-lg transition-colors font-medium text-sm"
-              >
-                {isSaved ? <Check size={16} aria-hidden="true" /> : <Save size={16} aria-hidden="true" />}
-                {isSaved ? '저장됨' : '저장'}
-              </button>
-            </div>
-            {/* 저장 결과 스크린리더 피드백 */}
-            <div aria-live="polite" className="sr-only">
-              {isSaved && '닉네임이 성공적으로 저장되었습니다.'}
-            </div>
-          </form>
-        </div>
       </div>
     </div>
+  );
+}
+
   );
 }
