@@ -65,20 +65,44 @@ router.post('/verify-code', authLimiter, verifyEmailCode);
 
 // ── 소셜 인증 미들웨어 (Fallback) ──
 const checkSteamAuth = (req, res, next) => {
+  const host = req.headers['x-forwarded-host'] || req.headers.host || '';
+  const protocol = req.headers['x-forwarded-proto'] || 'http';
+
   if (!process.env.STEAM_API_KEY) {
     // Fallback: 가짜 프로필 리턴
     req.user = { provider: 'steam', provider_id: 'steam_mock_' + Math.floor(Math.random() * 900000) };
     return oauthCallback(req, res, next);
   }
-  passport.authenticate('steam', { failureRedirect: '/' })(req, res, next);
+
+  // Vercel Preview 등 동적 도메인 대응을 위해 callbackURL을 동적 지정
+  const dynamicReturnURL = host && !host.includes('localhost:5000')
+    ? `${protocol}://${host}/api/v1/auth/steam/callback`
+    : undefined;
+
+  passport.authenticate('steam', { 
+    returnURL: dynamicReturnURL,
+    failureRedirect: '/' 
+  })(req, res, next);
 };
 
 const checkRiotAuth = (req, res, next) => {
+  const host = req.headers['x-forwarded-host'] || req.headers.host || '';
+  const protocol = req.headers['x-forwarded-proto'] || 'http';
+
   if (!process.env.RIOT_CLIENT_ID || !process.env.RIOT_CLIENT_SECRET) {
     req.user = { provider: 'riot', provider_id: 'riot_mock_' + Math.floor(Math.random() * 900000) };
     return oauthCallback(req, res, next);
   }
-  passport.authenticate('riot', { failureRedirect: '/' })(req, res, next);
+
+  // Vercel Preview 등 동적 도메인 대응을 위해 callbackURL을 동적 지정
+  const dynamicCallbackURL = host && !host.includes('localhost:5000')
+    ? `${protocol}://${host}/api/v1/auth/riot/callback`
+    : undefined;
+
+  passport.authenticate('riot', { 
+    callbackURL: dynamicCallbackURL,
+    failureRedirect: '/' 
+  })(req, res, next);
 };
 
 // ── Steam 인증 ──

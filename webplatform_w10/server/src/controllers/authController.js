@@ -182,7 +182,15 @@ export const verifyEmailCode = async (req, res, next) => {
 export const oauthCallback = async (req, res, next) => {
   try {
     // 0. 동적 CLIENT_URL 추론 (Vercel Preview 등 대응)
+    const host = req.headers['x-forwarded-host'] || req.headers.host || '';
+    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    
     let CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
+    
+    // x-forwarded-host가 있으면 Vercel Preview 환경으로 인지하고 동적 도메인 사용
+    if (host && !host.includes('localhost:5000')) {
+      CLIENT_URL = `${protocol}://${host}`;
+    }
     
     // 세션에 저장해둔 redirectUrl이 있다면 최우선 사용
     if (req.session && req.session.redirectOrigin) {
