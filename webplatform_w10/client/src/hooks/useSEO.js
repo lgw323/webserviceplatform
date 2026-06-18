@@ -21,6 +21,10 @@ const PAGE_META = {
     title: 'SYNCRIG - 환경 설정 | 테마 · 언어 · 계정',
     description: '앱 테마(다크/라이트), 시스템 언어, 계정 프로필을 관리하세요.',
   },
+  mypage: {
+    title: 'SYNCRIG - 마이페이지 | 내 활동 및 프로필 관리',
+    description: '작성한 글과 댓글을 확인하고 계정 프로필, 닉네임, 멤버십 상태를 확인하세요.',
+  },
 };
 
 const DEFAULT_META = {
