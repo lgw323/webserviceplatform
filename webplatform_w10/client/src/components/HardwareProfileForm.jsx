@@ -35,9 +35,65 @@ export default function HardwareProfileForm({ onSave }) {
     load();
   }, []);
 
+  const [cpuSuggestions, setCpuSuggestions] = useState([]);
+  const [gpuSuggestions, setGpuSuggestions] = useState([]);
+  const [showCpuDropdown, setShowCpuDropdown] = useState(false);
+  const [showGpuDropdown, setShowGpuDropdown] = useState(false);
+
   const handleInput = (e) => {
     const { name, value } = e.target;
     setFormData(p => ({ ...p, [name]: value }));
+  };
+
+  const handleCpuChange = async (e) => {
+    const val = e.target.value;
+    setFormData(prev => ({ ...prev, cpu: val }));
+    if (val.trim().length >= 1) {
+      try {
+        const list = await api.searchCatalog('cpu', val);
+        setCpuSuggestions(list);
+        setShowCpuDropdown(true);
+      } catch (err) {
+        console.error('Failed to search CPU catalog', err);
+      }
+    } else {
+      setCpuSuggestions([]);
+      setShowCpuDropdown(false);
+    }
+  };
+
+  const handleGpuChange = async (e) => {
+    const val = e.target.value;
+    setFormData(prev => ({ ...prev, gpu: val }));
+    if (val.trim().length >= 1) {
+      try {
+        const list = await api.searchCatalog('gpu', val);
+        setGpuSuggestions(list);
+        setShowGpuDropdown(true);
+      } catch (err) {
+        console.error('Failed to search GPU catalog', err);
+      }
+    } else {
+      setGpuSuggestions([]);
+      setShowGpuDropdown(false);
+    }
+  };
+
+  const selectCpu = (model) => {
+    setFormData(prev => ({ ...prev, cpu: model }));
+    setShowCpuDropdown(false);
+  };
+
+  const selectGpu = (model) => {
+    setFormData(prev => ({ ...prev, gpu: model }));
+    setShowGpuDropdown(false);
+  };
+
+  const handleBlur = (type) => {
+    setTimeout(() => {
+      if (type === 'cpu') setShowCpuDropdown(false);
+      if (type === 'gpu') setShowGpuDropdown(false);
+    }, 200);
   };
 
   const applyPreset = (p) => {
@@ -181,13 +237,65 @@ export default function HardwareProfileForm({ onSave }) {
                   <label htmlFor="hw-profile-name" className="text-sm font-medium text-gray-300">프로필 이름</label>
                   <input id="hw-profile-name" name="name" value={formData.name} onChange={handleInput} placeholder="e.g. 거실용 HTPC" aria-required="true" className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors" />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 relative">
                   <label htmlFor="hw-cpu" className="text-sm font-medium text-gray-300">CPU 모델명</label>
-                  <input id="hw-cpu" name="cpu" value={formData.cpu} onChange={handleInput} placeholder="e.g. Ryzen 5 5600X" aria-required="true" className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors" />
+                  <input 
+                    id="hw-cpu" 
+                    name="cpu" 
+                    value={formData.cpu} 
+                    onChange={handleCpuChange} 
+                    onBlur={() => handleBlur('cpu')}
+                    onFocus={() => { if (formData.cpu) setShowCpuDropdown(true); }}
+                    placeholder="e.g. Ryzen 5 5600X" 
+                    aria-required="true" 
+                    className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors" 
+                    autoComplete="off"
+                  />
+                  {showCpuDropdown && cpuSuggestions.length > 0 && (
+                    <ul role="listbox" className="absolute left-0 right-0 top-full mt-1 bg-cyber-card border border-gray-700 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto" style={{ contentVisibility: 'auto' }}>
+                      {cpuSuggestions.map((model) => (
+                        <li key={model} role="option">
+                          <button
+                            type="button"
+                            onMouseDown={() => selectCpu(model)}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-200 hover:bg-cyber-dark hover:text-cyber-accent transition-colors"
+                          >
+                            {model}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 relative">
                   <label htmlFor="hw-gpu" className="text-sm font-medium text-gray-300">GPU 모델명</label>
-                  <input id="hw-gpu" name="gpu" value={formData.gpu} onChange={handleInput} placeholder="e.g. RTX 3060" aria-required="true" className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors" />
+                  <input 
+                    id="hw-gpu" 
+                    name="gpu" 
+                    value={formData.gpu} 
+                    onChange={handleGpuChange} 
+                    onBlur={() => handleBlur('gpu')}
+                    onFocus={() => { if (formData.gpu) setShowGpuDropdown(true); }}
+                    placeholder="e.g. RTX 3060" 
+                    aria-required="true" 
+                    className="w-full bg-cyber-darker border border-gray-700 rounded-lg px-4 py-3 text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors" 
+                    autoComplete="off"
+                  />
+                  {showGpuDropdown && gpuSuggestions.length > 0 && (
+                    <ul role="listbox" className="absolute left-0 right-0 top-full mt-1 bg-cyber-card border border-gray-700 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto" style={{ contentVisibility: 'auto' }}>
+                      {gpuSuggestions.map((model) => (
+                        <li key={model} role="option">
+                          <button
+                            type="button"
+                            onMouseDown={() => selectGpu(model)}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-200 hover:bg-cyber-dark hover:text-cyber-accent transition-colors"
+                          >
+                            {model}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </fieldset>
             )}
