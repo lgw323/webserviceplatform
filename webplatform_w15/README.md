@@ -24,6 +24,10 @@
 [Phase 4] ERD/아키텍처 도면을 현재 기준으로 갱신 + 테스트
       ↓
 [Phase 5] UX 고도화 및 마이페이지(My Page) 편의 기능 신설
+      ↓
+[Phase 6] 페이지네이션 오류 해결, 정렬 및 게시글 고정 기능 구현
+      ↓
+[Phase 7] Vercel Preview 동적 리다이렉션 및 세션 캐시 오염 버그 해결
 ```
 
 ---
@@ -37,6 +41,8 @@
 | [`Phase3_Gap_Analysis.md`](./Phase3_Gap_Analysis.md) | **빠진 것 / 추가된 것 / 달라진 것**을 분류하고 심각도 판정 |
 | [`Phase4_Sync_QA.md`](./Phase4_Sync_QA.md) | 현재 코드 기준으로 **ERD·아키텍처 도면 갱신** + 최종 테스트 |
 | [`Phase5_Sync_UX_Enhancements.md`](./Phase5_Sync_UX_Enhancements.md) | **UX 고도화**(게임 라이브러리 검증, 상태 보존) 및 **마이페이지(My Page)** 신설 이력 |
+| [`Phase6_Pagination_Sorting_Pinning.md`](./Phase6_Pagination_Sorting_Pinning.md) | **페이지네이션 오류 해결**, 다각화 정렬 및 관리자 핀 고정 기능 구현 이력 |
+| [`Phase7_Vercel_Integration_and_Session_Cache_Fix.md`](./Phase7_Vercel_Integration_and_Session_Cache_Fix.md) | **Vercel Preview 동적 리다이렉션** 지원 및 로그인/가입 세션 캐시 오염 버그 해결 이력 |
 
 
 ---
