@@ -77,6 +77,8 @@ export default function App() {
         {/* 없는 주소는 모두 대시보드로 리다이렉트 */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
+      {/* 로그인 상태에서도 소셜 연동 콜백을 처리할 수 있도록 콜백 라우트 추가 */}
+      <Route path="/auth/callback" element={<AuthCallback />} />
     </Routes>
   );
 }
