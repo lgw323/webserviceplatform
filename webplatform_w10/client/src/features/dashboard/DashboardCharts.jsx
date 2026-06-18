@@ -174,7 +174,7 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
         </div>
 
         {/* Game Library */}
-        <div className="bg-cyber-card rounded-xl border border-gray-800 shadow-lg flex flex-col overflow-hidden min-h-[300px]">
+        <div className="bg-cyber-card rounded-xl border border-gray-800 shadow-lg flex flex-col overflow-hidden h-[480px]">
           <div className="p-5 border-b border-gray-800 flex justify-between items-center">
             <div>
               <h2 className="text-lg font-bold text-gray-100 mb-1">게임 라이브러리</h2>
