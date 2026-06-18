@@ -74,18 +74,29 @@ const checkSteamAuth = (req, res, next) => {
     return oauthCallback(req, res, next);
   }
 
-  // Vercel Preview 등 동적 도메인 대응을 위해 callbackURL 및 realm을 동적 지정
+  // Vercel Preview/Prod 등 동적 도메인 대응을 위해 callbackURL 및 realm을 동적 지정
   const isProdOrPreview = host && !host.includes('localhost:5000');
-  const dynamicReturnURL = isProdOrPreview
-    ? `${protocol}://${host}/api/v1/auth/steam/callback`
-    : undefined;
-  const dynamicRealm = isProdOrPreview
-    ? `${protocol}://${host}/`
-    : undefined;
+  const steamStrategy = passport._strategies && passport._strategies.steam;
+
+  if (isProdOrPreview) {
+    const dynamicReturnURL = `${protocol}://${host}/api/v1/auth/steam/callback`;
+    const dynamicRealm = `${protocol}://${host}/`;
+
+    if (steamStrategy && steamStrategy._relyingParty) {
+      steamStrategy._relyingParty.returnUrl = dynamicReturnURL;
+      steamStrategy._relyingParty.realm = dynamicRealm;
+    }
+  } else {
+    // 로컬 개발 환경인 경우 기본값으로 원복
+    const steamStrategy = passport._strategies && passport._strategies.steam;
+    if (steamStrategy && steamStrategy._relyingParty) {
+      const SERVER_URL = process.env.SERVER_URL || 'http://localhost:5000';
+      steamStrategy._relyingParty.returnUrl = `${SERVER_URL}/api/v1/auth/steam/callback`;
+      steamStrategy._relyingParty.realm = SERVER_URL;
+    }
+  }
 
   passport.authenticate('steam', { 
-    returnURL: dynamicReturnURL,
-    realm: dynamicRealm,
     failureRedirect: '/' 
   })(req, res, next);
 };

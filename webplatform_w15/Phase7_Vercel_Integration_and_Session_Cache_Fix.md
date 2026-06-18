@@ -11,7 +11,7 @@
 - **문제 배경**: Vercel 배포 시, 개발 서버나 메인 운영 도메인(localhost:3000, production)으로 콜백 URL 및 클라이언트 주소가 하드코딩되어 있으면, Vercel Preview 도메인에서 스팀 연동 버튼 클릭 시 다른 도메인으로 튀거나 리다이렉트가 오작동하는 현상이 발생했습니다.
 - **해결 방안 (`x-forwarded-host` 감지)**:
   - 백엔드 라우터 및 컨트롤러에서 `req.headers['x-forwarded-host']` 및 `req.headers['x-forwarded-proto']`를 분석하여 사용자가 현재 머무르고 있는 Vercel Preview의 동적 도메인을 실시간으로 추론합니다.
-  - 이를 기반으로 스팀의 `returnURL` 및 OpenID `realm`, 그리고 라이엇의 `callbackURL` 연동 주소를 실시간 동적으로 매핑하여 넘기도록 수정했습니다. (Steam OpenID 규격 상 `returnURL`은 `realm` 도메인의 하위 경로여야 하므로 둘 다 동적으로 매칭해야 리다이렉션 오류가 발생하지 않습니다.)
+  - 이를 기반으로 스팀의 `returnURL` 및 OpenID `realm`, 그리고 라이엇의 `callbackURL` 연동 주소를 실시간 동적으로 매핑하여 넘기도록 수정했습니다. (Steam OpenID 규격 상 `returnURL`은 `realm` 도메인의 하위 경로여야 하므로 둘 다 동적으로 매칭해야 리다이렉션 오류가 발생하지 않습니다. 특히, `passport-openid` / `passport-steam` 라이브러리는 `passport.authenticate('steam', { returnURL, realm })` 호출 시 인자로 받은 옵션을 런타임에 완전히 무시하고 생성 시점의 값만 사용하는 설계적 한계가 있어, 미들웨어 호출 직전에 Passport 글로벌 싱글톤 내 등록된 `steamStrategy._relyingParty` 인스턴스의 프로퍼티 값을 동적으로 직접 변경(Runtime Mutation)하여 무결성을 보장하도록 해결하였습니다.)
   - 로그인/연동 성공 후 프론트엔드로 리다이렉션될 때도, 세션에 보관된 `redirectOrigin`이나 실시간 추론된 호스트를 기준으로 최종 복귀할 클라이언트 URL (`CLIENT_URL`)을 동적으로 구성하여 Vercel Preview 환경에서 로그인 흐름이 완벽히 이어지도록 했습니다.
 
 ### 1.2. 리버스 프록시 뒤 Express 세션 쿠키 유지 보장
