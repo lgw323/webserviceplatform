@@ -127,22 +127,22 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
                 {/* 시각적 차트 (실제 데이터 기반) */}
                 <div className="flex items-end justify-between gap-3 h-48 pt-4" aria-hidden="true">
                   {weeklyData.map((d) => (
-                    <div key={d.day} className="flex flex-col items-center flex-1 gap-2">
-                      <div className="w-full flex items-end justify-center" style={{ height: '100%' }}>
+                    <div key={d.day} className="flex flex-col items-center flex-1 h-full justify-end gap-1">
+                      <div className="w-full flex-1 flex items-end justify-center relative">
                         <div
                           className="w-full max-w-[28px] sm:max-w-[40px] bg-cyber-accent/20 hover:bg-cyber-accent/40 rounded-t-md transition-all duration-300 relative group"
-                          style={{ height: d.h > 0 ? `${(d.h / maxWeekly) * 100}%` : '2%' }}
+                          style={{ height: d.h > 0 ? `${(d.h / maxWeekly) * 100}%` : '4%' }}
                         >
                           <div
                             className="absolute bottom-0 w-full bg-cyber-accent rounded-t-md transition-all duration-500"
-                            style={{ height: '60%' }}
+                            style={{ height: '100%' }}
                           />
-                          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-a11y-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                            {d.h}h
+                          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-a11y-muted opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            {d.h}시간
                           </div>
                         </div>
                       </div>
-                      <span className="text-xs text-a11y-muted font-medium">{d.day}</span>
+                      <span className="text-xs text-a11y-muted font-medium mt-1">{d.day}</span>
                     </div>
                   ))}
                 </div>
