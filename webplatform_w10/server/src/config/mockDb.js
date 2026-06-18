@@ -18,7 +18,8 @@ const GAME_UUIDS = {
   'game_bg3': '550e8400-e29b-41d4-a716-446655440005',
   'game_palworld': '550e8400-e29b-41d4-a716-446655440006',
   'game_wukong': '550e8400-e29b-41d4-a716-446655440007',
-  'game_marvel': '550e8400-e29b-41d4-a716-446655440008'
+  'game_marvel': '550e8400-e29b-41d4-a716-446655440008',
+  'game_lol': '550e8400-e29b-41d4-a716-446655440009'
 };
 
 const userUuid = (id) => toUuid('a', id);
@@ -43,7 +44,8 @@ export const MOCK_DB = {
     { id: 'game_bg3', external_app_id: '1086940', title: 'Baldur\'s Gate 3', created_at: pastDate(25) },
     { id: 'game_palworld', external_app_id: '1623730', title: 'Palworld', created_at: pastDate(20) },
     { id: 'game_wukong', external_app_id: '2358720', title: 'Black Myth: Wukong', created_at: pastDate(10) },
-    { id: 'game_marvel', external_app_id: '2767030', title: 'Marvel Rivals', created_at: pastDate(5) }
+    { id: 'game_marvel', external_app_id: '2767030', title: 'Marvel Rivals', created_at: pastDate(5) },
+    { id: 'game_lol', external_app_id: 'lol', title: 'League of Legends', created_at: pastDate(30) }
   ],
   optimization_profiles: []
 };
