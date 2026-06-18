@@ -4,6 +4,7 @@ import { ShieldAlert, Users, Trash2, Database, TrendingUp, Cpu, Loader2, Search,
 import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import * as api from '../api/apiClient';
 import useAuthStore from '../store/useAuthStore';
+import toast from 'react-hot-toast';
 
 const CHART_COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -14,9 +15,34 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => {
+    return sessionStorage.getItem('syncrig_admin_user_search') || '';
+  });
   const [userFilter, setUserFilter] = useState('');
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(() => {
+    return sessionStorage.getItem('syncrig_admin_active_tab') || 'overview';
+  });
+  const [postSearchQuery, setPostSearchQuery] = useState(() => {
+    return sessionStorage.getItem('syncrig_admin_post_search') || '';
+  });
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem('syncrig_admin_active_tab', activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
+    sessionStorage.setItem('syncrig_admin_user_search', searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    sessionStorage.setItem('syncrig_admin_post_search', postSearchQuery);
+  }, [postSearchQuery]);
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -31,13 +57,14 @@ export default function AdminDashboard() {
       const [statsData, usersData, postsData] = await Promise.all([
         api.getAdminStats(),
         api.getAdminUsers(searchQuery, userFilter),
-        api.getPosts()
+        api.getAdminPosts()
       ]);
       setStats(statsData);
       setUsers(usersData);
       setPosts(postsData.data || postsData);
     } catch (err) {
       console.error(err);
+      toast.error('통계 데이터를 불러오지 못했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -56,45 +83,67 @@ export default function AdminDashboard() {
     if (!isLoading) handleSearch();
   }, [searchQuery, userFilter]);
 
-  const handleRoleChange = async (userId, currentRole) => {
+  const handleRoleChange = (userId, currentRole) => {
     const newRole = currentRole === 'admin' ? 'user' : 'admin';
-    if (!window.confirm(`이 유저의 역할을 ${newRole.toUpperCase()}로 변경하시겠습니까?`)) return;
-    try {
-      await api.updateUserRole(userId, newRole);
-      fetchData();
-    } catch (err) {
-      alert(err.message || '역할 변경 실패');
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: '권한 변경',
+      message: `이 유저의 역할을 ${newRole.toUpperCase()}로 변경하시겠습니까?`,
+      onConfirm: async () => {
+        try {
+          await api.updateUserRole(userId, newRole);
+          toast.success(`유저 권한이 ${newRole.toUpperCase()}로 변경되었습니다.`);
+          fetchData();
+        } catch (err) {
+          toast.error(err.message || '역할 변경 실패');
+        }
+      }
+    });
   };
 
-  const handleBan = async (userId, isBanned) => {
+  const handleBan = (userId, isBanned) => {
     const action = isBanned ? '차단 해제' : '차단';
-    if (!window.confirm(`이 유저를 ${action}하시겠습니까?`)) return;
-    try {
-      await api.toggleUserBan(userId, !isBanned);
-      fetchData();
-    } catch (err) {
-      alert(err.message || `${action} 실패`);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: `유저 ${action}`,
+      message: `이 유저를 ${action}하시겠습니까?`,
+      onConfirm: async () => {
+        try {
+          await api.toggleUserBan(userId, !isBanned);
+          toast.success(`유저가 성공적으로 ${action}되었습니다.`);
+          fetchData();
+        } catch (err) {
+          toast.error(err.message || `${action} 실패`);
+        }
+      }
+    });
   };
 
   const handleToggleHide = async (postId, isHidden) => {
     try {
       await api.togglePostVisibility(postId, !isHidden);
+      toast.success(isHidden ? '게시글 숨김이 해제되었습니다.' : '게시글이 숨김 처리되었습니다.');
       fetchData();
     } catch (err) {
-      alert(err.message || '처리 실패');
+      toast.error(err.message || '처리 실패');
     }
   };
 
-  const handleDeletePost = async (id) => {
-    if (!window.confirm('정말 이 게시글을 삭제하시겠습니까?')) return;
-    try {
-      await api.deletePostByAdmin(id);
-      fetchData();
-    } catch (err) {
-      alert(err.message || '삭제 실패');
-    }
+  const handleDeletePost = (id) => {
+    setConfirmModal({
+      isOpen: true,
+      title: '게시글 삭제',
+      message: '정말 이 게시글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+      onConfirm: async () => {
+        try {
+          await api.deletePostByAdmin(id);
+          toast.success('게시글이 삭제되었습니다.');
+          fetchData();
+        } catch (err) {
+          toast.error(err.message || '삭제 실패');
+        }
+      }
+    });
   };
 
   if (isLoading) {
@@ -339,6 +388,20 @@ export default function AdminDashboard() {
       {/* ═══ POSTS TAB ═══ */}
       {activeTab === 'posts' && (
         <div className="space-y-4">
+          {/* Post Search Bar */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 flex items-center bg-cyber-darker rounded-lg px-4 py-2 border border-gray-800">
+              <Search className="w-4 h-4 text-gray-500 mr-2" />
+              <input
+                type="text"
+                placeholder="제목, 내용 또는 작성자 검색..."
+                value={postSearchQuery}
+                onChange={(e) => setPostSearchQuery(e.target.value)}
+                className="bg-transparent border-none outline-none text-sm w-full text-gray-200"
+              />
+            </div>
+          </div>
+
           <div className="bg-cyber-card border border-gray-800 rounded-xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
@@ -354,7 +417,13 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
-                  {(Array.isArray(posts) ? posts : []).map(p => (
+                  {((Array.isArray(posts) ? posts : []).filter(p => {
+                    if (!postSearchQuery) return true;
+                    const q = postSearchQuery.toLowerCase();
+                    return (p.title && p.title.toLowerCase().includes(q)) ||
+                           (p.nickname && p.nickname.toLowerCase().includes(q)) ||
+                           (p.content && p.content.toLowerCase().includes(q));
+                  })).map(p => (
                     <tr key={p.id} className={`text-gray-300 ${p.is_hidden ? 'opacity-50' : ''}`}>
                       <td className="px-4 py-3 truncate max-w-[200px] cursor-pointer hover:text-cyber-accent font-medium" onClick={() => navigate(`/community/${p.id}`)}>
                         {p.title}
@@ -396,7 +465,40 @@ export default function AdminDashboard() {
               </table>
             </div>
             <div className="px-4 py-3 bg-cyber-darker text-xs text-gray-500 border-t border-gray-800">
-              총 {(Array.isArray(posts) ? posts : []).length}개 게시물
+              총 {((Array.isArray(posts) ? posts : []).filter(p => {
+                if (!postSearchQuery) return true;
+                const q = postSearchQuery.toLowerCase();
+                return (p.title && p.title.toLowerCase().includes(q)) ||
+                       (p.nickname && p.nickname.toLowerCase().includes(q)) ||
+                       (p.content && p.content.toLowerCase().includes(q));
+              })).length}개 게시물
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Custom Confirm Modal ─── */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animation-fade-in" role="dialog" aria-modal="true">
+          <div className="bg-cyber-card border border-gray-700 p-6 rounded-xl max-w-sm w-full space-y-4 shadow-[0_0_30px_rgba(239,68,68,0.15)]">
+            <h3 className="text-lg font-bold text-white">{confirmModal.title}</h3>
+            <p className="text-sm text-gray-300">{confirmModal.message}</p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={() => {
+                  confirmModal.onConfirm();
+                  setConfirmModal({ ...confirmModal, isOpen: false });
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-semibold transition-colors"
+              >
+                확인
+              </button>
             </div>
           </div>
         </div>

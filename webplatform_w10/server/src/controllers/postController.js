@@ -101,7 +101,7 @@ export const updatePost = async (req, res, next) => {
     const userId = req.user.id;
 
     // Check ownership
-    const existing = await db.query('SELECT * FROM posts WHERE p.id = $1', [id]);
+    const existing = await db.query('SELECT * FROM posts WHERE id = $1', [id]);
     const post = existing.rows[0];
     if (!post) return res.status(404).json({ status: 'error', message: '게시글을 찾을 수 없습니다.' });
     if (post.user_id !== userId && req.user.role !== 'admin') {
@@ -128,7 +128,7 @@ export const deletePost = async (req, res, next) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const existing = await db.query('SELECT * FROM posts WHERE p.id = $1', [id]);
+    const existing = await db.query('SELECT * FROM posts WHERE id = $1', [id]);
     const post = existing.rows[0];
     if (!post) return res.status(404).json({ status: 'error', message: '게시글을 찾을 수 없습니다.' });
     if (post.user_id !== userId && req.user.role !== 'admin') {

@@ -200,3 +200,15 @@ export const getBusinessMetrics = async (req, res, next) => {
     next(err);
   }
 };
+
+// ─── 어드민 전용 게시글 전체 조회 (숨김 포함) ───
+export const getAdminPosts = async (req, res, next) => {
+  try {
+    const result = await db.query(
+      'SELECT p.*, u.nickname FROM posts p JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC /* admin */'
+    );
+    res.json({ status: 'success', data: result.rows || [] });
+  } catch (err) {
+    next(err);
+  }
+};

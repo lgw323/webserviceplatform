@@ -222,17 +222,12 @@ export async function initDb() {
     // Seed Games if empty
     const gameCheck = await client.query('SELECT COUNT(*) FROM games');
     if (parseInt(gameCheck.rows[0].count) === 0) {
-      await client.query(`
-        INSERT INTO games (id, external_app_id, title) VALUES
-        ('game_cyberpunk', '1091500', 'Cyberpunk 2077'),
-        ('game_valorant', 'valorant', 'Valorant'),
-        ('game_elden', '1245620', 'Elden Ring'),
-        ('game_witcher3', '292030', 'The Witcher 3: Wild Hunt'),
-        ('game_bg3', '1086940', 'Baldur''s Gate 3'),
-        ('game_palworld', '1623730', 'Palworld'),
-        ('game_wukong', '2358720', 'Black Myth: Wukong'),
-        ('game_marvel', '2767030', 'Marvel Rivals')
-      `);
+      for (const g of MOCK_DB.games) {
+        await client.query(
+          'INSERT INTO games (id, external_app_id, title, created_at) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO NOTHING',
+          [g.id, g.external_app_id, g.title, g.created_at]
+        );
+      }
       console.log('[SYNCRIG DB] 기본 게임 목록 시딩 완료.');
     }
 
@@ -250,6 +245,7 @@ export async function initDb() {
     console.error('[SYNCRIG DB] PostgreSQL 테이블 초기화 중 예외 발생:', err.message);
     console.log('[SYNCRIG DB] 인메모리 폴백 데이터베이스로 대체 기동합니다.');
     isPgAvailable = false;  // ← 실제로 인메모리 모드로 전환
+    throw err;
   }
 }
 
@@ -371,6 +367,15 @@ export const db = {
         return { rowCount: user ? 1 : 0, rows: user ? [user] : [] };
       }
 
+      // UPDATE users (nickname)
+      if (normalizedQuery.includes('update users') && normalizedQuery.includes('nickname =')) {
+        const nickname = params[0];
+        const userId = params[1];
+        const user = MOCK_DB.users.find(u => u.id === userId);
+        if (user) user.nickname = nickname;
+        return { rowCount: user ? 1 : 0, rows: user ? [user] : [] };
+      }
+
       // UPDATE users (is_banned)
       if (normalizedQuery.includes('update users') && normalizedQuery.includes('is_banned =')) {
         const isBanned = params[0];
@@ -437,6 +442,9 @@ export const db = {
       // ═══════════════════════════════════════
 
       if (normalizedQuery.includes('select') && normalizedQuery.includes('from hardware_profiles')) {
+        if (!normalizedQuery.includes('user_id =') && !normalizedQuery.includes('user_id=')) {
+          return { rows: MOCK_DB.hardware_profiles };
+        }
         const userId = params[0];
         const rows = MOCK_DB.hardware_profiles.filter(hp => hp.user_id === userId);
         return { rows };
@@ -564,7 +572,7 @@ export const db = {
         let filtered = [...MOCK_DB.posts];
         
         // Hide hidden posts for non-admin queries
-        if (!normalizedQuery.includes('is_hidden')) {
+        if (!normalizedQuery.includes('is_hidden') && !normalizedQuery.includes('admin')) {
           filtered = filtered.filter(p => !p.is_hidden);
         }
 

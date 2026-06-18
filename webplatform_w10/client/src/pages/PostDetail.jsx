@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Calendar, Eye, ThumbsUp, MessageSquare, Loader2, Send, Edit3, Trash2 } from 'lucide-react';
 import * as api from '../api/apiClient';
 import useAuthStore from '../store/useAuthStore';
+import toast from 'react-hot-toast';
 
 const CATEGORY_BADGES = {
   free: { label: '자유', color: 'bg-gray-700 text-gray-300' },
@@ -19,6 +20,12 @@ export default function PostDetail() {
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isLiking, setIsLiking] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null
+  });
 
   useEffect(() => {
     fetchPost();
@@ -29,7 +36,7 @@ export default function PostDetail() {
       const data = await api.getPostById(id);
       setPost(data);
     } catch (err) {
-      alert('게시글을 불러올 수 없습니다.');
+      toast.error('게시글을 불러올 수 없습니다.');
       navigate('/community');
     } finally {
       setIsLoading(false);
@@ -37,7 +44,10 @@ export default function PostDetail() {
   };
 
   const handleLike = async () => {
-    if (!user) return alert('로그인이 필요합니다.');
+    if (!user) {
+      toast.error('로그인이 필요합니다.');
+      return;
+    }
     if (isLiking) return;
     setIsLiking(true);
     try {
@@ -54,24 +64,38 @@ export default function PostDetail() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm('정말 이 게시글을 삭제하시겠습니까?')) return;
-    try {
-      await api.deletePost(id);
-      navigate('/community');
-    } catch (err) {
-      alert(err.message || '삭제에 실패했습니다.');
-    }
+  const handleDelete = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: '게시글 삭제',
+      message: '정말 이 게시글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+      onConfirm: async () => {
+        try {
+          await api.deletePost(id);
+          toast.success('게시글이 삭제되었습니다.');
+          navigate('/community');
+        } catch (err) {
+          toast.error(err.message || '삭제에 실패했습니다.');
+        }
+      }
+    });
   };
 
-  const handleDeleteComment = async (commentId) => {
-    if (!window.confirm('댓글을 삭제하시겠습니까?')) return;
-    try {
-      await api.deleteComment(commentId);
-      fetchPost();
-    } catch (err) {
-      alert(err.message || '댓글 삭제에 실패했습니다.');
-    }
+  const handleDeleteComment = (commentId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: '댓글 삭제',
+      message: '이 댓글을 삭제하시겠습니까?',
+      onConfirm: async () => {
+        try {
+          await api.deleteComment(commentId);
+          toast.success('댓글이 삭제되었습니다.');
+          fetchPost();
+        } catch (err) {
+          toast.error(err.message || '댓글 삭제에 실패했습니다.');
+        }
+      }
+    });
   };
 
   const handleCommentSubmit = async (e) => {
@@ -80,9 +104,10 @@ export default function PostDetail() {
     try {
       await api.createComment(id, newComment);
       setNewComment('');
+      toast.success('댓글이 등록되었습니다.');
       fetchPost();
     } catch (err) {
-      alert(err.message || '댓글 작성에 실패했습니다.');
+      toast.error(err.message || '댓글 작성에 실패했습니다.');
     }
   };
 
@@ -96,10 +121,18 @@ export default function PostDetail() {
   const isAdmin = user?.role === 'admin';
   const badge = CATEGORY_BADGES[post.category] || CATEGORY_BADGES.free;
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/community');
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6 animation-fade-in">
-      <button onClick={() => navigate('/community')} className="flex items-center gap-2 text-a11y-muted hover:text-white transition-colors text-sm">
-        <ArrowLeft className="w-4 h-4" /> 목록으로
+      <button onClick={handleBack} className="flex items-center gap-2 text-a11y-muted hover:text-white transition-colors text-sm">
+        <ArrowLeft className="w-4 h-4" /> 뒤로가기
       </button>
 
       {/* Post Header */}
@@ -209,6 +242,33 @@ export default function PostDetail() {
           ))}
         </div>
       </div>
+
+      {/* ─── Custom Confirm Modal ─── */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animation-fade-in" role="dialog" aria-modal="true">
+          <div className="bg-cyber-card border border-gray-700 p-6 rounded-xl max-w-sm w-full space-y-4 shadow-[0_0_30px_rgba(239,68,68,0.15)]">
+            <h3 className="text-lg font-bold text-white">{confirmModal.title}</h3>
+            <p className="text-sm text-gray-300">{confirmModal.message}</p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={() => {
+                  confirmModal.onConfirm();
+                  setConfirmModal({ ...confirmModal, isOpen: false });
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-semibold transition-colors"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

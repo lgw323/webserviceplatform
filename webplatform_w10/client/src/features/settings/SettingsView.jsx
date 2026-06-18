@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 export default function SettingsView({ user, onUpdateNickname }) {
   const [isLightMode, setIsLightMode] = useState(false);
   const [language, setLanguage] = useState('ko');
-  const [nickname, setNickname] = useState(user?.provider_id || '');
+  const [nickname, setNickname] = useState(user?.nickname || user?.provider_id || '');
   const [isSaved, setIsSaved] = useState(false);
 
   // Load theme from localStorage on mount
@@ -44,13 +44,17 @@ export default function SettingsView({ user, onUpdateNickname }) {
     localStorage.setItem('language', lang);
   };
 
-  const handleSaveProfile = (e) => {
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
     if (nickname.trim()) {
-      onUpdateNickname(nickname.trim());
-      setIsSaved(true);
-      toast.success('닉네임이 성공적으로 저장되었습니다.');
-      setTimeout(() => setIsSaved(false), 2000);
+      try {
+        await onUpdateNickname(nickname.trim());
+        setIsSaved(true);
+        toast.success('닉네임이 성공적으로 저장되었습니다.');
+        setTimeout(() => setIsSaved(false), 2000);
+      } catch (err) {
+        toast.error(err.message || '닉네임 저장에 실패했습니다.');
+      }
     } else {
       toast.error('닉네임을 입력해주세요.');
     }

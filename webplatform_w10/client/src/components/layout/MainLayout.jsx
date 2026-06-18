@@ -103,11 +103,11 @@ export default function MainLayout() {
           )}
           <div className="flex items-center px-3 py-2">
             <div className="w-8 h-8 rounded-full bg-cyber-dark flex items-center justify-center border border-gray-700 text-sm font-bold text-cyber-accent uppercase" aria-hidden="true">
-              {user?.provider_id ? user.provider_id.substring(0, 1) : 'U'}
+              {(user?.nickname || user?.provider_id || 'U').substring(0, 1)}
             </div>
             <div className="ml-3 truncate max-w-[130px]">
               <div className="flex items-center gap-1.5">
-                <p className="text-sm font-medium text-gray-200 truncate">{user?.provider_id || 'User'}</p>
+                <p className="text-sm font-medium text-gray-200 truncate">{user?.nickname || user?.provider_id || 'User'}</p>
                 {user?.subscription_status === 'premium' && (
                   <span className="bg-gradient-to-r from-amber-400 to-yellow-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center">
                     👑 PRO

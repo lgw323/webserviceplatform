@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import * as api from '../api/apiClient';
+import toast from 'react-hot-toast';
 
 const CATEGORIES = [
   { key: 'free', label: '자유 게시판', emoji: '💬' },
@@ -34,7 +35,7 @@ export default function PostWritePage() {
       setContent(data.content);
       setCategory(data.category || 'free');
     } catch (err) {
-      alert('게시글을 불러올 수 없습니다.');
+      toast.error('게시글을 불러올 수 없습니다.');
       navigate('/community');
     } finally {
       setIsFetching(false);
@@ -44,19 +45,21 @@ export default function PostWritePage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) {
-      alert('제목과 내용을 모두 입력해주세요.');
+      toast.error('제목과 내용을 모두 입력해주세요.');
       return;
     }
     setIsLoading(true);
     try {
       if (isEdit) {
         await api.updatePost(id, title, content, category);
+        toast.success('게시글이 수정되었습니다.');
       } else {
         await api.createPost(title, content, category);
+        toast.success('게시글이 등록되었습니다.');
       }
       navigate('/community');
     } catch (err) {
-      alert(err.message || '게시글 작성에 실패했습니다.');
+      toast.error(err.message || '게시글 작성에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }

@@ -12,7 +12,7 @@ const CPU_TIERS = {
   '5600x': 60, '12100f': 50, '3600': 45, '10400f': 40, '3100': 25
 };
 
-function parseGpuScore(gpuName) {
+export function parseGpuScore(gpuName) {
   const nameLower = gpuName.toLowerCase();
   for (const [key, val] of Object.entries(GPU_TIERS)) {
     if (nameLower.includes(key)) return val;
@@ -20,7 +20,7 @@ function parseGpuScore(gpuName) {
   return 50; // default medium score
 }
 
-function parseCpuScore(cpuName) {
+export function parseCpuScore(cpuName) {
   const nameLower = cpuName.toLowerCase();
   for (const [key, val] of Object.entries(CPU_TIERS)) {
     if (nameLower.includes(key)) return val;

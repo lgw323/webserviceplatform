@@ -1,5 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Clock, Trophy, Gamepad2, Monitor, RefreshCw, Check } from 'lucide-react';
+import toast from 'react-hot-toast';
+import useAuthStore from '../../store/useAuthStore';
 
 const COLOR_CLASSES = ['bg-cyber-accent', 'bg-cyber-purple', 'bg-cyber-warning', 'bg-cyber-success'];
 
@@ -24,6 +26,30 @@ function generateWeeklyFromGames(gameLibrary) {
 }
 
 export default function DashboardCharts({ userSpec, gameLibrary = [], achievementsCount = 0, onSyncAccount, linkedProviders = [] }) {
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null
+  });
+
+  const handleUnlink = (provider) => {
+    const providerName = provider === 'steam' ? 'Steam' : 'Riot Games';
+    setConfirmModal({
+      isOpen: true,
+      title: '연동 해제',
+      message: `${providerName} 계정 연동을 해제하시겠습니까?`,
+      onConfirm: async () => {
+        try {
+          await useAuthStore.getState().unlinkAccount(provider);
+          toast.success(`${providerName} 연동이 해제되었습니다.`);
+        } catch (err) {
+          toast.error(err.message || '해제 실패');
+        }
+      }
+    });
+  };
+
   const isSynced = gameLibrary.length > 0;
   const hasSteam = linkedProviders.includes('steam');
   const hasRiot = linkedProviders.includes('riot');
@@ -180,9 +206,7 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
                   <button
                     onClick={() => {
                       if (hasSteam) {
-                        if (window.confirm('Steam 계정 연동을 해제하시겠습니까?')) {
-                          useAuthStore.getState().unlinkAccount('steam').catch(err => alert(err.message || '해제 실패'));
-                        }
+                        handleUnlink('steam');
                         return;
                       }
                       const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
@@ -205,9 +229,7 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
                   <button
                     onClick={() => {
                       if (hasRiot) {
-                        if (window.confirm('Riot Games 계정 연동을 해제하시겠습니까?')) {
-                          useAuthStore.getState().unlinkAccount('riot').catch(err => alert(err.message || '해제 실패'));
-                        }
+                        handleUnlink('riot');
                         return;
                       }
                       const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
@@ -233,6 +255,33 @@ export default function DashboardCharts({ userSpec, gameLibrary = [], achievemen
           </div>
         </div>
       </div>
+
+      {/* ─── Custom Confirm Modal ─── */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animation-fade-in" role="dialog" aria-modal="true">
+          <div className="bg-cyber-card border border-gray-700 p-6 rounded-xl max-w-sm w-full space-y-4 shadow-[0_0_30px_rgba(139,92,246,0.15)]">
+            <h3 className="text-lg font-bold text-white">{confirmModal.title}</h3>
+            <p className="text-sm text-gray-300">{confirmModal.message}</p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={() => {
+                  confirmModal.onConfirm();
+                  setConfirmModal({ ...confirmModal, isOpen: false });
+                }}
+                className="px-4 py-2 bg-cyber-purple hover:bg-purple-600 text-white rounded-lg text-sm font-semibold transition-colors"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
