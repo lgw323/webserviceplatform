@@ -371,16 +371,69 @@ export const getUserPosts = async (req, res, next) => {
     if (!isValidUuid(userId)) {
       return res.json({
         status: 'success',
-        data: []
+        data: [],
+        pagination: { page: 1, limit: 20, total: 0 }
       });
     }
-    const result = await db.query(
-      'SELECT p.*, u.nickname as author_nickname, u.email as author_email FROM posts p LEFT JOIN users u ON p.user_id = u.id WHERE p.user_id = $1 ORDER BY p.created_at DESC',
-      [userId]
-    );
+
+    const { page = 1, limit = 20, sort = 'latest' } = req.query;
+    const parsedLimit = parseInt(limit, 10);
+    const parsedPage = parseInt(page, 10);
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    let totalCount = 0;
+    let posts = [];
+
+    let orderBy = 'p.created_at DESC';
+    if (sort === 'oldest') {
+      orderBy = 'p.created_at ASC';
+    } else if (sort === 'popular') {
+      orderBy = 'p.likes DESC, p.created_at DESC';
+    } else if (sort === 'views') {
+      orderBy = 'p.views DESC, p.created_at DESC';
+    }
+
+    if (db.isPgActive()) {
+      const countRes = await db.query(
+        'SELECT COUNT(*) FROM posts WHERE user_id = $1',
+        [userId]
+      );
+      totalCount = parseInt(countRes.rows[0].count, 10);
+
+      const result = await db.query(
+        `SELECT p.*, u.nickname as author_nickname, u.email as author_email FROM posts p LEFT JOIN users u ON p.user_id = u.id WHERE p.user_id = $1 ORDER BY ${orderBy} LIMIT $2 OFFSET $3`,
+        [userId, parsedLimit, offset]
+      );
+      posts = result.rows || [];
+    } else {
+      const result = await db.query(
+        'SELECT p.*, u.nickname as author_nickname, u.email as author_email FROM posts p LEFT JOIN users u ON p.user_id = u.id WHERE p.user_id = $1 ORDER BY p.created_at DESC',
+        [userId]
+      );
+      let allPosts = result.rows || [];
+
+      if (sort === 'oldest') {
+        allPosts.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      } else if (sort === 'popular') {
+        allPosts.sort((a, b) => b.likes - a.likes);
+      } else if (sort === 'views') {
+        allPosts.sort((a, b) => b.views - a.views);
+      } else {
+        allPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+
+      totalCount = allPosts.length;
+      posts = allPosts.slice(offset, offset + parsedLimit);
+    }
+
     res.json({
       status: 'success',
-      data: result.rows
+      data: posts,
+      pagination: {
+        page: parsedPage,
+        limit: parsedLimit,
+        total: totalCount
+      }
     });
   } catch (err) {
     next(err);
@@ -393,16 +446,61 @@ export const getUserComments = async (req, res, next) => {
     if (!isValidUuid(userId)) {
       return res.json({
         status: 'success',
-        data: []
+        data: [],
+        pagination: { page: 1, limit: 20, total: 0 }
       });
     }
-    const result = await db.query(
-      'SELECT c.*, p.title as post_title FROM comments c LEFT JOIN posts p ON c.post_id = p.id WHERE c.user_id = $1 ORDER BY c.created_at DESC',
-      [userId]
-    );
+
+    const { page = 1, limit = 20, sort = 'latest' } = req.query;
+    const parsedLimit = parseInt(limit, 10);
+    const parsedPage = parseInt(page, 10);
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    let totalCount = 0;
+    let comments = [];
+
+    let orderBy = 'c.created_at DESC';
+    if (sort === 'oldest') {
+      orderBy = 'c.created_at ASC';
+    }
+
+    if (db.isPgActive()) {
+      const countRes = await db.query(
+        'SELECT COUNT(*) FROM comments WHERE user_id = $1',
+        [userId]
+      );
+      totalCount = parseInt(countRes.rows[0].count, 10);
+
+      const result = await db.query(
+        `SELECT c.*, p.title as post_title FROM comments c LEFT JOIN posts p ON c.post_id = p.id WHERE c.user_id = $1 ORDER BY ${orderBy} LIMIT $2 OFFSET $3`,
+        [userId, parsedLimit, offset]
+      );
+      comments = result.rows || [];
+    } else {
+      const result = await db.query(
+        'SELECT c.*, p.title as post_title FROM comments c LEFT JOIN posts p ON c.post_id = p.id WHERE c.user_id = $1 ORDER BY c.created_at DESC',
+        [userId]
+      );
+      let allComments = result.rows || [];
+
+      if (sort === 'oldest') {
+        allComments.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      } else {
+        allComments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+
+      totalCount = allComments.length;
+      comments = allComments.slice(offset, offset + parsedLimit);
+    }
+
     res.json({
       status: 'success',
-      data: result.rows
+      data: comments,
+      pagination: {
+        page: parsedPage,
+        limit: parsedLimit,
+        total: totalCount
+      }
     });
   } catch (err) {
     next(err);
