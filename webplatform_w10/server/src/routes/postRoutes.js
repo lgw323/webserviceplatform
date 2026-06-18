@@ -1,6 +1,6 @@
 import express from 'express';
-import { getPosts, getPostById, createPost, updatePost, deletePost, toggleLike, createComment, deleteComment } from '../controllers/postController.js';
-import { authenticateToken } from '../middlewares/authMiddleware.js';
+import { getPosts, getPostById, createPost, updatePost, deletePost, toggleLike, createComment, deleteComment, togglePinPost } from '../controllers/postController.js';
+import { authenticateToken, isAdmin } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -15,5 +15,6 @@ router.delete('/:id', authenticateToken, deletePost);
 router.post('/:id/like', authenticateToken, toggleLike);
 router.post('/:id/comments', authenticateToken, createComment);
 router.delete('/comments/:commentId', authenticateToken, deleteComment);
+router.patch('/:id/pin', authenticateToken, isAdmin, togglePinPost);
 
 export default router;
