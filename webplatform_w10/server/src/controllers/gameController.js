@@ -19,8 +19,10 @@ export const getGameLibrary = async (req, res) => {
       games = [];
     } else {
       if (providers.includes('steam')) {
-        // user가 steam으로 로그인했으면 provider_id를, local 등으로 로그인하고 연동했으면 steam_id를 사용
-        const steamId = user.provider === 'steam' ? user.provider_id : user.steam_id;
+        // 어드민 계정(admin@syncrig.com)은 개인정보 보호를 위해 항상 mock 데이터를 사용하도록 강제 설정
+        const steamId = user.email === 'admin@syncrig.com'
+          ? 'steam_mock_admin'
+          : (user.provider === 'steam' ? user.provider_id : user.steam_id);
         const steamGames = await fetchSteamGames(steamId);
         games = games.concat(steamGames);
       }
