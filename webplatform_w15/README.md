@@ -22,6 +22,8 @@
 [Phase 3] 빠진 것, 추가된 것, 달라진 것 분류
       ↓
 [Phase 4] ERD/아키텍처 도면을 현재 기준으로 갱신 + 테스트
+      ↓
+[Phase 5] UX 고도화 및 마이페이지(My Page) 편의 기능 신설
 ```
 
 ---
@@ -34,6 +36,8 @@
 | [`Phase2_RTM.md`](./Phase2_RTM.md) | 4주차 기획서의 요구사항이 **실제로 코드에 반영되었는지** 추적표 |
 | [`Phase3_Gap_Analysis.md`](./Phase3_Gap_Analysis.md) | **빠진 것 / 추가된 것 / 달라진 것**을 분류하고 심각도 판정 |
 | [`Phase4_Sync_QA.md`](./Phase4_Sync_QA.md) | 현재 코드 기준으로 **ERD·아키텍처 도면 갱신** + 최종 테스트 |
+| [`Phase5_Sync_UX_Enhancements.md`](./Phase5_Sync_UX_Enhancements.md) | **UX 고도화**(게임 라이브러리 검증, 상태 보존) 및 **마이페이지(My Page)** 신설 이력 |
+
 
 ---
 
