@@ -142,10 +142,15 @@ export async function updateNickname(nickname) {
 }
 
 // ─── COMMUNITY POSTS ───
-export async function getPosts(category = 'all', page = 1, sort = 'latest') {
-  const params = new URLSearchParams({ page: page.toString(), sort });
+export async function getPosts(category = 'all', page = 1, sort = 'latest', limit = 20) {
+  const params = new URLSearchParams({ page: page.toString(), sort, limit: limit.toString() });
   if (category && category !== 'all') params.append('category', category);
   const { data } = await apiClient.get(`/posts?${params.toString()}`);
+  return data;
+}
+
+export async function togglePostPin(id) {
+  const { data } = await apiClient.patch(`/posts/${id}/pin`);
   return data;
 }
 
@@ -195,17 +200,20 @@ export async function getAdminStats() {
   return data.data;
 }
 
-export async function getAdminPosts() {
-  const { data } = await apiClient.get('/admin/posts');
+export async function getAdminPosts(search = '', filter = '', page = 1, limit = 20, sort = 'latest') {
+  const params = new URLSearchParams({ page: page.toString(), limit: limit.toString(), sort });
+  if (search) params.append('search', search);
+  if (filter) params.append('filter', filter);
+  const { data } = await apiClient.get(`/admin/posts?${params.toString()}`);
   return data;
 }
 
-export async function getAdminUsers(search = '', filter = '') {
-  const params = new URLSearchParams();
+export async function getAdminUsers(search = '', filter = '', page = 1, limit = 20, sort = 'latest') {
+  const params = new URLSearchParams({ page: page.toString(), limit: limit.toString(), sort });
   if (search) params.append('search', search);
   if (filter) params.append('filter', filter);
   const { data } = await apiClient.get(`/admin/users?${params.toString()}`);
-  return data.data;
+  return data;
 }
 
 export async function updateUserRole(userId, role) {
@@ -301,14 +309,16 @@ export async function unlinkAccount(provider) {
   return data.data;
 }
 
-export async function getUserPosts() {
-  const { data } = await apiClient.get('/users/me/posts');
-  return data.data;
+export async function getUserPosts(page = 1, limit = 20, sort = 'latest') {
+  const params = new URLSearchParams({ page: page.toString(), limit: limit.toString(), sort });
+  const { data } = await apiClient.get(`/users/me/posts?${params.toString()}`);
+  return data;
 }
 
-export async function getUserComments() {
-  const { data } = await apiClient.get('/users/me/comments');
-  return data.data;
+export async function getUserComments(page = 1, limit = 20, sort = 'latest') {
+  const params = new URLSearchParams({ page: page.toString(), limit: limit.toString(), sort });
+  const { data } = await apiClient.get(`/users/me/comments?${params.toString()}`);
+  return data;
 }
 
 export default apiClient;
