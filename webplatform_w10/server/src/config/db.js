@@ -576,9 +576,16 @@ export const db = {
           filtered = filtered.filter(p => !p.is_hidden);
         }
 
+        // User filter
+        if (normalizedQuery.includes('user_id = $1') || normalizedQuery.includes('p.user_id = $1')) {
+          const userId = params[0];
+          filtered = filtered.filter(p => p.user_id === userId);
+        }
+
         // Category filter
         if (normalizedQuery.includes('category = $1') || normalizedQuery.includes("category =")) {
-          const cat = params[0];
+          const catIdx = normalizedQuery.includes('user_id') ? 1 : 0;
+          const cat = params[catIdx];
           if (cat && cat !== 'all') {
             filtered = filtered.filter(p => p.category === cat);
           }
@@ -644,6 +651,16 @@ export const db = {
         const newComment = { id: crypto.randomUUID(), post_id, user_id, content, is_hidden: false, created_at: new Date() };
         MOCK_DB.comments.push(newComment);
         return { rows: [newComment] };
+      }
+
+      // SELECT comments by user_id
+      if (normalizedQuery.includes('select') && normalizedQuery.includes('from comments') && (normalizedQuery.includes('user_id = $1') || normalizedQuery.includes('c.user_id = $1'))) {
+        const userId = params[0];
+        const rows = MOCK_DB.comments.filter(c => c.user_id === userId).map(c => {
+          const post = MOCK_DB.posts.find(p => p.id === c.post_id) || {};
+          return { ...c, post_title: post.title };
+        }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        return { rows };
       }
 
       if (normalizedQuery.includes('select') && normalizedQuery.includes('from comments') && normalizedQuery.includes('post_id = $1')) {
