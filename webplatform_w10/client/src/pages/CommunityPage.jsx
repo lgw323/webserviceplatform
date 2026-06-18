@@ -26,13 +26,14 @@ export default function CommunityPage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [sort, setSort] = useState('latest');
+  const [limit, setLimit] = useState(20);
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const limit = 10;
 
   useEffect(() => {
     fetchPosts();
-  }, [activeCategory, currentPage]);
+  }, [activeCategory, currentPage, sort, limit]);
 
   useEffect(() => {
     fetchPopularPosts();
@@ -41,7 +42,7 @@ export default function CommunityPage() {
   const fetchPosts = async () => {
     setIsLoading(true);
     try {
-      const result = await api.getPosts(activeCategory, currentPage, 'latest');
+      const result = await api.getPosts(activeCategory, currentPage, sort, limit);
       setPosts(result.data || []);
       setTotalCount(result.pagination?.total || 0);
     } catch (err) {
@@ -53,7 +54,7 @@ export default function CommunityPage() {
 
   const fetchPopularPosts = async () => {
     try {
-      const result = await api.getPosts('all', 1, 'popular');
+      const result = await api.getPosts('all', 1, 'popular', 5);
       setPopularPosts((result.data || []).slice(0, 5));
     } catch (err) {
       console.error(err);
@@ -103,6 +104,38 @@ export default function CommunityPage() {
             ))}
           </div>
 
+          {/* Filters & Sorting Panel */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 bg-cyber-card border border-gray-800/60 p-3.5 rounded-xl">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-gray-400">정렬 기준</span>
+              <select
+                value={sort}
+                onChange={(e) => { setSort(e.target.value); setCurrentPage(1); }}
+                className="bg-cyber-darker border border-gray-800 rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors"
+              >
+                <option value="latest">최신순</option>
+                <option value="popular">인기순</option>
+                <option value="views">조회수순</option>
+                <option value="alphabetical">제목순</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <span className="text-xs font-semibold text-gray-400">보기 개수</span>
+              <select
+                value={limit}
+                onChange={(e) => { setLimit(parseInt(e.target.value, 10)); setCurrentPage(1); }}
+                className="bg-cyber-darker border border-gray-800 rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-cyber-accent transition-colors"
+              >
+                <option value={10}>10개씩 보기</option>
+                <option value={20}>20개씩 보기</option>
+                <option value={30}>30개씩 보기</option>
+                <option value={40}>40개씩 보기</option>
+                <option value={50}>50개씩 보기</option>
+              </select>
+            </div>
+          </div>
+
           {/* Post List */}
           {isLoading ? (
             <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-cyber-accent" /></div>
@@ -114,7 +147,11 @@ export default function CommunityPage() {
                   <div 
                     key={post.id} 
                     onClick={() => navigate(`/community/${post.id}`)}
-                    className="bg-cyber-card border border-gray-800 hover:border-gray-600 p-5 rounded-xl cursor-pointer transition-all hover:shadow-lg group"
+                    className={`bg-cyber-card border p-5 rounded-xl cursor-pointer transition-all hover:shadow-lg group ${
+                      post.is_pinned 
+                        ? 'border-yellow-500/40 bg-yellow-500/[0.02] shadow-[0_0_15px_rgba(245,158,11,0.05)] border-l-4 border-l-yellow-500' 
+                        : 'border-gray-800 hover:border-gray-600'
+                    }`}
                   >
                     <div className="flex items-start gap-3">
                       {post.is_pinned && <Pin className="w-4 h-4 text-yellow-500 mt-1 flex-shrink-0" />}
