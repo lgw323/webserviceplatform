@@ -15,16 +15,34 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => {
+    return sessionStorage.getItem('syncrig_admin_user_search') || '';
+  });
   const [userFilter, setUserFilter] = useState('');
-  const [activeTab, setActiveTab] = useState('overview');
-  const [postSearchQuery, setPostSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState(() => {
+    return sessionStorage.getItem('syncrig_admin_active_tab') || 'overview';
+  });
+  const [postSearchQuery, setPostSearchQuery] = useState(() => {
+    return sessionStorage.getItem('syncrig_admin_post_search') || '';
+  });
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: '',
     message: '',
     onConfirm: null
   });
+
+  useEffect(() => {
+    sessionStorage.setItem('syncrig_admin_active_tab', activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
+    sessionStorage.setItem('syncrig_admin_user_search', searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    sessionStorage.setItem('syncrig_admin_post_search', postSearchQuery);
+  }, [postSearchQuery]);
 
   useEffect(() => {
     if (user?.role !== 'admin') {
