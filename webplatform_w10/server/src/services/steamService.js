@@ -10,15 +10,18 @@ const STEAM_API_BASE_URL = 'http://api.steampowered.com';
  * @returns {Promise<Array>} 게임 라이브러리 배열
  */
 export const fetchSteamGames = async (steamId) => {
-  if (!STEAM_API_KEY) {
-    console.warn('⚠️ [Steam Service] STEAM_API_KEY가 없습니다. Mock 데이터를 사용합니다.');
+  const isRealSteamId = /^\d{17}$/.test(steamId);
+
+  // 만약 실제 17자리 스팀 ID가 아니라면(테스트용 mock 유저 등), mock 데이터를 그대로 노출합니다.
+  if (!isRealSteamId) {
+    console.log(`ℹ️ [Steam Service] Mock 유저 ID 감지 (${steamId}). Mock 데이터를 노출합니다.`);
     return getFallbackSteamGames();
   }
 
-  // 간단한 유효성 검사 (Steam ID는 17자리 숫자)
-  if (!/^\d{17}$/.test(steamId)) {
-    console.warn(`⚠️ [Steam Service] 유효하지 않은 Steam ID 형식입니다 (${steamId}). Mock 데이터를 사용합니다.`);
-    return getFallbackSteamGames();
+  // 실제 스팀 ID인데 API Key가 없다면 빈 배열 반환
+  if (!STEAM_API_KEY) {
+    console.warn('⚠️ [Steam Service] STEAM_API_KEY가 등록되지 않아 실제 스팀 연동 게임을 조회할 수 없습니다. 빈 배열을 반환합니다.');
+    return [];
   }
 
   try {
@@ -44,10 +47,12 @@ export const fetchSteamGames = async (steamId) => {
       })).sort((a, b) => b.playtime - a.playtime).slice(0, 50); // 상위 50개만
     }
 
-    return getFallbackSteamGames();
+    // 실제 사용자의 프로필이 비공개이거나 보유 게임이 없는 경우 빈 배열 반환
+    console.warn(`⚠️ [Steam Service] 스팀 ID ${steamId}의 프로필이 비공개이거나 게임을 찾을 수 없습니다.`);
+    return [];
   } catch (error) {
     console.error('🚨 [Steam Service] API 호출 중 오류 발생:', error.message);
-    return getFallbackSteamGames();
+    return [];
   }
 };
 
