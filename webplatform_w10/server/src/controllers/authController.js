@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { db } from '../config/db.js';
+import { sendVerificationEmail } from '../services/emailService.js';
 
 // ── JWT 보안 설정 ──
 const JWT_SECRET = process.env.JWT_SECRET || 'syncrig_dev_fallback_key';
@@ -133,9 +134,16 @@ export const sendVerificationCode = async (req, res, next) => {
       [email, code, expiresAt]
     );
 
-    console.log(`[Email Mock] ${email}로 인증 코드가 발송되었습니다: ${code}`);
+    const emailResult = await sendVerificationEmail(email, code);
 
-    res.json({ status: 'success', message: `인증 코드가 발송되었습니다. (테스트용 코드: ${code})` });
+    if (emailResult.mock) {
+      return res.json({ 
+        status: 'success', 
+        message: `인증 코드가 발송되었습니다. (테스트용 코드: ${code})` 
+      });
+    }
+
+    res.json({ status: 'success', message: '이메일로 인증 코드가 발송되었습니다.' });
   } catch (err) {
     next(err);
   }
