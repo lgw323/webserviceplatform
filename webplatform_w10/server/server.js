@@ -8,10 +8,13 @@ import recommendationRoutes from './src/routes/recommendationRoutes.js';
 import gameRoutes from './src/routes/gameRoutes.js';
 import postRoutes from './src/routes/postRoutes.js';
 import adminRoutes from './src/routes/adminRoutes.js';
+import userRoutes from './src/routes/userRoutes.js';
+import catalogRoutes from './src/routes/catalogRoutes.js';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { v4 as uuidv4 } from 'uuid';
 import { errorHandler, logger } from './src/middlewares/errorMiddleware.js';
+import { authenticateToken, isAdmin } from './src/middlewares/authMiddleware.js';
 
 dotenv.config();
 
@@ -82,7 +85,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // ─── Danger: Force DB Reset ───
-app.get('/api/admin/force-reset-db', async (req, res) => {
+app.get('/api/admin/force-reset-db', authenticateToken, isAdmin, async (req, res) => {
   try {
     if (!db.isPgActive()) {
       return res.status(400).json({ error: 'PostgreSQL is not active' });
@@ -117,7 +120,9 @@ import statsRoutes from './src/routes/statsRoutes.js';
 
 // ─── Routes ───
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/users/hardware-profiles', profileRoutes);
+app.use('/api/v1/catalog', catalogRoutes);
 app.use('/api/v1/profiles/recommendations', recommendationRoutes);
 app.use('/api/v1/games', gameRoutes);
 app.use('/api/v1/payments', paymentRoutes);
