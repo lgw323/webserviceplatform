@@ -19,22 +19,41 @@ const COLOR_CLASSES = ['bg-cyber-accent', 'bg-cyber-purple', 'bg-cyber-warning',
 
 // Generate weekly playtime from actual game data instead of hardcoded template
 function generateWeeklyFromGames(gameLibrary) {
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const labels = ['월', '화', '수', '목', '금', '토', '일'];
+  const dayNamesEng = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayNamesKor = ['일', '월', '화', '수', '목', '금', '토'];
+  const weekdayWeight = [0.26, 0.08, 0.09, 0.07, 0.10, 0.12, 0.28]; // Sun, Mon, Tue, Wed, Thu, Fri, Sat
+
   const totalHours = gameLibrary.reduce((s, g) => s + (g.playtime || g.hours || 0), 0);
   
-  if (totalHours === 0) return days.map((d, i) => ({ day: d, label: labels[i], h: 0 }));
+  // Calculate the last 7 days ending today
+  const last7Days = [];
+  const today = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    last7Days.push(d);
+  }
 
-  // Distribute total playtime across days with realistic weekend-heavy pattern
-  const weekdayWeight = [0.08, 0.09, 0.07, 0.10, 0.12, 0.28, 0.26];
-  // Scale so weekly total is roughly totalHours / (totalHours/30) ≈ 30h/month → ~7h/week
-  const weeklyTotal = Math.min(totalHours * 0.07, 60); // 7% of total as weekly estimate, cap at 60h
-  
-  return days.map((d, i) => ({
-    day: d,
-    label: labels[i],
-    h: Math.round(weeklyTotal * weekdayWeight[i] * 10) / 10
-  }));
+  const weeklyTotal = Math.min(totalHours * 0.07, 60);
+
+  return last7Days.map((d, index) => {
+    const idx = d.getDay();
+    let displayLabel = dayNamesEng[idx];
+    let kLabel = dayNamesKor[idx];
+    
+    // UI enhancements: show "오늘" (Today) for the rightmost bar, "어제" (Yesterday) for the one next to it
+    if (index === 6) {
+      displayLabel = '오늘';
+    } else if (index === 5) {
+      displayLabel = '어제';
+    }
+
+    return {
+      day: displayLabel,
+      label: kLabel,
+      h: totalHours === 0 ? 0 : Math.round(weeklyTotal * weekdayWeight[idx] * 10) / 10
+    };
+  });
 }
 
 export default function DashboardCharts({ userSpec, gameLibrary = [], achievementsCount = 0, onSyncAccount, linkedProviders = [] }) {
