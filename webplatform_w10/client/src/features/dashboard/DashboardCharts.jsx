@@ -36,20 +36,12 @@ function generateWeeklyFromGames(gameLibrary) {
 
   const weeklyTotal = Math.min(totalHours * 0.07, 60);
 
-  return last7Days.map((d, index) => {
+  return last7Days.map((d) => {
     const idx = d.getDay();
-    let displayLabel = dayNamesEng[idx];
     let kLabel = dayNamesKor[idx];
-    
-    // UI enhancements: show "오늘" (Today) for the rightmost bar, "어제" (Yesterday) for the one next to it
-    if (index === 6) {
-      displayLabel = '오늘';
-    } else if (index === 5) {
-      displayLabel = '어제';
-    }
 
     return {
-      day: displayLabel,
+      day: kLabel,
       label: kLabel,
       h: totalHours === 0 ? 0 : Math.round(weeklyTotal * weekdayWeight[idx] * 10) / 10
     };
