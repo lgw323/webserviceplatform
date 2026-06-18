@@ -359,9 +359,21 @@ export const updateNickname = async (req, res, next) => {
   }
 };
 
+const IS_UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isValidUuid(uuid) {
+  if (!uuid) return false;
+  return IS_UUID_REGEX.test(uuid);
+}
+
 export const getUserPosts = async (req, res, next) => {
   try {
     const userId = req.user.id;
+    if (!isValidUuid(userId)) {
+      return res.json({
+        status: 'success',
+        data: []
+      });
+    }
     const result = await db.query(
       'SELECT p.*, u.nickname as author_nickname, u.email as author_email FROM posts p LEFT JOIN users u ON p.user_id = u.id WHERE p.user_id = $1 ORDER BY p.created_at DESC',
       [userId]
@@ -378,6 +390,12 @@ export const getUserPosts = async (req, res, next) => {
 export const getUserComments = async (req, res, next) => {
   try {
     const userId = req.user.id;
+    if (!isValidUuid(userId)) {
+      return res.json({
+        status: 'success',
+        data: []
+      });
+    }
     const result = await db.query(
       'SELECT c.*, p.title as post_title FROM comments c LEFT JOIN posts p ON c.post_id = p.id WHERE c.user_id = $1 ORDER BY c.created_at DESC',
       [userId]
@@ -390,4 +408,5 @@ export const getUserComments = async (req, res, next) => {
     next(err);
   }
 };
+
 
