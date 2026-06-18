@@ -36,7 +36,13 @@ export const getRecommendations = async (req, res, next) => {
       `;
       let queryParams = [];
       if (game_id) {
-        queryText += ' WHERE op.game_id = $1 OR g.external_app_id = $1';
+        // game_id가 UUID 형식인지 확인하여 다르게 쿼리 구성 (PostgreSQL 타입 변환 에러 방지)
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(game_id);
+        if (isUuid) {
+          queryText += ' WHERE op.game_id = $1 OR g.external_app_id = $1';
+        } else {
+          queryText += ' WHERE g.external_app_id = $1';
+        }
         queryParams.push(game_id);
       }
       const profilesResult = await db.query(queryText, queryParams);
