@@ -195,6 +195,11 @@ export async function getAdminStats() {
   return data.data;
 }
 
+export async function getAdminPosts() {
+  const { data } = await apiClient.get('/admin/posts');
+  return data;
+}
+
 export async function getAdminUsers(search = '', filter = '') {
   const params = new URLSearchParams();
   if (search) params.append('search', search);
