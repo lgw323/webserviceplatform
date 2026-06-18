@@ -37,14 +37,40 @@ export const fetchSteamGames = async (steamId) => {
     });
 
     if (response.data && response.data.response && response.data.response.games) {
-      return response.data.response.games.map(game => ({
+      const allGames = response.data.response.games.map(game => ({
         id: game.appid,
         title: game.name,
         // Steam API returns playtime in minutes, convert to hours
         playtime: Math.round(game.playtime_forever / 60),
         lastPlayed: '최근 플레이 (Steam 동기화)',
-        platform: 'steam'
-      })).sort((a, b) => b.playtime - a.playtime).slice(0, 50); // 상위 50개만
+        platform: 'steam',
+        achievementsCount: 0
+      })).sort((a, b) => b.playtime - a.playtime);
+
+      // 상위 10개 게임에 대해 실제 달성 과제 조회 (병렬 처리)
+      const topGames = allGames.slice(0, 10);
+      await Promise.all(topGames.map(async (game) => {
+        try {
+          const achievementsUrl = `${STEAM_API_BASE_URL}/ISteamUserStats/GetPlayerAchievements/v0001/`;
+          const achResponse = await axios.get(achievementsUrl, {
+            params: {
+              key: STEAM_API_KEY,
+              steamid: steamId,
+              appid: game.id,
+              format: 'json'
+            }
+          });
+          if (achResponse.data && achResponse.data.playerstats && achResponse.data.playerstats.achievements) {
+            const unlockedCount = achResponse.data.playerstats.achievements.filter(ach => ach.achieved === 1).length;
+            game.achievementsCount = unlockedCount;
+          }
+        } catch (err) {
+          // 달성 과제가 없거나 프로필 비공개 등으로 오류 발생 시 0개 유지
+          console.warn(`[Steam Service] 게임 ID ${game.id} (${game.title})의 달성 과제 조회 실패:`, err.message);
+        }
+      }));
+
+      return allGames.slice(0, 50); // 상위 50개만
     }
 
     // 실제 사용자의 프로필이 비공개이거나 보유 게임이 없는 경우 빈 배열 반환
@@ -61,10 +87,10 @@ export const fetchSteamGames = async (steamId) => {
  */
 function getFallbackSteamGames() {
   return [
-    { id: 1091500, title: 'Cyberpunk 2077', playtime: 124, lastPlayed: '2 hours ago', platform: 'steam' },
-    { id: 1245620, title: 'Elden Ring', playtime: 89, lastPlayed: '3 days ago', platform: 'steam' },
-    { id: 292030, title: 'The Witcher 3: Wild Hunt', playtime: 310, lastPlayed: '1 week ago', platform: 'steam' },
-    { id: 570, title: 'Dota 2', playtime: 1540, lastPlayed: 'Yesterday', platform: 'steam' },
-    { id: 730, title: 'Counter-Strike 2', playtime: 820, lastPlayed: '5 hours ago', platform: 'steam' }
+    { id: 1091500, title: 'Cyberpunk 2077', playtime: 124, lastPlayed: '2 hours ago', platform: 'steam', achievementsCount: 34 },
+    { id: 1245620, title: 'Elden Ring', playtime: 89, lastPlayed: '3 days ago', platform: 'steam', achievementsCount: 22 },
+    { id: 292030, title: 'The Witcher 3: Wild Hunt', playtime: 310, lastPlayed: '1 week ago', platform: 'steam', achievementsCount: 52 },
+    { id: 570, title: 'Dota 2', playtime: 1540, lastPlayed: 'Yesterday', platform: 'steam', achievementsCount: 88 },
+    { id: 730, title: 'Counter-Strike 2', playtime: 820, lastPlayed: '5 hours ago', platform: 'steam', achievementsCount: 1 }
   ];
 }
