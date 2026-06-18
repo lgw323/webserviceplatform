@@ -32,6 +32,8 @@ function generateTokenPair(user) {
       nickname: user.nickname,
       provider: user.provider, 
       provider_id: user.provider_id,
+      steam_id: user.steam_id || (user.provider === 'steam' ? user.provider_id : null),
+      riot_id: user.riot_id || (user.provider === 'riot' ? user.provider_id : null),
       role: user.role || 'user',
       subscription_status: user.subscription_status || 'free',
       linked_providers: user.linked_providers || []
@@ -65,7 +67,7 @@ export const register = async (req, res, next) => {
 
     const passwordHash = hashPassword(password);
     const result = await db.query(
-      'INSERT INTO users (email, nickname, provider, provider_id, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, nickname, role, provider, provider_id, subscription_status, linked_providers',
+      'INSERT INTO users (email, nickname, provider, provider_id, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, nickname, role, provider, provider_id, steam_id, riot_id, subscription_status, linked_providers',
       [email, nickname, 'local', email, passwordHash]
     );
 
@@ -222,7 +224,22 @@ export const oauthCallback = async (req, res, next) => {
           
           if (!linked.includes(provider)) {
             linked.push(provider);
-            // 업데이트
+          }
+          
+          // 업데이트: linked_providers와 함께 steam_id 또는 riot_id를 저장합니다.
+          if (provider === 'steam') {
+            await db.query(
+              'UPDATE users SET linked_providers = $1, steam_id = $2 WHERE id = $3',
+              [JSON.stringify(linked), provider_id, userId]
+            );
+            targetUser.steam_id = provider_id;
+          } else if (provider === 'riot') {
+            await db.query(
+              'UPDATE users SET linked_providers = $1, riot_id = $2 WHERE id = $3',
+              [JSON.stringify(linked), provider_id, userId]
+            );
+            targetUser.riot_id = provider_id;
+          } else {
             await db.query('UPDATE users SET linked_providers = $1 WHERE id = $2', [JSON.stringify(linked), userId]);
           }
           
@@ -251,8 +268,8 @@ export const oauthCallback = async (req, res, next) => {
     let user = result.rows[0];
     if (!user) {
       const insertResult = await db.query(
-        'INSERT INTO users (provider, provider_id, linked_providers) VALUES ($1, $2, $3) RETURNING id, provider, provider_id, linked_providers, subscription_status',
-        [provider, provider_id, '[]']
+        'INSERT INTO users (provider, provider_id, linked_providers, steam_id, riot_id) VALUES ($1, $2, $3, $4, $5) RETURNING id, provider, provider_id, steam_id, riot_id, linked_providers, subscription_status',
+        [provider, provider_id, '[]', provider === 'steam' ? provider_id : null, provider === 'riot' ? provider_id : null]
       );
       user = insertResult.rows[0];
     }
@@ -292,8 +309,16 @@ export const unlinkAccount = async (req, res, next) => {
 
     if (linked.includes(provider)) {
       linked = linked.filter(p => p !== provider);
-      await db.query('UPDATE users SET linked_providers = $1 WHERE id = $2', [JSON.stringify(linked), userId]);
-      // 연동 해제 시 관련된 하드웨어나 최적화 정보 중 해당 프로바이더의 데이터(게임 등)를 삭제하는 로직도 가능
+      // 연동 해제 시 steam_id / riot_id 도 지워줍니다.
+      if (provider === 'steam') {
+        await db.query('UPDATE users SET linked_providers = $1, steam_id = NULL WHERE id = $2', [JSON.stringify(linked), userId]);
+        user.steam_id = null;
+      } else if (provider === 'riot') {
+        await db.query('UPDATE users SET linked_providers = $1, riot_id = NULL WHERE id = $2', [JSON.stringify(linked), userId]);
+        user.riot_id = null;
+      } else {
+        await db.query('UPDATE users SET linked_providers = $1 WHERE id = $2', [JSON.stringify(linked), userId]);
+      }
     }
 
     user.linked_providers = linked;
@@ -349,7 +374,7 @@ export const updateNickname = async (req, res, next) => {
     }
 
     const updateResult = await db.query(
-      'UPDATE users SET nickname = $1 WHERE id = $2 RETURNING id, email, nickname, role, provider, provider_id, subscription_status, linked_providers',
+      'UPDATE users SET nickname = $1 WHERE id = $2 RETURNING id, email, nickname, role, provider, provider_id, steam_id, riot_id, subscription_status, linked_providers',
       [nickname.trim(), userId]
     );
 
