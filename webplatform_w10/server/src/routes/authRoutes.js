@@ -3,6 +3,7 @@ import { body, validationResult } from 'express-validator';
 import rateLimit from 'express-rate-limit';
 import { register, login, oauthCallback, refreshAccessToken, unlinkAccount, sendVerificationCode, verifyEmailCode } from '../controllers/authController.js';
 import passport from 'passport';
+import SteamStrategy from 'passport-steam';
 
 const router = express.Router();
 
@@ -64,6 +65,7 @@ router.post('/send-code', authLimiter, sendVerificationCode);
 router.post('/verify-code', authLimiter, verifyEmailCode);
 
 // ── 소셜 인증 미들웨어 (Fallback) ──
+// ── 소셜 인증 미들웨어 (동적 Strategy 생성으로 Race Condition 해결) ──
 const checkSteamAuth = (req, res, next) => {
   const host = req.headers['x-forwarded-host'] || req.headers.host || '';
   const protocol = req.headers['x-forwarded-proto'] || 'http';
@@ -74,42 +76,44 @@ const checkSteamAuth = (req, res, next) => {
     return oauthCallback(req, res, next);
   }
 
-  // Vercel Preview/Prod 등 동적 도메인 대응을 위해 callbackURL 및 realm을 동적 지정
-  const isProdOrPreview = host && !host.includes('localhost:5000');
-  const steamStrategy = passport._strategies && passport._strategies.steam;
-
   // Stateless 대응: 세션 유실에 대비해 JWT 토큰을 returnURL의 쿼리 스트링으로 실어 보냄
   let linkToken = req.query.token || req.query.linkToken || (req.session && req.session.linkToken);
   if (linkToken && typeof linkToken === 'string') {
     linkToken = linkToken.replace(/ /g, '+');
   }
 
-  if (isProdOrPreview) {
-    const callbackBase = `${protocol}://${host}/api/v1/auth/steam/callback`;
-    const dynamicReturnURL = linkToken
-      ? `${callbackBase}?linkToken=${encodeURIComponent(linkToken)}`
-      : callbackBase;
-    const dynamicRealm = `${protocol}://${host}/`;
+  // 동적 도메인 계산
+  const isProdOrPreview = host && !host.includes('localhost:5000');
+  const serverBase = isProdOrPreview ? `${protocol}://${host}` : (process.env.SERVER_URL || 'http://localhost:5000');
+  const callbackBase = `${serverBase}/api/v1/auth/steam/callback`;
+  const returnURL = linkToken
+    ? `${callbackBase}?linkToken=${encodeURIComponent(linkToken)}`
+    : callbackBase;
+  const realm = `${serverBase}/`;
 
-    if (steamStrategy && steamStrategy._relyingParty) {
-      steamStrategy._relyingParty.returnUrl = dynamicReturnURL;
-      steamStrategy._relyingParty.realm = dynamicRealm;
+  // 매 요청마다 새로운 Strategy 인스턴스 생성하여 전역 싱글톤 변조 경쟁 조건 방지
+  const dynamicStrategy = new SteamStrategy({
+    returnURL,
+    realm,
+    apiKey: process.env.STEAM_API_KEY
+  }, (identifier, profile, done) => {
+    try {
+      const steamId = identifier.match(/\d+$/)[0];
+      done(null, { 
+        provider: 'steam', 
+        provider_id: steamId,
+        displayName: profile?.displayName || `SteamUser_${steamId}`
+      });
+    } catch (err) {
+      done(err, null);
     }
-  } else {
-    // 로컬 개발 환경인 경우 기본값으로 원복
-    if (steamStrategy && steamStrategy._relyingParty) {
-      const SERVER_URL = process.env.SERVER_URL || 'http://localhost:5000';
-      const callbackBase = `${SERVER_URL}/api/v1/auth/steam/callback`;
-      const dynamicReturnURL = linkToken
-        ? `${callbackBase}?linkToken=${encodeURIComponent(linkToken)}`
-        : callbackBase;
+  });
 
-      steamStrategy._relyingParty.returnUrl = dynamicReturnURL;
-      steamStrategy._relyingParty.realm = SERVER_URL;
-    }
-  }
+  // 고유한 이름으로 전략 등록
+  const strategyName = 'steam-dynamic-' + Math.random().toString(36).substring(2, 9);
+  passport.use(strategyName, dynamicStrategy);
 
-  passport.authenticate('steam', { 
+  passport.authenticate(strategyName, { 
     failureRedirect: '/' 
   })(req, res, next);
 };
