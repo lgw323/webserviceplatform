@@ -316,3 +316,45 @@ export const refreshAccessToken = async (req, res, next) => {
     next(err);
   }
 };
+
+export const updateNickname = async (req, res, next) => {
+  try {
+    const { nickname } = req.body;
+    const userId = req.user.id;
+
+    if (!nickname || nickname.trim().length < 2 || nickname.trim().length > 20) {
+      return res.status(400).json({ status: 'error', message: '닉네임은 2자에서 20자 사이여야 합니다.' });
+    }
+
+    const updateResult = await db.query(
+      'UPDATE users SET nickname = $1 WHERE id = $2 RETURNING id, email, nickname, role, provider, provider_id, subscription_status, linked_providers',
+      [nickname.trim(), userId]
+    );
+
+    if (updateResult.rows.length === 0) {
+      return res.status(404).json({ status: 'error', message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    const user = updateResult.rows[0];
+    if (user.linked_providers && typeof user.linked_providers === 'string') {
+      try {
+        user.linked_providers = JSON.parse(user.linked_providers);
+      } catch (e) {
+        user.linked_providers = [];
+      }
+    }
+
+    const { accessToken, refreshToken } = generateTokenPair(user);
+
+    res.json({
+      status: 'success',
+      data: {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        user
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
