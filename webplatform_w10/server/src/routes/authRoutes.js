@@ -74,13 +74,18 @@ const checkSteamAuth = (req, res, next) => {
     return oauthCallback(req, res, next);
   }
 
-  // Vercel Preview 등 동적 도메인 대응을 위해 callbackURL을 동적 지정
-  const dynamicReturnURL = host && !host.includes('localhost:5000')
+  // Vercel Preview 등 동적 도메인 대응을 위해 callbackURL 및 realm을 동적 지정
+  const isProdOrPreview = host && !host.includes('localhost:5000');
+  const dynamicReturnURL = isProdOrPreview
     ? `${protocol}://${host}/api/v1/auth/steam/callback`
+    : undefined;
+  const dynamicRealm = isProdOrPreview
+    ? `${protocol}://${host}/`
     : undefined;
 
   passport.authenticate('steam', { 
     returnURL: dynamicReturnURL,
+    realm: dynamicRealm,
     failureRedirect: '/' 
   })(req, res, next);
 };
