@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Calendar, Eye, ThumbsUp, MessageSquare, Loader2, Send, Edit3, Trash2 } from 'lucide-react';
+import { ArrowLeft, User, Calendar, Eye, ThumbsUp, MessageSquare, Loader2, Send, Edit3, Trash2, Pin } from 'lucide-react';
 import * as api from '../api/apiClient';
 import useAuthStore from '../store/useAuthStore';
 import toast from 'react-hot-toast';
@@ -61,6 +61,16 @@ export default function PostDetail() {
       console.error(err);
     } finally {
       setIsLiking(false);
+    }
+  };
+
+  const handleTogglePin = async () => {
+    try {
+      const result = await api.togglePostPin(id);
+      setPost(prev => ({ ...prev, is_pinned: result.data.is_pinned }));
+      toast.success(result.message);
+    } catch (err) {
+      toast.error(err.message || '처리 실패');
     }
   };
 
@@ -152,6 +162,20 @@ export default function PostDetail() {
           </div>
           {(isOwner || isAdmin) && (
             <div className="flex items-center gap-2">
+              {isAdmin && (
+                <button 
+                  onClick={handleTogglePin}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border ${
+                    post.is_pinned 
+                      ? 'bg-yellow-500/15 hover:bg-yellow-500/25 text-yellow-500 border-yellow-500/30' 
+                      : 'bg-cyber-dark hover:bg-gray-700 text-gray-300 border-gray-700'
+                  }`}
+                  title={post.is_pinned ? '고정 해제' : '상단 고정'}
+                >
+                  <Pin className={`w-3.5 h-3.5 ${post.is_pinned ? 'fill-current' : ''}`} />
+                  {post.is_pinned ? '고정 해제' : '상단 고정'}
+                </button>
+              )}
               {isOwner && (
                 <button 
                   onClick={() => navigate(`/community/edit/${id}`)} 
