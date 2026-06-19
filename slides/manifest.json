@@ -17,15 +17,16 @@
         "04-market.html",
         "05-philosophy.html",
         "06-algorithm.html",
-        "07-mechanism.html",
-        "08-feature-core.html",
-        "09-feature-operation.html",
-        "10-architecture.html",
-        "11-comparison.html",
-        "12-decisions.html",
-        "13-verification.html",
-        "14-milestone.html",
-        "15-references.html",
-        "16-closing.html"
+        "07-weights.html",
+        "08-mechanism.html",
+        "09-feature-core.html",
+        "10-feature-operation.html",
+        "11-responsive.html",
+        "12-architecture.html",
+        "13-comparison.html",
+        "14-verification.html",
+        "15-roadmap.html",
+        "16-references.html",
+        "17-closing.html"
     ]
 }
