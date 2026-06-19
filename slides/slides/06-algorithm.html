@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <title>06 · Core Algorithm</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <div class="slide-container" data-screen-label="06 Core Algorithm">
+
+        <!-- Tracker & Header Title -->
+        <div data-object="true" data-object-type="textbox"
+            style="position:absolute;left:120px;top:100px;width:800px;z-index:10;">
+            <div class="header-tracker">06 / OPTIMIZATION ALGORITHM</div>
+            <div class="header-title">핵심 최적화 알고리즘 (L1-Norm Distance)</div>
+            <div class="header-rule"></div>
+        </div>
+
+        <!-- Left Column: Math & Stats (L1-Norm text content and Bar Chart) -->
+        <div data-object="true" data-object-type="textbox"
+            style="position:absolute;left:120px;top:260px;width:780px;z-index:10;">
+            <!-- Math formula block -->
+            <div class="glass-card" style="padding:40px;margin-bottom:30px;background:rgba(22, 26, 24, 0.9);">
+                <div
+                    style="font-family:var(--font-mono);font-size:16px;color:var(--accent-mint);margin-bottom:15px;letter-spacing:0.15em;">
+                    MATHEMATICAL FORMULATION</div>
+                <div
+                    style="font-size:38px;font-family:var(--font-mono);color:#FFFFFF;text-align:center;padding:15px 0;">
+                    d₁(<strong style="color:var(--accent-mint);">x</strong>, <strong
+                        style="color:var(--accent-mint);">y</strong>) = &sum; w<sub>i</sub> | (x<sub>i</sub> -
+                    y<sub>i</sub>) / &sigma;<sub>i</sub> |
+                </div>
+                <div style="font-size:18px;color:#85908C;line-height:1.6;margin-top:20px;text-wrap:pretty;">
+                    L1(맨해튼) 거리는 고차원 환경에서 특정 가설 축의 극단적인 이상치(Outlier)에 왜곡되지 않는 강건성을 보장하여, 유클리드(L2) 오차가 유발하는 제곱 왜곡을 물리적으로
+                    상쇄합니다.
+                </div>
+            </div>
+
+            <!-- Live Performance Weight bar chart -->
+            <div class="glass-card" style="padding:30px;">
+                <div
+                    style="font-family:var(--font-mono);font-size:15px;color:var(--accent-mint);margin-bottom:20px;letter-spacing:0.1em;">
+                    ALGORITHM FEATURE WEIGHTS</div>
+
+                <!-- GPU Row -->
+                <div style="margin-bottom:15px;">
+                    <div
+                        style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:18px;margin-bottom:5px;">
+                        <span>GPU Profile Matching</span>
+                        <span style="color:var(--accent-mint);font-weight:700;">50%</span>
+                    </div>
+                    <div style="width:100%;height:12px;background:#161A18;border-radius:6px;overflow:hidden;">
+                        <div style="width:50%;height:100%;background:var(--accent-mint);border-radius:6px;"></div>
+                    </div>
+                </div>
+
+                <!-- CPU Row -->
+                <div style="margin-bottom:15px;">
+                    <div
+                        style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:18px;margin-bottom:5px;">
+                        <span>CPU Pipeline Scaling</span>
+                        <span style="color:var(--accent-mint);font-weight:700;">30%</span>
+                    </div>
+                    <div style="width:100%;height:12px;background:#161A18;border-radius:6px;overflow:hidden;">
+                        <div style="width:30%;height:100%;background:var(--accent-mint);border-radius:6px;"></div>
+                    </div>
+                </div>
+
+                <!-- RAM/RES Rows -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                    <div>
+                        <div
+                            style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:16px;margin-bottom:5px;">
+                            <span>RAM</span>
+                            <span style="color:#85908C;">10%</span>
+                        </div>
+                        <div style="width:100%;height:8px;background:#161A18;border-radius:4px;overflow:hidden;">
+                            <div style="width:10%;height:100%;background:#85908C;border-radius:4px;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div
+                            style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:16px;margin-bottom:5px;">
+                            <span>Resolution</span>
+                            <span style="color:#85908C;">10%</span>
+                        </div>
+                        <div style="width:100%;height:8px;background:#161A18;border-radius:4px;overflow:hidden;">
+                            <div style="width:10%;height:100%;background:#85908C;border-radius:4px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right Column: 3D Mockup Graphic Overlay representation -->
+        <div data-object="true" data-object-type="shape"
+            style="position:absolute;left:980px;top:260px;width:820px;height:670px;z-index:5;">
+            <!-- Large Isometric Layout Stack container -->
+            <div
+                style="position:relative;width:100%;height:100%;background:var(--bg-secondary);border:1px solid rgba(61, 242, 148, 0.1);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);">
+
+                <!-- Grid Overlay Decoration -->
+                <div
+                    style="position:absolute;inset:0;background-image:linear-gradient(rgba(61, 242, 148, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(61, 242, 148, 0.02) 1px, transparent 1px);background-size:40px 40px;z-index:1;">
+                </div>
+
+                <!-- RTX 4080 SUPER Floating Card -->
+                <div class="glass-card"
+                    style="position:absolute;left:180px;top:120px;width:460px;height:240px;transform:perspective(1000px) rotateX(20deg) rotateY(-15deg);z-index:10;border-color:var(--accent-mint);background:rgba(30, 37, 34, 0.95);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                        <span
+                            style="font-family:var(--font-mono);font-size:14px;color:var(--accent-mint);letter-spacing:0.15em;">TARGET
+                            DEVICE ACTIVE</span>
+                        <span
+                            style="padding:4px 10px;background:rgba(61, 242, 148, 0.15);color:var(--accent-mint);border-radius:4px;font-family:var(--font-mono);font-size:12px;">MATCH
+                            98.4%</span>
+                    </div>
+                    <div style="font-size:32px;font-weight:900;color:#FFFFFF;margin-bottom:10px;">RTX 4080 SUPER</div>
+                    <div style="font-family:var(--font-mono);font-size:16px;color:#85908C;line-height:1.5;">
+                        • GPU Weight: 0.50 (Normalized)<br>
+                        • Vector Index: [G_108, C_88, R_16, S_4]
+                    </div>
+                </div>
+
+                <!-- Lower overlapping pipeline layer -->
+                <div class="glass-card"
+                    style="position:absolute;left:120px;top:280px;width:440px;height:220px;transform:perspective(1000px) rotateX(20deg) rotateY(-15deg);z-index:5;background:rgba(22, 26, 24, 0.85);opacity:0.6;border-color:rgba(255, 138, 101, 0.2);">
+                    <div style="font-family:var(--font-mono);font-size:14px;color:var(--accent-coral);">BASELINE
+                        HARDWARE DATASET</div>
+                    <div style="font-size:24px;font-weight:700;color:#FFFFFF;margin:10px 0;">유클리드 왜곡 분포 제거</div>
+                    <div style="font-family:var(--font-mono);font-size:14px;color:#85908C;">
+                        Dataset: n=45,280 Gaming Profiles<br>
+                        Deviation Correction: σ_i (Robust Standard Deviation)
+                    </div>
+                </div>
+
+                <!-- Radar matching sweep radar line effect -->
+                <div
+                    style="position:absolute;left:50%;top:0;width:4px;height:100%;background:linear-gradient(to bottom, transparent, var(--accent-mint), transparent);z-index:2;animation: sweep 4s linear infinite;">
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <style>
+        @keyframes sweep {
+            0% {
+                left: 0%;
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.8;
+            }
+
+            90% {
+                opacity: 0.8;
+            }
+
+            100% {
+                left: 100%;
+                opacity: 0;
+            }
+        }
+    </style>
+</body>
+
+</html>

@@ -1,0 +1,31 @@
+{
+    "schemaVersion": "1.0",
+    "format": "html",
+    "metadata": {
+        "title": "SYNCRIG 최종 발표용 3D 레이아웃 스토리보드 (Pawvera Style)",
+        "description": "가중치 기반 정규화 알고리즘을 통한 개인 맞춤형 인게임 그래픽 최적화 솔루션",
+        "author": "SYNCRIG"
+    },
+    "canvas": {
+        "width": 1920,
+        "height": 1080
+    },
+    "playlist": [
+        "01-cover.html",
+        "02-vision.html",
+        "03-problem.html",
+        "04-market.html",
+        "05-philosophy.html",
+        "06-algorithm.html",
+        "07-mechanism.html",
+        "08-feature-core.html",
+        "09-feature-operation.html",
+        "10-architecture.html",
+        "11-comparison.html",
+        "12-decisions.html",
+        "13-verification.html",
+        "14-milestone.html",
+        "15-references.html",
+        "16-closing.html"
+    ]
+}

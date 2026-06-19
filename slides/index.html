@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYNCRIG Presentation Board Viewer</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Google Material Symbols (Icons) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <style>
+        :root {
+            --bg-primary: #0A0D0C;
+            --bg-secondary: #121614;
+            --bg-glass: rgba(18, 22, 20, 0.85);
+            --accent-mint: #3DF294;
+            --accent-mint-hover: #2ecb7a;
+            --accent-mint-dim: rgba(61, 242, 148, 0.15);
+            --text-main: #FFFFFF;
+            --text-muted: #85908C;
+            --text-dark: #4A5350;
+            --border-color: rgba(61, 242, 148, 0.12);
+            --border-hover: rgba(61, 242, 148, 0.3);
+            --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+
+        /* Presentation Container */
+        .presentation-container {
+            flex: 1;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-color: var(--bg-primary);
+            overflow: hidden;
+        }
+
+        /* Slide Wrapper for Aspect Ratio scaling */
+        .slide-wrapper {
+            position: relative;
+            width: 1920px;
+            height: 1080px;
+            transform-origin: center center;
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.8);
+            background: #0E1110;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: border-color 0.3s ease;
+        }
+
+        .slide-wrapper:hover {
+            border-color: rgba(61, 242, 148, 0.25);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* Control Bar styling */
+        .control-bar {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(0);
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 40px;
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .control-bar.hidden {
+            opacity: 0;
+            transform: translateX(-50%) translateY(30px);
+            pointer-events: none;
+        }
+
+        /* Control buttons styling */
+        .btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .btn:hover:not(:disabled) {
+            color: var(--accent-mint);
+            background: var(--accent-mint-dim);
+        }
+
+        .btn:disabled {
+            color: var(--text-dark);
+            cursor: not-allowed;
+        }
+
+        .btn-active {
+            color: var(--accent-mint);
+            background: var(--accent-mint-dim);
+        }
+
+        /* Slide Tracker / Indicator */
+        .slide-tracker {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            color: var(--text-main);
+            font-weight: 600;
+            padding: 0 8px;
+        }
+
+        .slide-tracker span.current {
+            color: var(--accent-mint);
+        }
+
+        .slide-tracker span.separator {
+            color: var(--text-dark);
+        }
+
+        .slide-tracker span.total {
+            color: var(--text-muted);
+        }
+
+        /* Divider inside Control Bar */
+        .divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border-color);
+        }
+
+        /* Sidebar/Drawer for Navigation */
+        .drawer {
+            width: 380px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 105;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .drawer.collapsed {
+            transform: translateX(-380px);
+            margin-right: -380px;
+        }
+
+        .drawer-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .drawer-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+        }
+
+        .drawer-subtitle {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            color: var(--accent-mint);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .slide-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Custom Scrollbar for Drawer List */
+        .slide-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .slide-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .slide-list::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .slide-list::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-mint-dim);
+        }
+
+        .slide-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .slide-item:hover {
+            border-color: var(--border-hover);
+            background: rgba(61, 242, 148, 0.04);
+        }
+
+        .slide-item.active {
+            background: var(--accent-mint-dim);
+            border-color: var(--accent-mint);
+        }
+
+        .slide-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dark);
+            transition: var(--transition);
+        }
+
+        .slide-item.active .slide-num {
+            color: var(--accent-mint);
+        }
+
+        .slide-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: var(--transition);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .slide-item.active .slide-name {
+            color: var(--text-main);
+        }
+
+        /* Keyboard Help Overlay */
+        .help-overlay {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            z-index: 100;
+            max-width: 280px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: opacity 0.3s ease;
+        }
+
+        .help-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .help-title {
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .help-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .key-badge {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-main);
+        }
+
+        /* Autoplay Progress Bar */
+        .autoplay-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: var(--accent-mint);
+            width: 0%;
+            transition: width 0.1s linear;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+        }
+
+        /* Autoplay Speed Select styling */
+        .select-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .select-wrapper select {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            border-radius: 12px;
+            padding: 4px 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            padding-right: 20px;
+            transition: var(--transition);
+        }
+
+        .select-wrapper select:hover {
+            color: var(--accent-mint);
+            border-color: var(--accent-mint);
+        }
+
+        .select-wrapper::after {
+            content: '▼';
+            font-size: 8px;
+            color: var(--text-dark);
+            position: absolute;
+            right: 8px;
+            pointer-events: none;
+        }
+
+        /* Responsive UI adjustments */
+        @media (max-width: 768px) {
+            .drawer {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+            }
+            .help-overlay {
+                display: none; /* Hide helper on small devices */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Slide Navigator -->
+    <div class="drawer" id="sidebar">
+        <div class="drawer-header">
+            <div>
+                <h2 class="drawer-title" id="pres-title">SYNCRIG Presentation</h2>
+                <div class="drawer-subtitle">15-Week Portfolio</div>
+            </div>
+            <button class="btn" onclick="toggleDrawer()" title="Close Sidebar (L)">
+                <span class="material-symbols-outlined">menu_open</span>
+            </button>
+        </div>
+        <div class="slide-list" id="slide-list-container">
+            <!-- Slide list items will be injected here by JS -->
+        </div>
+    </div>
+
+    <!-- Presentation Viewport -->
+    <div class="presentation-container">
+        
+        <!-- Helper guide overlay -->
+        <div class="help-overlay" id="help-box">
+            <div class="help-title">
+                <span class="material-symbols-outlined" style="font-size: 18px; color: var(--accent-mint)">keyboard</span>
+                Keyboard Controls
+            </div>
+            <div class="help-row"><span>Next Slide</span><span class="key-badge">→ / Space</span></div>
+            <div class="help-row"><span>Prev Slide</span><span class="key-badge">←</span></div>
+            <div class="help-row"><span>First / Last</span><span class="key-badge">Home / End</span></div>
+            <div class="help-row"><span>Toggle Menu</span><span class="key-badge">L</span></div>
+            <div class="help-row"><span>Autoplay</span><span class="key-badge">P</span></div>
+            <div class="help-row"><span>Fullscreen</span><span class="key-badge">F</span></div>
+        </div>
+
+        <!-- 16:9 Scale Wrapper -->
+        <div class="slide-wrapper" id="slide-wrapper">
+            <iframe id="slide-iframe" src="" title="Presentation Slide"></iframe>
+        </div>
+
+        <!-- Float Control Bar -->
+        <div class="control-bar" id="controls">
+            <!-- Sidebar toggle -->
+            <button class="btn" id="btn-menu" onclick="toggleDrawer()" title="Toggle Slide List (L)">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+            
+            <div class="divider"></div>
+
+            <!-- Navigate controls -->
+            <button class="btn" id="btn-prev" onclick="prevSlide()" title="Previous Slide (Arrow Left)">
+                <span class="material-symbols-outlined">navigate_before</span>
+            </button>
+            
+            <div class="slide-tracker">
+                <span class="current" id="current-index">01</span>
+                <span class="separator">/</span>
+                <span class="total" id="total-count">15</span>
+            </div>
+
+            <button class="btn" id="btn-next" onclick="nextSlide()" title="Next Slide (Arrow Right / Space)">
+                <span class="material-symbols-outlined">navigate_next</span>
+            </button>
+
+            <div class="divider"></div>
+
+            <!-- Autoplay controls -->
+            <button class="btn" id="btn-play" onclick="toggleAutoplay()" title="Autoplay Slideshow (P)">
+                <span class="material-symbols-outlined" id="play-icon">play_arrow</span>
+            </button>
+            
+            <div class="select-wrapper">
+                <select id="autoplay-speed" onchange="updateAutoplaySpeed()" title="Autoplay Speed">
+                    <option value="3000">3s</option>
+                    <option value="5000" selected>5s</option>
+                    <option value="10000">10s</option>
+                    <option value="15000">15s</option>
+                </select>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Fullscreen control -->
+            <button class="btn" id="btn-fullscreen" onclick="toggleFullscreen()" title="Toggle Fullscreen (F)">
+                <span class="material-symbols-outlined" id="fullscreen-icon">fullscreen</span>
+            </button>
+
+            <!-- Autoplay progress bar at bottom of controls -->
+            <div class="autoplay-bar" id="autoplay-progress"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // Fallback hardcoded slide list in case fetch(manifest.json) fails (e.g. running locally via file:// protocol)
+        const fallbackSlides = [
+            { path: "slides/01-cover.html", title: "Cover" },
+            { path: "slides/02-vision.html", title: "Vision & Goals" },
+            { path: "slides/03-problem.html", title: "Problem Definition" },
+            { path: "slides/04-market.html", title: "Market Feasibility" },
+            { path: "slides/05-philosophy.html", title: "Engineering Philosophy" },
+            { path: "slides/06-algorithm.html", title: "Optimization Algorithm" },
+            { path: "slides/07-mechanism.html", title: "Core Mechanism" },
+            { path: "slides/08-feature-core.html", title: "Feature: Core Features" },
+            { path: "slides/09-feature-operation.html", title: "Feature: Operation" },
+            { path: "slides/10-architecture.html", title: "System Architecture" },
+            { path: "slides/11-comparison.html", title: "Alternatives Comparison" },
+            { path: "slides/12-decisions.html", title: "Engineering Decisions" },
+            { path: "slides/13-verification.html", title: "Validation & Tests" },
+            { path: "slides/14-milestone.html", title: "Development Milestones" },
+            { path: "slides/15-references.html", title: "References & Sources" },
+            { path: "slides/16-closing.html", title: "Closing Summary" }
+        ];
+
+        let slides = [];
+        let currentIndex = 0;
+        let autoplayInterval = null;
+        let autoplayStartTime = null;
+        let autoplayDuration = 5000; // default 5s
+        let autoplayProgressFrame = null;
+        let controlsTimeout = null;
+
+        const iframe = document.getElementById('slide-iframe');
+        const slideWrapper = document.getElementById('slide-wrapper');
+        const container = document.querySelector('.presentation-container');
+        const currentIdxLabel = document.getElementById('current-index');
+        const totalCountLabel = document.getElementById('total-count');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const slideListContainer = document.getElementById('slide-list-container');
+        const sidebar = document.getElementById('sidebar');
+        const playIcon = document.getElementById('play-icon');
+        const autoplayProgress = document.getElementById('autoplay-progress');
+        const controls = document.getElementById('controls');
+        const helpBox = document.getElementById('help-box');
+        const presentationTitle = document.getElementById('pres-title');
+
+        // Init presentation configurations
+        async function init() {
+            try {
+                // Try fetching manifest.json
+                const response = await fetch('manifest.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Populate slide names mapping
+                    const nameMap = {
+                        "01-cover.html": "Cover",
+                        "02-vision.html": "Vision & Goals",
+                        "03-problem.html": "Problem Definition",
+                        "04-market.html": "Market Feasibility",
+                        "05-philosophy.html": "Engineering Philosophy",
+                        "06-algorithm.html": "Optimization Algorithm",
+                        "07-mechanism.html": "Core Mechanism",
+                        "08-feature-core.html": "Feature: Core Features",
+                        "09-feature-operation.html": "Feature: Operation",
+                        "10-architecture.html": "System Architecture",
+                        "11-comparison.html": "Alternatives Comparison",
+                        "12-decisions.html": "Engineering Decisions",
+                        "13-verification.html": "Validation & Tests",
+                        "14-milestone.html": "Development Milestones",
+                        "15-references.html": "References & Sources",
+                        "16-closing.html": "Closing Summary"
+                    };
+
+                    if (data.metadata && data.metadata.title) {
+                        presentationTitle.textContent = data.metadata.title;
+                        document.title = data.metadata.title + " - Viewer";
+                    }
+
+                    if (data.playlist && Array.isArray(data.playlist)) {
+                        slides = data.playlist.map(item => {
+                            // Extract basename if path contains slash
+                            const filename = item.split('/').pop();
+                            return {
+                                path: 'slides/' + filename,
+                                title: nameMap[filename] || filename.replace('.html', '')
+                            };
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not load manifest.json (likely due to file:// CORS restrictions). Using fallback slide list.", e);
+            }
+
+            // Fallback to hardcoded list if empty
+            if (slides.length === 0) {
+                slides = fallbackSlides;
+            }
+
+            totalCountLabel.textContent = String(slides.length).padStart(2, '0');
+            
+            buildSidebarList();
+            
+            // Check hash for starting slide
+            handleHashChange();
+            
+            // Initial resize & setup resize listener
+            resizeSlides();
+            window.addEventListener('resize', resizeSlides);
+            
+            // Hash routing
+            window.addEventListener('hashchange', handleHashChange);
+            
+            // Keyboard listener
+            window.addEventListener('keydown', handleKeyDown);
+            
+            // Auto hide controls
+            setupAutoHideControls();
+
+            // Setup help overlay auto-fade
+            setTimeout(() => {
+                helpBox.classList.add('hidden');
+            }, 8000);
+        }
+
+        // Generate list of slides in sidebar
+        function buildSidebarList() {
+            slideListContainer.innerHTML = '';
+            slides.forEach((slide, idx) => {
+                const item = document.createElement('div');
+                item.className = 'slide-item' + (idx === currentIndex ? ' active' : '');
+                item.id = `slide-item-${idx}`;
+                item.onclick = () => goToSlide(idx);
+                
+                const num = document.createElement('div');
+                num.className = 'slide-num';
+                num.textContent = String(idx + 1).padStart(2, '0');
+                
+                const name = document.createElement('div');
+                name.className = 'slide-name';
+                name.textContent = slide.title;
+                name.title = slide.title;
+                
+                item.appendChild(num);
+                item.appendChild(name);
+                slideListContainer.appendChild(item);
+            });
+        }
+
+        // Fit 1920x1080 slide wrapper in viewport
+        function resizeSlides() {
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            
+            // Calculate scaling ratio for 1920x1080
+            const scaleX = containerWidth / 1920;
+            const scaleY = containerHeight / 1080;
+            const scale = Math.min(scaleX, scaleY) * 0.96; // 4% safety margin
+            
+            slideWrapper.style.transform = `scale(${scale})`;
+        }
+
+        // Navigate to slide index
+        function goToSlide(index) {
+            if (index < 0 || index >= slides.length) return;
+            
+            // Update active states in sidebar
+            const prevActive = document.querySelector('.slide-item.active');
+            if (prevActive) prevActive.classList.remove('active');
+            
+            currentIndex = index;
+            const currentItem = document.getElementById(`slide-item-${currentIndex}`);
+            if (currentItem) {
+                currentItem.classList.add('active');
+                currentItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            // Update UI elements
+            currentIdxLabel.textContent = String(currentIndex + 1).padStart(2, '0');
+            btnPrev.disabled = currentIndex === 0;
+            btnNext.disabled = currentIndex === slides.length - 1;
+            
+            // Load in iframe
+            iframe.src = slides[currentIndex].path;
+            
+            // Update hash route without triggering full page refresh
+            history.replaceState(null, null, `#slide=${currentIndex + 1}`);
+
+            // Reset autoplay timer if active
+            if (autoplayInterval) {
+                resetAutoplayTimer();
+            }
+        }
+
+        function nextSlide() {
+            if (currentIndex < slides.length - 1) {
+                goToSlide(currentIndex + 1);
+            } else if (autoplayInterval) {
+                // If it's the last slide and playing, stop autoplay
+                stopAutoplay();
+            }
+        }
+
+        function prevSlide() {
+            if (currentIndex > 0) {
+                goToSlide(currentIndex - 1);
+            }
+        }
+
+        // Hash Routing handler
+        function handleHashChange() {
+            const hash = window.location.hash;
+            const match = hash.match(/#slide=(\d+)/);
+            if (match) {
+                const targetIdx = parseInt(match[1], 10) - 1;
+                if (targetIdx >= 0 && targetIdx < slides.length && targetIdx !== currentIndex) {
+                    goToSlide(targetIdx);
+                    return;
+                }
+            }
+            // Fallback to load current slide
+            goToSlide(currentIndex);
+        }
+
+        // Keyboard handler
+        function handleKeyDown(e) {
+            switch (e.key) {
+                case 'ArrowRight':
+                case 'Spacebar':
+                case ' ':
+                case 'PageDown':
+                    e.preventDefault();
+                    nextSlide();
+                    break;
+                case 'ArrowLeft':
+                case 'PageUp':
+                    e.preventDefault();
+                    prevSlide();
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    goToSlide(0);
+                    break;
+                case 'End':
+                    e.preventDefault();
+                    goToSlide(slides.length - 1);
+                    break;
+                case 'l':
+                case 'L':
+                    toggleDrawer();
+                    break;
+                case 'p':
+                case 'P':
+                    toggleAutoplay();
+                    break;
+                case 'f':
+                case 'F':
+                    toggleFullscreen();
+                    break;
+                case 'h':
+                case 'H':
+                    helpBox.classList.toggle('hidden');
+                    break;
+            }
+        }
+
+        // Inject keyboard forwarder inside iframe so clicking inside it doesn't break presentation arrow keys
+        iframe.addEventListener('load', () => {
+            try {
+                const iframeWindow = iframe.contentWindow;
+                const iframeDoc = iframe.contentDocument || iframeWindow.document;
+                
+                // Add stylesheet dynamically inside iframe to hide scrollbars if they appear
+                const style = iframeDoc.createElement('style');
+                style.textContent = `
+                    body, html, .slide-container {
+                        overflow: hidden !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        width: 1920px !important;
+                        height: 1080px !important;
+                    }
+                `;
+                iframeDoc.head.appendChild(style);
+
+                // Forward keydown
+                iframeDoc.addEventListener('keydown', (e) => {
+                    const event = new KeyboardEvent('keydown', {
+                        key: e.key,
+                        code: e.code,
+                        keyCode: e.keyCode,
+                        which: e.which,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    window.dispatchEvent(event);
+                });
+
+                // Show control bar on mousemove inside iframe
+                iframeDoc.addEventListener('mousemove', () => {
+                    showControls();
+                });
+
+                // Close drawer if clicking on slide content
+                iframeDoc.addEventListener('click', () => {
+                    if (!sidebar.classList.contains('collapsed') && window.innerWidth < 1200) {
+                        toggleDrawer();
+                    }
+                });
+
+            } catch (err) {
+                console.log("Could not configure iframe internal event handlers due to sandbox or CORS.", err);
+            }
+        });
+
+        // Sidebar drawer controls
+        function toggleDrawer() {
+            sidebar.classList.toggle('collapsed');
+            // Trigger resize after animation to adjust container sizing
+            setTimeout(resizeSlides, 400);
+        }
+
+        function closeDrawer() {
+            sidebar.classList.add('collapsed');
+            setTimeout(resizeSlides, 400);
+        }
+
+        // Fullscreen API toggle
+        function toggleFullscreen() {
+            const fsIcon = document.getElementById('fullscreen-icon');
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().then(() => {
+                    fsIcon.textContent = 'fullscreen_exit';
+                }).catch(err => {
+                    console.error(`Error enabling fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+                fsIcon.textContent = 'fullscreen';
+            }
+        }
+
+        // Fullscreen listener to update icon if exited via Esc key
+        document.addEventListener('fullscreenchange', () => {
+            const fsIcon = document.getElementById('fullscreen-icon');
+            if (!document.fullscreenElement) {
+                fsIcon.textContent = 'fullscreen';
+            } else {
+                fsIcon.textContent = 'fullscreen_exit';
+            }
+            resizeSlides();
+        });
+
+        // Autoplay controller logic
+        function toggleAutoplay() {
+            if (autoplayInterval) {
+                stopAutoplay();
+            } else {
+                startAutoplay();
+            }
+        }
+
+        function startAutoplay() {
+            autoplayDuration = parseInt(document.getElementById('autoplay-speed').value, 10);
+            playIcon.textContent = 'pause';
+            playIcon.parentNode.classList.add('btn-active');
+            
+            resetAutoplayTimer();
+        }
+
+        function stopAutoplay() {
+            if (autoplayInterval) {
+                clearInterval(autoplayInterval);
+                autoplayInterval = null;
+            }
+            if (autoplayProgressFrame) {
+                cancelAnimationFrame(autoplayProgressFrame);
+                autoplayProgressFrame = null;
+            }
+            playIcon.textContent = 'play_arrow';
+            playIcon.parentNode.classList.remove('btn-active');
+            autoplayProgress.style.width = '0%';
+        }
+
+        function resetAutoplayTimer() {
+            if (autoplayInterval) {
+                clearInterval(autoplayInterval);
+            }
+            if (autoplayProgressFrame) {
+                cancelAnimationFrame(autoplayProgressFrame);
+            }
+
+            autoplayStartTime = Date.now();
+            autoplayInterval = setInterval(() => {
+                nextSlide();
+            }, autoplayDuration);
+
+            updateAutoplayProgressBar();
+        }
+
+        function updateAutoplayProgressBar() {
+            const elapsed = Date.now() - autoplayStartTime;
+            const percentage = Math.min((elapsed / autoplayDuration) * 100, 100);
+            autoplayProgress.style.width = `${percentage}%`;
+
+            if (autoplayInterval) {
+                autoplayProgressFrame = requestAnimationFrame(updateAutoplayProgressBar);
+            }
+        }
+
+        function updateAutoplaySpeed() {
+            if (autoplayInterval) {
+                startAutoplay(); // restart with new speed
+            }
+        }
+
+        // Floating Control Bar Auto-hide on mouse inactivity
+        function showControls() {
+            controls.classList.remove('hidden');
+            document.body.style.cursor = 'default';
+            
+            clearTimeout(controlsTimeout);
+            
+            // Auto hide controls after 3 seconds of inactivity (only if not hovering controls)
+            controlsTimeout = setTimeout(() => {
+                if (!controls.matches(':hover') && !sidebar.matches(':hover')) {
+                    controls.classList.add('hidden');
+                    // Also hide mouse cursor for cleaner presentation view
+                    document.body.style.cursor = 'none';
+                }
+            }, 3000);
+        }
+
+        function setupAutoHideControls() {
+            document.addEventListener('mousemove', showControls);
+            document.addEventListener('click', showControls);
+            controls.addEventListener('mouseenter', () => {
+                clearTimeout(controlsTimeout);
+            });
+            controls.addEventListener('mouseleave', showControls);
+        }
+
+        // Run
+        window.onload = init;
+    </script>
+</body>
+</html>

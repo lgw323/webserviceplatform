@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <title>13 · Verification Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <div class="slide-container" data-screen-label="13 Verification Dashboard">
+
+        <!-- Tracker & Header Title -->
+        <div data-object="true" data-object-type="textbox"
+            style="position:absolute;left:120px;top:100px;width:1100px;z-index:10;">
+            <div class="header-tracker">13 / SYSTEM ALIGNMENT &amp; QA METRICS</div>
+            <div class="header-title">기획-코드 정합성 품질 검증 (Verification)</div>
+            <div class="header-rule"></div>
+        </div>
+
+        <!-- Central Verification Pipeline Track -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:120px;top:240px;width:1680px;height:160px;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:0 50px;background:rgba(22, 26, 24, 0.95);border-color:var(--accent-mint);">
+
+            <!-- Flow Block 1 -->
+            <div style="text-align:center;position:relative;flex:1;">
+                <div
+                    style="font-family:var(--font-mono);font-size:26px;font-weight:900;color:var(--accent-mint);margin-bottom:8px;">
+                    Feature Audit</div>
+                <div style="font-size:16px;color:#85908C;">요구사항 기능 전수 감사</div>
+                <div
+                    style="position:absolute;right:-15px;top:50%;transform:translateY(-50%);font-size:24px;color:rgba(61, 242, 148, 0.3);font-family:var(--font-mono);">
+                    ➔</div>
+            </div>
+
+            <!-- Flow Block 2 -->
+            <div style="text-align:center;position:relative;flex:1;">
+                <div
+                    style="font-family:var(--font-mono);font-size:26px;font-weight:900;color:var(--accent-mint);margin-bottom:8px;">
+                    RTM Tracking</div>
+                <div style="font-size:16px;color:#85908C;">요구사항 추적표 교차 대조</div>
+                <div
+                    style="position:absolute;right:-15px;top:50%;transform:translateY(-50%);font-size:24px;color:rgba(61, 242, 148, 0.3);font-family:var(--font-mono);">
+                    ➔</div>
+            </div>
+
+            <!-- Flow Block 3 -->
+            <div style="text-align:center;position:relative;flex:1;">
+                <div
+                    style="font-family:var(--font-mono);font-size:26px;font-weight:900;color:var(--accent-mint);margin-bottom:8px;">
+                    Gap Analysis</div>
+                <div style="font-size:16px;color:#85908C;">기획-코드 구현 격차 도출</div>
+                <div
+                    style="position:absolute;right:-15px;top:50%;transform:translateY(-50%);font-size:24px;color:rgba(61, 242, 148, 0.3);font-family:var(--font-mono);">
+                    ➔</div>
+            </div>
+
+            <!-- Flow Block 4 -->
+            <div style="text-align:center;flex:1;">
+                <div
+                    style="font-family:var(--font-mono);font-size:26px;font-weight:900;color:var(--accent-mint);margin-bottom:8px;">
+                    Sync QA Integration</div>
+                <div style="font-size:16px;color:#85908C;">격차 제거 및 신규 통합 검증</div>
+            </div>
+
+        </div>
+
+        <!-- Horizontal Results Count Cards (Big Typography, no textual fluff) -->
+
+        <!-- Card 1 -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:120px;top:440px;width:380px;height:340px;z-index:5;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:30px;">
+            <div
+                style="font-family:var(--font-mono);font-size:72px;font-weight:900;color:var(--accent-mint);line-height:1;">
+                100%</div>
+            <div style="font-size:22px;font-weight:700;color:#FFFFFF;margin-top:15px;text-align:center;">핵심 요구사항 구현 완료</div>
+            <div style="font-size:16px;color:#85908C;margin-top:10px;text-align:center;">기획 명세서 기준 13개 핵심 기획 기능 전수 가동 상태
+                확인</div>
+        </div>
+
+        <!-- Card 2 -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:550px;top:440px;width:380px;height:340px;z-index:5;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:30px;border-color:var(--accent-coral);">
+            <div
+                style="font-family:var(--font-mono);font-size:72px;font-weight:900;color:var(--accent-coral);line-height:1;">
+                0건</div>
+            <div style="font-size:22px;font-weight:700;color:#FFFFFF;margin-top:15px;text-align:center;">기능 완전 누락</div>
+            <div style="font-size:16px;color:#85908C;margin-top:10px;text-align:center;">RTM 매트릭스 비교 시 미구현 유실 및 유실 컴포넌트
+                제로화 달성</div>
+        </div>
+
+        <!-- Card 3 -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:980px;top:440px;width:380px;height:340px;z-index:5;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:30px;">
+            <div style="font-family:var(--font-mono);font-size:72px;font-weight:900;color:#FFFFFF;line-height:1;">40+
+            </div>
+            <div style="font-size:22px;font-weight:700;color:#FFFFFF;margin-top:15px;text-align:center;">API 엔드포인트 동작</div>
+            <div style="font-size:16px;color:#85908C;margin-top:10px;text-align:center;">프론트엔드-백엔드 런타임 40여 개 핵심 서비스 경로
+                전수 검사 완수</div>
+        </div>
+
+        <!-- Card 4 -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:1410px;top:440px;width:380px;height:340px;z-index:5;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:30px;">
+            <div
+                style="font-family:var(--font-mono);font-size:72px;font-weight:900;color:var(--accent-mint);line-height:1;">
+                11개</div>
+            <div style="font-size:22px;font-weight:700;color:#FFFFFF;margin-top:15px;text-align:center;">기획 외 신규 가치 추가</div>
+            <div style="font-size:16px;color:#85908C;margin-top:10px;text-align:center;">원안 외 마이페이지 탭, 관리자 대시보드 고도화, 2차
+                보안 검증 등 개선</div>
+        </div>
+
+        <!-- Bottom Details (reserving 40%+ negative space easily) -->
+        <div data-object="true" data-object-type="textbox"
+            style="position:absolute;left:120px;top:910px;width:1680px;font-size:22px;color:#606B67;text-align:center;z-index:10;">
+            기획 명세 대비 실제 구동 코드의 무중단 검증 파이프라인을 최종 수립하여 플랫폼 완성도를 객적으로 입증했습니다.
+        </div>
+
+    </div>
+</body>
+
+</html>

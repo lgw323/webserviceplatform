@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <title>05 · Technology Philosophy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <style>
+        .flow-line {
+            position: absolute;
+            border-left: 2px dashed rgba(61, 242, 148, 0.4);
+            width: 2px;
+            z-index: 2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slide-container" data-screen-label="05 Technology Philosophy">
+
+        <!-- Tracker & Header Title -->
+        <div data-object="true" data-object-type="textbox"
+            style="position:absolute;left:120px;top:100px;width:800px;z-index:10;">
+            <div class="header-tracker">05 / ARCHITECTURE PHILOSOPHY</div>
+            <div class="header-title">기술 철학 — 왜 이 기술인가</div>
+            <div class="header-rule"></div>
+        </div>
+
+        <!-- Connection Lines (Neon Mint Dashed Flow) -->
+        <div data-object="true" data-object-type="shape" class="flow-line" style="left:780px;top:380px;height:50px;">
+        </div>
+        <div data-object="true" data-object-type="shape" class="flow-line" style="left:1140px;top:590px;height:50px;">
+        </div>
+
+        <!-- Diagonal Cascade Cards -->
+        <!-- Client Layer Card (Top-Left block) -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:380px;top:220px;width:800px;height:160px;z-index:5;display:flex;align-items:center;">
+            <div
+                style="flex: 0 0 180px;font-family:var(--font-mono);font-size:24px;font-weight:900;color:var(--accent-mint);border-right:1px solid rgba(61, 242, 148, 0.2);padding-right:20px;margin-right:30px;">
+                Client Layer
+            </div>
+            <div style="flex: 1;">
+                <div style="font-size:22px;font-weight:700;color:#FFFFFF;margin-bottom:10px;">
+                    React 18 + Vite · Zustand · TailwindCSS
+                </div>
+                <div style="font-size:18px;color:#85908C;line-height:1.5;">
+                    • 컴포넌트 기반 SPA 최적화 관리 및 Redux 대비 보일러플레이트 90% 절감<br>
+                    • 다크/라이트 테마 런타임 제어 및 정적 렌더링 무오류 가동
+                </div>
+            </div>
+        </div>
+
+        <!-- Server Layer Card (Middle block) -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:560px;top:430px;width:800px;height:160px;z-index:5;display:flex;align-items:center;border-color:var(--accent-mint);">
+            <div
+                style="flex: 0 0 180px;font-family:var(--font-mono);font-size:24px;font-weight:900;color:var(--accent-mint);border-right:1px solid rgba(61, 242, 148, 0.2);padding-right:20px;margin-right:30px;">
+                Server Layer
+            </div>
+            <div style="flex: 1;">
+                <div style="font-size:22px;font-weight:700;color:#FFFFFF;margin-bottom:10px;">
+                    Node.js + Express · Passport.js · JWT 이중 토큰
+                </div>
+                <div style="font-size:18px;color:#85908C;line-height:1.5;">
+                    • Steam OpenID + Riot OAuth 2.0 연동 및 무상태 Serverless 환경 이중 보안<br>
+                    • JS 풀스택 단일 언어 구현으로 런타임 통신 효율성 강화
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Layer Card (Bottom-Right block) -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:740px;top:640px;width:800px;height:160px;z-index:5;display:flex;align-items:center;">
+            <div
+                style="flex: 0 0 180px;font-family:var(--font-mono);font-size:24px;font-weight:900;color:var(--accent-mint);border-right:1px solid rgba(61, 242, 148, 0.2);padding-right:20px;margin-right:30px;">
+                Data Layer
+            </div>
+            <div style="flex: 1;">
+                <div style="font-size:22px;font-weight:700;color:#FFFFFF;margin-bottom:10px;">
+                    PostgreSQL (Neon) · In-Memory Fallback
+                </div>
+                <div style="font-size:18px;color:#85908C;line-height:1.5;">
+                    • 클라우드 관계형 데이터 모델링 및 Vercel 네이티브 연동 최적화<br>
+                    • 메인 DB 장애 감지 시 In-Memory Fallback 아키텍처로 실시간 극복 (서비스 중단 0초)
+                </div>
+            </div>
+        </div>
+
+        <!-- Left/Right Negative Space Info (WCAG text-floor respected) -->
+        <div data-object="true" data-object-type="textbox"
+            style="position:absolute;left:120px;top:910px;width:1680px;font-size:24px;color:#85908C;font-weight:300;line-height:1.6;z-index:10;">
+            단순한 스택 도입을 넘어, <strong style="color:#FFFFFF;font-weight:700;">실서비스의 가용성과 유지보수성, 보안 규격</strong>을 극대화하기 위해 검증된
+            엔지니어링 의사결정을 적용했습니다.
+        </div>
+
+    </div>
+</body>
+
+</html>

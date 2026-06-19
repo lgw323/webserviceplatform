@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <title>12 · Agile Engineering Decisions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <div class="slide-container" data-screen-label="12 Agile Decisions">
+
+        <!-- Tracker & Header Title -->
+        <div data-object="true" data-object-type="textbox"
+            style="position:absolute;left:120px;top:100px;width:1200px;z-index:10;">
+            <div class="header-tracker">12 / DATA-DRIVEN REFACTORING &amp; ENG DECISIONS</div>
+            <div class="header-title">실전에서 검증된 애자일 의사결정 (Before ➔ After)</div>
+            <div class="header-rule"></div>
+        </div>
+
+        <!-- 3 Horizontal "Before -> After" Cards -->
+
+        <!-- Decision 1 -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:120px;top:260px;width:1680px;height:180px;z-index:5;display:flex;padding:0;overflow:hidden;">
+            <div
+                style="flex:0 0 100px;background:rgba(61, 242, 148, 0.1);display:flex;flex-direction:column;justify-content:center;align-items:center;border-right:1px solid rgba(61, 242, 148, 0.2);">
+                <span
+                    style="font-family:var(--font-mono);font-size:26px;font-weight:900;color:var(--accent-mint);">DEC<br>01</span>
+            </div>
+
+            <div
+                style="flex:1;display:grid;grid-template-columns:1.2fr 1fr 1fr;padding:25px;align-items:center;gap:30px;">
+                <div>
+                    <div style="font-size:24px;font-weight:700;color:#FFFFFF;margin-bottom:5px;">매칭 가중치 알고리즘 최적화</div>
+                    <div style="font-size:16px;color:#85908C;line-height:1.4;">실측 인게임 벤치마크 테스트에서 CPU 기여도가 당초 예측 설계 대비 약
+                        3배 높게 확인됨.</div>
+                </div>
+                <div
+                    style="background:rgba(255, 138, 101, 0.08);border:1px dashed rgba(255, 138, 101, 0.3);border-radius:8px;padding:15px 25px;height:80px;display:flex;flex-direction:column;justify-content:center;">
+                    <span
+                        style="font-family:var(--font-mono);font-size:14px;color:var(--accent-coral);text-transform:uppercase;">기존
+                        설계 (BEFORE)</span>
+                    <span style="font-size:18px;color:#FFFFFF;font-weight:700;margin-top:5px;">해상도 가중치 30% · CPU
+                        10%</span>
+                </div>
+                <div
+                    style="background:rgba(61, 242, 148, 0.08);border:1px solid rgba(61, 242, 148, 0.3);border-radius:8px;padding:15px 25px;height:80px;display:flex;flex-direction:column;justify-content:center;">
+                    <span
+                        style="font-family:var(--font-mono);font-size:14px;color:var(--accent-mint);text-transform:uppercase;">애자일
+                        개선 (AFTER)</span>
+                    <span style="font-size:18px;color:var(--accent-mint);font-weight:900;margin-top:5px;">CPU 가중치 30% ·
+                        해상도 10%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Decision 2 -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:120px;top:470px;width:1680px;height:180px;z-index:5;display:flex;padding:0;overflow:hidden;border-color:var(--accent-mint);">
+            <div
+                style="flex:0 0 100px;background:rgba(61, 242, 148, 0.1);display:flex;flex-direction:column;justify-content:center;align-items:center;border-right:1px solid rgba(61, 242, 148, 0.2);">
+                <span
+                    style="font-family:var(--font-mono);font-size:26px;font-weight:900;color:var(--accent-mint);">DEC<br>02</span>
+            </div>
+
+            <div
+                style="flex:1;display:grid;grid-template-columns:1.2fr 1fr 1fr;padding:25px;align-items:center;gap:30px;">
+                <div>
+                    <div style="font-size:24px;font-weight:700;color:#FFFFFF;margin-bottom:5px;">하드웨어 유사도 필터 완화</div>
+                    <div style="font-size:16px;color:#85908C;line-height:1.4;">극초기 테스트 가동 시 지나치게 협소한 매칭 한계로 유저 검색 결과가 상시
+                        누락(0건)되는 오류 완화.</div>
+                </div>
+                <div
+                    style="background:rgba(255, 138, 101, 0.08);border:1px dashed rgba(255, 138, 101, 0.3);border-radius:8px;padding:15px 25px;height:80px;display:flex;flex-direction:column;justify-content:center;">
+                    <span
+                        style="font-family:var(--font-mono);font-size:14px;color:var(--accent-coral);text-transform:uppercase;">기존
+                        설계 (BEFORE)</span>
+                    <span style="font-size:18px;color:#FFFFFF;font-weight:700;margin-top:5px;">L1-Norm 오차율 90%+
+                        기준</span>
+                </div>
+                <div
+                    style="background:rgba(61, 242, 148, 0.08);border:1px solid rgba(61, 242, 148, 0.3);border-radius:8px;padding:15px 25px;height:80px;display:flex;flex-direction:column;justify-content:center;">
+                    <span
+                        style="font-family:var(--font-mono);font-size:14px;color:var(--accent-mint);text-transform:uppercase;">애자일
+                        개선 (AFTER)</span>
+                    <span style="font-size:18px;color:var(--accent-mint);font-weight:900;margin-top:5px;">80% 오차 기준으로 완화
+                        (다양성)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Decision 3 -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:120px;top:680px;width:1680px;height:180px;z-index:5;display:flex;padding:0;overflow:hidden;">
+            <div
+                style="flex:0 0 100px;background:rgba(61, 242, 148, 0.1);display:flex;flex-direction:column;justify-content:center;align-items:center;border-right:1px solid rgba(61, 242, 148, 0.2);">
+                <span
+                    style="font-family:var(--font-mono);font-size:26px;font-weight:900;color:var(--accent-mint);">DEC<br>03</span>
+            </div>
+
+            <div
+                style="flex:1;display:grid;grid-template-columns:1.2fr 1fr 1fr;padding:25px;align-items:center;gap:30px;">
+                <div>
+                    <div style="font-size:24px;font-weight:700;color:#FFFFFF;margin-bottom:5px;">배포 클라우드 인프라 전환</div>
+                    <div style="font-size:16px;color:#85908C;line-height:1.4;">1인 개발 산출 프로젝트에서 과도한 인프라 분산 및 AWS 아키텍처
+                        오버헤드 완화 결정.</div>
+                </div>
+                <div
+                    style="background:rgba(255, 138, 101, 0.08);border:1px dashed rgba(255, 138, 101, 0.3);border-radius:8px;padding:15px 25px;height:80px;display:flex;flex-direction:column;justify-content:center;">
+                    <span
+                        style="font-family:var(--font-mono);font-size:14px;color:var(--accent-coral);text-transform:uppercase;">기존
+                        설계 (BEFORE)</span>
+                    <span style="font-size:18px;color:#FFFFFF;font-weight:700;margin-top:5px;">Docker + K8s + AWS
+                        구축</span>
+                </div>
+                <div
+                    style="background:rgba(61, 242, 148, 0.08);border:1px solid rgba(61, 242, 148, 0.3);border-radius:8px;padding:15px 25px;height:80px;display:flex;flex-direction:column;justify-content:center;">
+                    <span
+                        style="font-family:var(--font-mono);font-size:14px;color:var(--accent-mint);text-transform:uppercase;">애자일
+                        개선 (AFTER)</span>
+                    <span style="font-size:18px;color:var(--accent-mint);font-weight:900;margin-top:5px;">Vercel
+                        Serverless 무중단 배포</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Information -->
+        <div data-object="true" data-object-type="textbox"
+            style="position:absolute;left:120px;top:890px;width:1680px;font-size:22px;color:#606B67;text-align:center;z-index:10;">
+            기획 명세서 수준의 정적 요구사항에 매몰되지 않고, 실제 유저 가치 검증에 최적화된 하이엔드 엔지니어링 리팩토링을 집행했습니다.
+        </div>
+
+    </div>
+</body>
+
+</html>
