@@ -10,14 +10,6 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="../assets/style.css">
-    <style>
-        .flow-line {
-            position: absolute;
-            border-left: 2px dashed rgba(61, 242, 148, 0.4);
-            width: 2px;
-            z-index: 2;
-        }
-    </style>
 </head>
 
 <body>
@@ -25,78 +17,108 @@
 
         <!-- Tracker & Header Title -->
         <div data-object="true" data-object-type="textbox"
-            style="position:absolute;left:120px;top:100px;width:800px;z-index:10;">
+            style="position:absolute;left:120px;top:100px;width:1200px;z-index:10;">
             <div class="header-tracker">05 / ARCHITECTURE PHILOSOPHY</div>
-            <div class="header-title">기술 철학 — 왜 이 기술인가</div>
-            <div class="header-rule"></div>
-        </div>
+            <div class="header-title" style="font-size:52px;">기술 철학 — 서비스 가용성을 위한 요청 처리 흐름</div>
+            <div cl        <!-- Diagonal Step-Cascade Layout with 3D Perspective -->
 
-        <!-- Connection Lines (Neon Mint Dashed Flow) -->
-        <div data-object="true" data-object-type="shape" class="flow-line" style="left:780px;top:380px;height:50px;">
-        </div>
-        <div data-object="true" data-object-type="shape" class="flow-line" style="left:1140px;top:590px;height:50px;">
-        </div>
-
-        <!-- Diagonal Cascade Cards -->
-        <!-- Client Layer Card (Top-Left block) -->
+        <!-- Step 1: Client Request (Top-Left) -->
         <div data-object="true" data-object-type="shape" class="glass-card"
-            style="position:absolute;left:380px;top:220px;width:800px;height:160px;z-index:5;display:flex;align-items:center;">
-            <div
-                style="flex: 0 0 180px;font-family:var(--font-mono);font-size:24px;font-weight:900;color:var(--accent-mint);border-right:1px solid rgba(61, 242, 148, 0.2);padding-right:20px;margin-right:30px;">
-                Client Layer
+            style="position:absolute;left:120px;top:260px;width:520px;height:340px;z-index:10;padding:36px;transform:perspective(1200px) rotateX(10deg) rotateY(15deg);box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <!-- Ghost Number -->
+            <div style="font-family:var(--font-mono);font-size:72px;font-weight:900;color:rgba(61, 242, 148, 0.12);position:absolute;right:28px;top:16px;line-height:1;">
+                01</div>
+            <div style="display:flex;align-items:center;margin-bottom:18px;">
+                <div style="width:48px;height:48px;background:rgba(61, 242, 148, 0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-right:14px;border:1px solid rgba(61, 242, 148, 0.3);">
+                    <span style="font-family:var(--font-mono);font-size:18px;color:var(--accent-mint);font-weight:700;">UI</span>
+                </div>
+                <div>
+                    <div style="font-family:var(--font-mono);font-size:14px;color:var(--accent-mint);letter-spacing:0.15em;">REQUEST START</div>
+                    <div style="font-size:28px;font-weight:900;color:#FFFFFF;">Client UI 레이어</div>
+                </div>
             </div>
-            <div style="flex: 1;">
-                <div style="font-size:22px;font-weight:700;color:#FFFFFF;margin-bottom:10px;">
-                    React 18 + Vite · Zustand · TailwindCSS
-                </div>
-                <div style="font-size:18px;color:#85908C;line-height:1.5;">
-                    • 컴포넌트 기반 SPA 최적화 관리 및 Redux 대비 보일러플레이트 90% 절감<br>
-                    • 다크/라이트 테마 런타임 제어 및 정적 렌더링 무오류 가동
-                </div>
+
+            <div style="background:#161A18;border:1px solid rgba(61, 242, 148, 0.15);border-radius:8px;padding:14px;margin-bottom:18px;font-family:var(--font-mono);font-size:20px;color:var(--accent-mint);text-align:center;">
+                React 18 &middot; Zustand &middot; Tailwind
+            </div>
+
+            <div style="font-size:20px;color:#B5C0BC;line-height:1.6;font-weight:300;text-wrap:pretty;">
+                유저가 브라우저에서 게임 최적화 추천 요청이나 커뮤니티 상호작용 등의 요청을 보내는 프론트엔드 시작점입니다.
             </div>
         </div>
 
-        <!-- Server Layer Card (Middle block) -->
+        <!-- Step 2: Server Layer (Center, highlighted) -->
         <div data-object="true" data-object-type="shape" class="glass-card"
-            style="position:absolute;left:560px;top:430px;width:800px;height:160px;z-index:5;display:flex;align-items:center;border-color:var(--accent-mint);">
-            <div
-                style="flex: 0 0 180px;font-family:var(--font-mono);font-size:24px;font-weight:900;color:var(--accent-mint);border-right:1px solid rgba(61, 242, 148, 0.2);padding-right:20px;margin-right:30px;">
-                Server Layer
+            style="position:absolute;left:650px;top:380px;width:580px;height:400px;z-index:30;padding:40px;border:2px solid var(--accent-mint);background:rgba(30, 37, 34, 0.98);transform:perspective(1200px) rotateX(10deg) rotateY(-10deg) scale(1.05);box-shadow: 0 30px 60px rgba(61, 242, 148, 0.15);">
+            <!-- Ghost Number -->
+            <div style="font-family:var(--font-mono);font-size:72px;font-weight:900;color:rgba(61, 242, 148, 0.25);position:absolute;right:32px;top:16px;line-height:1;">
+                02</div>
+            <div style="display:flex;align-items:center;margin-bottom:22px;">
+                <div style="width:54px;height:54px;background:rgba(61, 242, 148, 0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-right:15px;border:1px solid var(--accent-mint);">
+                    <span style="font-family:var(--font-mono);font-size:22px;color:var(--accent-mint);font-weight:700;">JWT</span>
+                </div>
+                <div>
+                    <div style="font-family:var(--font-mono);font-size:14px;color:var(--accent-mint);letter-spacing:0.15em;">AUTH & ROUTING</div>
+                    <div style="font-size:30px;font-weight:900;color:#FFFFFF;">Server 인증 및 처리 레이어</div>
+                </div>
             </div>
-            <div style="flex: 1;">
-                <div style="font-size:22px;font-weight:700;color:#FFFFFF;margin-bottom:10px;">
-                    Node.js + Express · Passport.js · JWT 이중 토큰
-                </div>
-                <div style="font-size:18px;color:#85908C;line-height:1.5;">
-                    • Steam OpenID + Riot OAuth 2.0 연동 및 무상태 Serverless 환경 이중 보안<br>
-                    • JS 풀스택 단일 언어 구현으로 런타임 통신 효율성 강화
-                </div>
+
+            <div style="background:#161A18;border:1px solid var(--accent-mint);border-radius:8px;padding:16px;margin-bottom:20px;font-family:var(--font-mono);font-size:20px;color:var(--accent-mint);text-align:center;">
+                Node.js &middot; Express &middot; JWT Token
+            </div>
+
+            <div style="font-size:22px;color:#FFFFFF;line-height:1.6;font-weight:300;text-wrap:pretty;">
+                클라이언트에서 전송된 보안 검증 토큰(JWT)의 유효성을 서버리스 배포 환경에서 안전하게 인증하고 백엔드 라우팅 및 데이터 처리를 조율합니다.
             </div>
         </div>
 
-        <!-- Data Layer Card (Bottom-Right block) -->
+        <!-- Step 3: Data Layer (Bottom-Right) -->
         <div data-object="true" data-object-type="shape" class="glass-card"
-            style="position:absolute;left:740px;top:640px;width:800px;height:160px;z-index:5;display:flex;align-items:center;">
-            <div
-                style="flex: 0 0 180px;font-family:var(--font-mono);font-size:24px;font-weight:900;color:var(--accent-mint);border-right:1px solid rgba(61, 242, 148, 0.2);padding-right:20px;margin-right:30px;">
-                Data Layer
+            style="position:absolute;left:1300px;top:500px;width:520px;height:340px;z-index:20;padding:36px;transform:perspective(1200px) rotateX(10deg) rotateY(15deg);box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <!-- Ghost Number -->
+            <div style="font-family:var(--font-mono);font-size:72px;font-weight:900;color:rgba(61, 242, 148, 0.12);position:absolute;right:28px;top:16px;line-height:1;">
+                03</div>
+            <div style="display:flex;align-items:center;margin-bottom:18px;">
+                <div style="width:48px;height:48px;background:rgba(61, 242, 148, 0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-right:14px;border:1px solid rgba(61, 242, 148, 0.3);">
+                    <span style="font-family:var(--font-mono);font-size:18px;color:var(--accent-mint);font-weight:700;">DB</span>
+                </div>
+                <div>
+                    <div style="font-family:var(--font-mono);font-size:14px;color:var(--accent-mint);letter-spacing:0.15em;">DATA FAULT TOLERANCE</div>
+                    <div style="font-size:28px;font-weight:900;color:#FFFFFF;">Data 저장 및 우회 가동</div>
+                </div>
             </div>
-            <div style="flex: 1;">
-                <div style="font-size:22px;font-weight:700;color:#FFFFFF;margin-bottom:10px;">
-                    PostgreSQL (Neon) · In-Memory Fallback
-                </div>
-                <div style="font-size:18px;color:#85908C;line-height:1.5;">
-                    • 클라우드 관계형 데이터 모델링 및 Vercel 네이티브 연동 최적화<br>
-                    • 메인 DB 장애 감지 시 In-Memory Fallback 아키텍처로 실시간 극복 (서비스 중단 0초)
-                </div>
+
+            <div style="background:#161A18;border:1px solid rgba(61, 242, 148, 0.15);border-radius:8px;padding:14px;margin-bottom:18px;font-family:var(--font-mono);font-size:20px;color:var(--accent-mint);text-align:center;">
+                Postgres &middot; In-Memory Fallback
+            </div>
+
+            <div style="font-size:20px;color:#B5C0BC;line-height:1.6;font-weight:300;text-wrap:pretty;">
+                최적화 데이터베이스를 조회하며, 만약 외부 DB 서버 연결에 장애가 발생할 경우 즉시 <strong>In-Memory Mock DB</strong>로 자동 스위칭(즉각 우회)하여 서비스 가용성을 보장합니다.
             </div>
         </div>
 
-        <!-- Left/Right Negative Space Info (WCAG text-floor respected) -->
+        <!-- SVG Connector Arrows -->
+        <svg data-object="true" data-object-type="shape"
+            style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;z-index:2;"
+            viewBox="0 0 1920 1080">
+            <defs>
+                <marker id="arrow05" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6"
+                    orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(61, 242, 148, 0.35)" />
+                </marker>
+            </defs>
+            <!-- Arrow 1→2 -->
+            <path d="M 640 430 L 650 435" fill="none" stroke="rgba(61, 242, 148, 0.3)" stroke-width="4"
+                marker-end="url(#arrow05)" />
+            <!-- Arrow 2→3 -->
+            <path d="M 1230 580 L 1300 600" fill="none" stroke="rgba(61, 242, 148, 0.3)" stroke-width="4"
+                marker-end="url(#arrow05)" />
+        </svg>
+
+        <!-- Bottom Summary -->
         <div data-object="true" data-object-type="textbox"
-            style="position:absolute;left:120px;top:910px;width:1680px;font-size:24px;color:#85908C;font-weight:300;line-height:1.6;z-index:10;">
-            단순한 스택 도입을 넘어, <strong style="color:#FFFFFF;font-weight:700;">실서비스의 가용성과 유지보수성, 보안 규격</strong>을 극대화하기 위해 검증된
-            엔지니어링 의사결정을 적용했습니다.
+            style="position:absolute;left:120px;top:910px;width:1680px;font-size:24px;color:#85908C;font-weight:300;line-height:1.6;z-index:10;text-align:center;">
+            사용자의 단일 요청(Request)이 웹 프론트엔드와 백엔드를 거쳐 데이터베이스 레이어까지 <strong style="color:#FFFFFF;font-weight:700;">지속 가능하고 안정적으로 흐르는 아키텍처</strong>입니다.
         </div>
 
     </div>
