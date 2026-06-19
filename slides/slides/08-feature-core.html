@@ -31,16 +31,20 @@
             <!-- Pseudo Mockup Image Component (WCAG 24px+ respected) -->
             <div
                 style="width:100%;height:240px;background:#161A18;border:1px solid rgba(61, 242, 148, 0.1);border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
-                <div
-                    style="position:absolute;inset:0;background-image:linear-gradient(rgba(61, 242, 148, 0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(61, 242, 148, 0.015) 1px, transparent 1px);background-size:20px 20px;">
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;">
+                    <div
+                        style="position:absolute;inset:0;background-image:linear-gradient(rgba(61, 242, 148, 0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(61, 242, 148, 0.015) 1px, transparent 1px);background-size:20px 20px;">
+                    </div>
+                    <!-- Virtual Chart Graphic inside -->
+                    <div
+                        style="font-family:var(--font-mono);font-size:16px;color:var(--accent-mint);text-align:center;line-height:1.6;z-index:2;">
+                        [Recharts Playtime Trend]<br>
+                        <span style="font-size:28px;font-weight:700;color:#FFFFFF;">42.8 Hrs</span><br>
+                        Avg Play Session Tracked
+                    </div>
                 </div>
-                <!-- Virtual Chart Graphic inside -->
-                <div
-                    style="font-family:var(--font-mono);font-size:16px;color:var(--accent-mint);text-align:center;line-height:1.6;z-index:2;">
-                    [Recharts Playtime Trend]<br>
-                    <span style="font-size:28px;font-weight:700;color:#FFFFFF;">42.8 Hrs</span><br>
-                    Avg Play Session Tracked
-                </div>
+                <!-- Fallback screenshot overlay -->
+                <img src="../assets/screenshot_dashboard.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:6px;display:none;z-index:10;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" alt="통합 대시보드">
             </div>
 
             <div>
@@ -59,15 +63,19 @@
             style="position:absolute;left:700px;top:250px;width:520px;height:520px;transform:rotate(3deg);z-index:5;display:flex;flex-direction:column;justify-content:space-between;padding:30px;border-color:var(--accent-mint);">
             <div
                 style="width:100%;height:240px;background:#161A18;border:1px solid var(--accent-mint);border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
-                <div
-                    style="position:absolute;inset:0;background:radial-gradient(circle at center, rgba(61, 242, 148, 0.15) 0%, transparent 80%);">
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;">
+                    <div
+                        style="position:absolute;inset:0;background:radial-gradient(circle at center, rgba(61, 242, 148, 0.15) 0%, transparent 80%);">
+                    </div>
+                    <div
+                        style="font-family:var(--font-mono);font-size:16px;color:var(--accent-mint);text-align:center;line-height:1.6;z-index:2;">
+                        [L1-Norm Engine Run]<br>
+                        <span style="font-size:32px;font-weight:900;color:#FFFFFF;">MATCH COMPLETED</span><br>
+                        Delta Distance: 0.0162
+                    </div>
                 </div>
-                <div
-                    style="font-family:var(--font-mono);font-size:16px;color:var(--accent-mint);text-align:center;line-height:1.6;z-index:2;">
-                    [L1-Norm Engine Run]<br>
-                    <span style="font-size:32px;font-weight:900;color:#FFFFFF;">MATCH COMPLETED</span><br>
-                    Delta Distance: 0.0162
-                </div>
+                <!-- Fallback screenshot overlay -->
+                <img src="../assets/screenshot_optimization.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:6px;display:none;z-index:10;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" alt="최적화 추천 허브">
             </div>
 
             <div>
@@ -86,15 +94,19 @@
             style="position:absolute;left:1280px;top:250px;width:520px;height:520px;transform:rotate(-4deg);z-index:5;display:flex;flex-direction:column;justify-content:space-between;padding:30px;">
             <div
                 style="width:100%;height:240px;background:#161A18;border:1px solid rgba(61, 242, 148, 0.1);border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
-                <div
-                    style="position:absolute;inset:0;background-image:linear-gradient(rgba(61, 242, 148, 0.01) 1px, transparent 1px);background-size:20px 20px;">
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;">
+                    <div
+                        style="position:absolute;inset:0;background-image:linear-gradient(rgba(61, 242, 148, 0.01) 1px, transparent 1px);background-size:20px 20px;">
+                    </div>
+                    <div
+                        style="font-family:var(--font-mono);font-size:16px;color:#85908C;text-align:center;line-height:1.6;z-index:2;">
+                        [Community Thread Node]<br>
+                        <span style="font-size:24px;font-weight:700;color:#FFFFFF;">Pagination Feed Loaded</span><br>
+                        Category Count: 4
+                    </div>
                 </div>
-                <div
-                    style="font-family:var(--font-mono);font-size:16px;color:#85908C;text-align:center;line-height:1.6;z-index:2;">
-                    [Community Thread Node]<br>
-                    <span style="font-size:24px;font-weight:700;color:#FFFFFF;">Pagination Feed Loaded</span><br>
-                    Category Count: 4
-                </div>
+                <!-- Fallback screenshot overlay -->
+                <img src="../assets/screenshot_community.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:6px;display:none;z-index:10;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" alt="커뮤니티 게시판">
             </div>
 
             <div>
