@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <title>14 · Verification Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <div class="slide-container" data-screen-label="14 Verification Dashboard">
+
+        <!-- Tracker & Header Title -->
+        <div data-object="true" data-object-type="textbox"
+            style="position:absolute;left:120px;top:100px;width:1100px;z-index:10;">
+            <div class="header-tracker">14 / SYSTEM ALIGNMENT &amp; QA METRICS</div>
+            <div class="header-title">기획-코드 정합성 품질 검증 (Verification)</div>
+            <div class="header-rule"></div>
+        </div>
+
+        <!-- Left Column: Pipeline Flow + Summary Text (Tilted Glass Card) -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:120px;top:250px;width:580px;height:580px;transform:perspective(1200px) rotateX(12deg) rotateY(12deg);z-index:10;padding:40px;box-shadow:0 20px 40px rgba(0,0,0,0.5);">
+            
+            <!-- Vertical Pipeline Steps -->
+            <div style="display:flex;flex-direction:column;gap:0;">
+                <!-- Step 1 -->
+                <div style="display:flex;align-items:flex-start;gap:18px;">
+                    <div style="display:flex;flex-direction:column;align-items:center;">
+                        <div style="width:44px;height:44px;background:rgba(61, 242, 148, 0.15);border:2px solid var(--accent-mint);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                            <span style="font-family:var(--font-mono);font-size:16px;font-weight:900;color:var(--accent-mint);">01</span>
+                        </div>
+                        <div style="width:2px;height:36px;background:linear-gradient(180deg, var(--accent-mint) 0%, rgba(61, 242, 148, 0.1) 100%);"></div>
+                    </div>
+                    <div style="padding-top:8px;">
+                        <div style="font-family:var(--font-mono);font-size:22px;font-weight:900;color:var(--accent-mint);margin-bottom:4px;">Feature Audit</div>
+                        <div style="font-size:16px;color:#85908C;">요구사항 기능 전수 감사</div>
+                    </div>
+                </div>
+                <!-- Step 2 -->
+                <div style="display:flex;align-items:flex-start;gap:18px;">
+                    <div style="display:flex;flex-direction:column;align-items:center;">
+                        <div style="width:44px;height:44px;background:rgba(61, 242, 148, 0.15);border:2px solid var(--accent-mint);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                            <span style="font-family:var(--font-mono);font-size:16px;font-weight:900;color:var(--accent-mint);">02</span>
+                        </div>
+                        <div style="width:2px;height:36px;background:linear-gradient(180deg, var(--accent-mint) 0%, rgba(61, 242, 148, 0.1) 100%);"></div>
+                    </div>
+                    <div style="padding-top:8px;">
+                        <div style="font-family:var(--font-mono);font-size:22px;font-weight:900;color:var(--accent-mint);margin-bottom:4px;">Spec Tracking</div>
+                        <div style="font-size:16px;color:#85908C;">기획 요구사항 추적표 교차 대조</div>
+                    </div>
+                </div>
+                <!-- Step 3 -->
+                <div style="display:flex;align-items:flex-start;gap:18px;">
+                    <div style="display:flex;flex-direction:column;align-items:center;">
+                        <div style="width:44px;height:44px;background:rgba(61, 242, 148, 0.15);border:2px solid var(--accent-mint);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                            <span style="font-family:var(--font-mono);font-size:16px;font-weight:900;color:var(--accent-mint);">03</span>
+                        </div>
+                        <div style="width:2px;height:36px;background:linear-gradient(180deg, var(--accent-mint) 0%, rgba(61, 242, 148, 0.1) 100%);"></div>
+                    </div>
+                    <div style="padding-top:8px;">
+                        <div style="font-family:var(--font-mono);font-size:22px;font-weight:900;color:var(--accent-mint);margin-bottom:4px;">Gap Analysis</div>
+                        <div style="font-size:16px;color:#85908C;">기획-코드 구현 격차 도출</div>
+                    </div>
+                </div>
+                <!-- Step 4 -->
+                <div style="display:flex;align-items:flex-start;gap:18px;">
+                    <div style="display:flex;flex-direction:column;align-items:center;">
+                        <div style="width:44px;height:44px;background:rgba(61, 242, 148, 0.3);border:2px solid var(--accent-mint);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                            <span style="font-family:var(--font-mono);font-size:16px;font-weight:900;color:var(--accent-mint);">04</span>
+                        </div>
+                    </div>
+                    <div style="padding-top:8px;">
+                        <div style="font-family:var(--font-mono);font-size:22px;font-weight:900;color:var(--accent-mint);margin-bottom:4px;">Sync QA Integration</div>
+                        <div style="font-size:16px;color:#85908C;">격차 제거 및 신규 통합 검증</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Text below pipeline -->
+            <div style="margin-top:40px;font-size:22px;color:#85908C;line-height:1.6;font-weight:300;">
+                기획 명세 대비 구동 코드의 지속적 정합성 검증 체계를 수립하여 플랫폼 신뢰도를 확보했습니다.
+            </div>
+        </div>
+
+        <!-- Right: 3D Perspective Stacked Metric Cards (like slide 10 pattern) -->
+
+        <!-- Card 1: 100% (Top, tilted left) -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:740px;top:240px;width:480px;height:190px;transform:perspective(1200px) rotateX(12deg) rotateY(-6deg);z-index:15;padding:30px;display:flex;align-items:center;gap:28px;border-color:var(--accent-mint);box-shadow:0 15px 30px rgba(0,0,0,0.5);">
+            <div style="font-family:var(--font-mono);font-size:72px;font-weight:900;color:var(--accent-mint);line-height:1;flex-shrink:0;">
+                100%</div>
+            <div>
+                <div style="font-size:22px;font-weight:700;color:#FFFFFF;margin-bottom:6px;">핵심 요구사항 구현 완료</div>
+                <div style="font-size:16px;color:#85908C;line-height:1.4;">기획 명세서 기준 13개 핵심 기획 기능 전수 가동 상태 확인</div>
+            </div>
+        </div>
+
+        <!-- Card 2: 0건 (Middle-Right, tilted right, coral accent) -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:860px;top:440px;width:480px;height:190px;transform:perspective(1200px) rotateX(12deg) rotateY(6deg);z-index:20;padding:30px;display:flex;align-items:center;gap:28px;border-color:var(--accent-coral);background:rgba(30, 37, 34, 0.98);box-shadow:0 25px 50px rgba(255, 138, 101, 0.12);">
+            <div style="font-family:var(--font-mono);font-size:72px;font-weight:900;color:var(--accent-coral);line-height:1;flex-shrink:0;">
+                0건</div>
+            <div>
+                <div style="font-size:22px;font-weight:700;color:#FFFFFF;margin-bottom:6px;">기획 기능 누락</div>
+                <div style="font-size:16px;color:#85908C;line-height:1.4;">요구사항 명세 비교 시 기획 기능 미구현 및 유실율 0% 달성</div>
+            </div>
+        </div>
+
+        <!-- Card 3: 40+ (Lower-Left, tilted left) -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:740px;top:640px;width:480px;height:190px;transform:perspective(1200px) rotateX(12deg) rotateY(-6deg);z-index:15;padding:30px;display:flex;align-items:center;gap:28px;box-shadow:0 15px 30px rgba(0,0,0,0.5);">
+            <div style="font-family:var(--font-mono);font-size:72px;font-weight:900;color:#FFFFFF;line-height:1;flex-shrink:0;">
+                40+</div>
+            <div>
+                <div style="font-size:22px;font-weight:700;color:#FFFFFF;margin-bottom:6px;">API 엔드포인트 동작</div>
+                <div style="font-size:16px;color:#85908C;line-height:1.4;">프론트엔드-백엔드 런타임 40여 개 핵심 서비스 경로 전수 검사 완수</div>
+            </div>
+        </div>
+
+        <!-- Right Side: Status Monitor Panel (Tilted Glass Card) -->
+        <div data-object="true" data-object-type="shape"
+            style="position:absolute;left:1400px;top:250px;width:400px;height:580px;z-index:5;transform:perspective(1200px) rotateX(12deg) rotateY(-12deg);box-shadow:0 30px 60px rgba(61, 242, 148, 0.15);">
+            <div style="width:100%;height:100%;background:rgba(22, 26, 24, 0.7);border:1px solid rgba(61, 242, 148, 0.1);border-radius:12px;display:flex;flex-direction:column;justify-content:space-between;padding:40px;box-shadow:var(--card-shadow);">
+                <div style="font-family:var(--font-mono);font-size:14px;color:var(--accent-mint);letter-spacing:0.1em;">
+                    VERIFICATION STATUS</div>
+
+                <div style="text-align:center;">
+                    <div style="font-size:80px;font-weight:900;color:var(--accent-mint);font-family:var(--font-mono);line-height:1;">
+                        Pass</div>
+                    <div style="font-size:18px;color:#85908C;margin-top:10px;">웹 표준 및 접근성 준수</div>
+                </div>
+
+                <div style="border-top:1px solid rgba(61, 242, 148, 0.1);padding-top:20px;">
+                    <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:14px;margin-bottom:12px;">
+                        <span>WCAG 2.1</span>
+                        <span style="color:var(--accent-mint);">PASS</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:14px;margin-bottom:12px;">
+                        <span>Keyboard Nav</span>
+                        <span style="color:var(--accent-mint);">PASS</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:14px;margin-bottom:12px;">
+                        <span>Screen Reader</span>
+                        <span style="color:var(--accent-mint);">PASS</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:14px;">
+                        <span>Feature Coverage</span>
+                        <span style="color:var(--accent-mint);">100%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

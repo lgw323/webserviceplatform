@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <title>07 · Core Algorithm: Weights &amp; Normalization</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <div class="slide-container" data-screen-label="07 Core Algorithm Weights">
+
+        <!-- Tracker & Header Title -->
+        <div data-object="true" data-object-type="textbox"
+            style="position:absolute;left:120px;top:100px;width:1200px;z-index:10;">
+            <div class="header-tracker">07 / OPTIMIZATION WEIGHT FORMULATION</div>
+            <div class="header-title">하드웨어 편차 및 성능 가중치 모델 (Weights &amp; Normalization)</div>
+            <div class="header-rule"></div>
+        </div>
+
+        <!-- Left Column: Math & Feature Weights -->
+        <div data-object="true" data-object-type="textbox"
+            style="position:absolute;left:120px;top:240px;width:780px;z-index:10;display:flex;flex-direction:column;gap:24px;">
+            
+            <!-- Mathematical Formulation -->
+            <div class="glass-card" style="padding:32px;background:rgba(22, 26, 24, 0.9);border-color:var(--accent-mint);">
+                <div style="font-family:var(--font-mono);font-size:16px;color:var(--accent-mint);margin-bottom:12px;letter-spacing:0.15em;">
+                    WEIGHTED NORMALIZED FORMULATION</div>
+                <div style="font-size:38px;font-family:var(--font-mono);color:#FFFFFF;text-align:center;padding:12px 0;">
+                    d₁(<strong style="color:var(--accent-mint);">x</strong>, <strong style="color:var(--accent-mint);">y</strong>) = &sum; w<sub>i</sub> | (x<sub>i</sub> - y<sub>i</sub>) / &sigma;<sub>i</sub> |
+                </div>
+                <div style="font-size:18px;color:#85908C;line-height:1.6;margin-top:16px;text-wrap:pretty;">
+                    <strong>물리적 단위 표준화 (&sigma;<sub>i</sub>)</strong>: GPU 벤치마크 점수(수만 단위)와 RAM 용량(GB 단위)처럼 서로 다른 단위를 통일하여 공정하게 비교할 수 있도록 정규화합니다.
+                </div>
+            </div>
+
+            <!-- Algorithm Feature Weights Chart -->
+            <div class="glass-card" style="padding:28px;">
+                <div style="font-family:var(--font-mono);font-size:15px;color:var(--accent-mint);margin-bottom:18px;letter-spacing:0.1em;">
+                    ALGORITHM FEATURE WEIGHTS</div>
+
+                <!-- GPU Row -->
+                <div style="margin-bottom:12px;">
+                    <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:18px;margin-bottom:5px;">
+                        <span>GPU Profile Matching</span>
+                        <span style="color:var(--accent-mint);font-weight:700;">50%</span>
+                    </div>
+                    <div style="width:100%;height:10px;background:#161A18;border-radius:6px;overflow:hidden;">
+                        <div style="width:50%;height:100%;background:var(--accent-mint);border-radius:6px;"></div>
+                    </div>
+                </div>
+
+                <!-- CPU Row -->
+                <div style="margin-bottom:12px;">
+                    <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:18px;margin-bottom:5px;">
+                        <span>CPU Pipeline Scaling</span>
+                        <span style="color:var(--accent-mint);font-weight:700;">30%</span>
+                    </div>
+                    <div style="width:100%;height:10px;background:#161A18;border-radius:6px;overflow:hidden;">
+                        <div style="width:30%;height:100%;background:var(--accent-mint);border-radius:6px;"></div>
+                    </div>
+                </div>
+
+                <!-- RAM/RES Rows -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                    <div>
+                        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:16px;margin-bottom:5px;">
+                            <span>RAM Capacity</span>
+                            <span style="color:#85908C;">10%</span>
+                        </div>
+                        <div style="width:100%;height:8px;background:#161A18;border-radius:4px;overflow:hidden;">
+                            <div style="width:10%;height:100%;background:#85908C;border-radius:4px;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:16px;margin-bottom:5px;">
+                            <span>Resolution Scale</span>
+                            <span style="color:#85908C;">10%</span>
+                        </div>
+                        <div style="width:100%;height:8px;background:#161A18;border-radius:4px;overflow:hidden;">
+                            <div style="width:10%;height:100%;background:#85908C;border-radius:4px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: 3D Mockup Graphic Overlay -->
+        <div data-object="true" data-object-type="shape"
+            style="position:absolute;left:940px;top:240px;width:860px;height:720px;z-index:5;">
+            <div style="position:relative;width:100%;height:100%;background:var(--bg-secondary);border:1px solid rgba(61, 242, 148, 0.15);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);">
+
+                <!-- Grid Overlay Decoration -->
+                <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(61, 242, 148, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(61, 242, 148, 0.02) 1px, transparent 1px);background-size:40px 40px;z-index:1;"></div>
+
+                <!-- RTX 4080 SUPER Floating Card -->
+                <div class="glass-card"
+                    style="position:absolute;left:180px;top:120px;width:500px;height:250px;transform:perspective(1000px) rotateX(20deg) rotateY(-15deg);z-index:10;border-color:var(--accent-mint);background:rgba(30, 37, 34, 0.95);padding:24px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                        <span style="font-family:var(--font-mono);font-size:14px;color:var(--accent-mint);letter-spacing:0.15em;">TARGET DEVICE ACTIVE</span>
+                        <span style="padding:4px 10px;background:rgba(61, 242, 148, 0.15);color:var(--accent-mint);border-radius:4px;font-family:var(--font-mono);font-size:12px;font-weight:700;">MATCH 98.4%</span>
+                    </div>
+                    <div style="font-size:32px;font-weight:900;color:#FFFFFF;margin-bottom:10px;">RTX 4080 SUPER</div>
+                    <div style="font-family:var(--font-mono);font-size:16px;color:#85908C;line-height:1.6;">
+                        • GPU Weight (w_gpu): 0.50 (Normalized)<br>
+                        • Vector Index: [G_108, C_88, R_16, S_4]<br>
+                        • Deviation Metric: | x - y | / &sigma;
+                    </div>
+                </div>
+
+                <!-- Lower overlapping pipeline layer -->
+                <div class="glass-card"
+                    style="position:absolute;left:120px;top:300px;width:480px;height:240px;transform:perspective(1000px) rotateX(20deg) rotateY(-15deg);z-index:5;background:rgba(22, 26, 24, 0.85);opacity:0.6;border-color:rgba(255, 138, 101, 0.2);padding:24px;">
+                    <div style="font-family:var(--font-mono);font-size:14px;color:var(--accent-coral);">BASELINE HARDWARE DATASET</div>
+                    <div style="font-size:24px;font-weight:700;color:#FFFFFF;margin:10px 0;">유클리드 왜곡 분포 제거</div>
+                    <div style="font-family:var(--font-mono);font-size:14px;color:#85908C;line-height:1.5;">
+                        Dataset: n=45,280 Gaming Profiles<br>
+                        Deviation Correction: &sigma;_i (Robust Standard Deviation)<br>
+                        Multi-dimensional Manhattan Space Mapping
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

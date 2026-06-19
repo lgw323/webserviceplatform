@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <title>09 · Feature Spotlight: Core</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <div class="slide-container" data-screen-label="09 Feature Spotlight Core">
+
+        <!-- Tracker & Header Title -->
+        <div data-object="true" data-object-type="textbox"
+            style="position:absolute;left:120px;top:100px;width:1000px;z-index:10;">
+            <div class="header-tracker">09 / USER APPLICATION SYSTEM</div>
+            <div class="header-title">기능 하이라이트 ① — 코어 플랫폼</div>
+            <div class="header-rule"></div>
+        </div>
+
+        <!-- 3 Horizontal Spotlight Cards with staggered rotation angles -->
+
+        <!-- Card A (-2deg) -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:100px;top:220px;width:540px;height:730px;transform:rotate(-2deg);z-index:5;display:flex;flex-direction:column;justify-content:flex-start;padding:24px;gap:20px;">
+            <div style="font-size:32px;font-weight:900;color:var(--accent-mint);display:flex;align-items:center;">
+                <span style="font-family:var(--font-mono);margin-right:12px;">01</span> 통합 대시보드
+            </div>
+            
+            <!-- Screenshot Container -->
+            <div style="width:100%;flex:1;background:#161A18;border:1px solid rgba(61, 242, 148, 0.15);border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;">
+                    <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(61, 242, 148, 0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(61, 242, 148, 0.015) 1px, transparent 1px);background-size:20px 20px;"></div>
+                    <div style="font-family:var(--font-mono);font-size:18px;color:var(--accent-mint);text-align:center;line-height:1.6;z-index:2;">
+                        [Recharts Playtime Trend]<br>
+                        <span style="font-size:32px;font-weight:900;color:#FFFFFF;">42.8 Hrs</span><br>
+                        Avg Play Session Tracked
+                    </div>
+                </div>
+                <!-- Fallback screenshot overlay -->
+                <img src="../assets/screenshot_dashboard.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:6px;display:none;z-index:10;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" alt="통합 대시보드">
+            </div>
+        </div>
+
+        <!-- Card B (2deg) -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:690px;top:220px;width:540px;height:730px;transform:rotate(2deg);z-index:5;display:flex;flex-direction:column;justify-content:flex-start;padding:24px;gap:20px;border-color:var(--accent-mint);">
+            <div style="font-size:32px;font-weight:900;color:var(--accent-mint);display:flex;align-items:center;">
+                <span style="font-family:var(--font-mono);margin-right:12px;">02</span> 최적화 추천 허브
+            </div>
+            
+            <div style="width:100%;flex:1;background:#161A18;border:1px solid var(--accent-mint);border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;">
+                    <div style="position:absolute;inset:0;background:radial-gradient(circle at center, rgba(61, 242, 148, 0.15) 0%, transparent 80%);"></div>
+                    <div style="font-family:var(--font-mono);font-size:18px;color:var(--accent-mint);text-align:center;line-height:1.6;z-index:2;">
+                        [L1-Norm Engine Run]<br>
+                        <span style="font-size:32px;font-weight:900;color:#FFFFFF;">MATCH COMPLETED</span><br>
+                        Delta Distance: 0.0162
+                    </div>
+                </div>
+                <!-- Fallback screenshot overlay -->
+                <img src="../assets/screenshot_optimization.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:6px;display:none;z-index:10;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" alt="최적화 추천 허브">
+            </div>
+        </div>
+
+        <!-- Card C (-1.5deg) -->
+        <div data-object="true" data-object-type="shape" class="glass-card"
+            style="position:absolute;left:1280px;top:220px;width:540px;height:730px;transform:rotate(-1.5deg);z-index:5;display:flex;flex-direction:column;justify-content:flex-start;padding:24px;gap:20px;">
+            <div style="font-size:32px;font-weight:900;color:var(--accent-mint);display:flex;align-items:center;">
+                <span style="font-family:var(--font-mono);margin-right:12px;">03</span> 커뮤니티 게시판
+            </div>
+            
+            <div style="width:100%;flex:1;background:#161A18;border:1px solid rgba(61, 242, 148, 0.15);border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;">
+                    <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(61, 242, 148, 0.01) 1px, transparent 1px);background-size:20px 20px;"></div>
+                    <div style="font-family:var(--font-mono);font-size:18px;color:#85908C;text-align:center;line-height:1.6;z-index:2;">
+                        [Community Thread Node]<br>
+                        <span style="font-size:26px;font-weight:700;color:#FFFFFF;">Pagination Feed Loaded</span><br>
+                        Category Count: 4
+                    </div>
+                </div>
+                <!-- Fallback screenshot overlay -->
+                <img src="../assets/screenshot_community.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:6px;display:none;z-index:10;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" alt="커뮤니티 게시판">
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>
