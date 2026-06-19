@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <title>11 · Responsive Mobile Experience</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <style>
+        .tilt-card {
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.5s ease, border-color 0.5s ease;
+            cursor: pointer;
+        }
+        .tilt-card:hover {
+            transform: perspective(1000px) rotateY(0deg) rotateX(0deg) scale(1.05) !important;
+            border-color: var(--accent-mint) !important;
+            box-shadow: 0 20px 40px rgba(61, 242, 148, 0.15) !important;
+            z-index: 100 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slide-container" data-screen-label="11 Responsive Experience">
+
+        <!-- Tracker & Header Title -->
+        <div data-object="true" data-object-type="textbox"
+            style="position:absolute;left:120px;top:100px;width:1200px;z-index:10;">
+            <div class="header-tracker">11 / RESPONSIVE MOBILE EXPERIENCE</div>
+            <div class="header-title">언제 어디서나 접근 가능한 반응형 모바일 경험 (Mobile-First Web App)</div>
+            <div class="header-rule"></div>
+        </div>
+
+        <!-- 4 Column 3D Tilted Cards Container -->
+        <div style="position:absolute;left:0;top:230px;width:1920px;height:720px;display:flex;justify-content:center;align-items:center;perspective:2000px;">
+            
+            <!-- Card 1: Dashboard -->
+            <div class="glass-card tilt-card"
+                style="position:absolute;left:200px;width:320px;height:650px;transform:perspective(1000px) rotateY(15deg) rotateX(5deg);display:flex;flex-direction:column;padding:20px;gap:15px;z-index:5;">
+                <div style="font-size:20px;font-weight:900;color:var(--accent-mint);display:flex;align-items:center;justify-content:between;">
+                    <span style="font-family:var(--font-mono);">01</span>
+                    <span style="font-size:16px;font-weight:700;color:#FFFFFF;margin-left:auto;">MOBILE DASHBOARD</span>
+                </div>
+                
+                <div style="width:100%;flex:1;background:#161A18;border:1px solid rgba(61, 242, 148, 0.15);border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;">
+                        <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(61, 242, 148, 0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(61, 242, 148, 0.015) 1px, transparent 1px);background-size:20px 20px;"></div>
+                        <div style="font-family:var(--font-mono);font-size:14px;color:var(--accent-mint);text-align:center;line-height:1.6;z-index:2;padding:10px;">
+                            [Mobile Dashboard]<br>
+                            <span style="font-size:22px;font-weight:900;color:#FFFFFF;">RECHARTS LIVE</span><br>
+                            Optimal Grid System
+                        </div>
+                    </div>
+                    <!-- Fallback screenshot overlay -->
+                    <img src="../assets/screenshot_mobile_dashboard.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:6px;display:none;z-index:10;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" alt="모바일 대시보드">
+                </div>
+                <div style="font-size:16px;color:#B5C0BC;line-height:1.4;text-align:center;">
+                    모바일에 최적화된 리차트 컴포넌트로 최근 플레이 세션 통계를 한눈에 확인
+                </div>
+            </div>
+
+            <!-- Card 2: Optimization -->
+            <div class="glass-card tilt-card"
+                style="position:absolute;left:600px;width:320px;height:650px;transform:perspective(1000px) rotateY(-10deg) rotateX(5deg);display:flex;flex-direction:column;padding:20px;gap:15px;z-index:5;border-color:var(--accent-mint);">
+                <div style="font-size:20px;font-weight:900;color:var(--accent-mint);display:flex;align-items:center;justify-content:between;">
+                    <span style="font-family:var(--font-mono);">02</span>
+                    <span style="font-size:16px;font-weight:700;color:#FFFFFF;margin-left:auto;">OPTIMIZATION DETECT</span>
+                </div>
+                
+                <div style="width:100%;flex:1;background:#161A18;border:1px solid var(--accent-mint);border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;">
+                        <div style="position:absolute;inset:0;background:radial-gradient(circle at center, rgba(61, 242, 148, 0.15) 0%, transparent 80%);"></div>
+                        <div style="font-family:var(--font-mono);font-size:14px;color:var(--accent-mint);text-align:center;line-height:1.6;z-index:2;padding:10px;">
+                            [L1-Norm Engine]<br>
+                            <span style="font-size:22px;font-weight:900;color:#FFFFFF;">1-CLICK MATCH</span><br>
+                            Hardware Recommendation
+                        </div>
+                    </div>
+                    <!-- Fallback screenshot overlay -->
+                    <img src="../assets/screenshot_mobile_optimization.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:6px;display:none;z-index:10;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" alt="모바일 최적화추천">
+                </div>
+                <div style="font-size:16px;color:#FFFFFF;line-height:1.4;text-align:center;">
+                    가중치 기반 L1-Norm 알고리즘 분석 및 기기별 세부 그래픽 가이드 제공
+                </div>
+            </div>
+
+            <!-- Card 3: Community -->
+            <div class="glass-card tilt-card"
+                style="position:absolute;left:1000px;width:320px;height:650px;transform:perspective(1000px) rotateY(12deg) rotateX(5deg);display:flex;flex-direction:column;padding:20px;gap:15px;z-index:5;">
+                <div style="font-size:20px;font-weight:900;color:var(--accent-mint);display:flex;align-items:center;justify-content:between;">
+                    <span style="font-family:var(--font-mono);">03</span>
+                    <span style="font-size:16px;font-weight:700;color:#FFFFFF;margin-left:auto;">COMMUNITY FEED</span>
+                </div>
+                
+                <div style="width:100%;flex:1;background:#161A18;border:1px solid rgba(61, 242, 148, 0.15);border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;">
+                        <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(61, 242, 148, 0.01) 1px, transparent 1px);background-size:20px 20px;"></div>
+                        <div style="font-family:var(--font-mono);font-size:14px;color:#85908C;text-align:center;line-height:1.6;z-index:2;padding:10px;">
+                            [Community Feed]<br>
+                            <span style="font-size:20px;font-weight:700;color:#FFFFFF;">RESPONSIVE LIST</span><br>
+                            A11y Compliant Layout
+                        </div>
+                    </div>
+                    <!-- Fallback screenshot overlay -->
+                    <img src="../assets/screenshot_mobile_community.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:6px;display:none;z-index:10;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" alt="모바일 커뮤니티">
+                </div>
+                <div style="font-size:16px;color:#B5C0BC;line-height:1.4;text-align:center;">
+                    터치 제스처에 완벽 최적화된 반응형 글 리스트 및 유저 피드백 소통 창구
+                </div>
+            </div>
+
+            <!-- Card 4: MyPage -->
+            <div class="glass-card tilt-card"
+                style="position:absolute;left:1400px;width:320px;height:650px;transform:perspective(1000px) rotateY(-15deg) rotateX(5deg);display:flex;flex-direction:column;padding:20px;gap:15px;z-index:5;">
+                <div style="font-size:20px;font-weight:900;color:var(--accent-mint);display:flex;align-items:center;justify-content:between;">
+                    <span style="font-family:var(--font-mono);">04</span>
+                    <span style="font-size:16px;font-weight:700;color:#FFFFFF;margin-left:auto;">MYPAGE CONTROLS</span>
+                </div>
+                
+                <div style="width:100%;flex:1;background:#161A18;border:1px solid rgba(61, 242, 148, 0.15);border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;">
+                        <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(61, 242, 148, 0.015) 1px, transparent 1px);background-size:20px 20px;"></div>
+                        <div style="font-family:var(--font-mono);font-size:14px;color:var(--accent-mint);text-align:center;line-height:1.6;z-index:2;padding:10px;">
+                            [MyPage Settings]<br>
+                            <span style="font-size:22px;font-weight:900;color:#FFFFFF;">USER PROFILE</span><br>
+                            Security & API Connect
+                        </div>
+                    </div>
+                    <!-- Fallback screenshot overlay -->
+                    <img src="../assets/screenshot_mobile_mypage.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:6px;display:none;z-index:10;" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" alt="모바일 마이페이지">
+                </div>
+                <div style="font-size:16px;color:#B5C0BC;line-height:1.4;text-align:center;">
+                    스팀/라이엇 연동 프로필 관리 및 앱 환경설정을 간결한 스택 뷰로 구현
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</body>
+
+</html>
