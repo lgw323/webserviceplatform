@@ -202,7 +202,7 @@ export default function MainLayout() {
 
       {/* Mobile Bottom Nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 bg-cyber-card/95 backdrop-blur border-t border-gray-800 z-50">
-        <div className="grid grid-cols-4 h-16">
+        <div className="grid grid-cols-6 h-16">
           {NAV.map(item => {
             const Icon = item.icon;
             return (
